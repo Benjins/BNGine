@@ -9,6 +9,7 @@
 
 #include "Component.h"
 #include "Transform.h"
+#include "Camera.h"
 
 #include "../gfx/GfxResManager.h"
 
@@ -16,6 +17,8 @@ struct Scene {
 	IDTracker<Entity> entities;
 	IDTracker<Transform> transforms;
 	GfxResManager gfx;
+
+	Camera cam;
 
 	Scene();
 

@@ -13,7 +13,7 @@ struct Transform : Component{
 	Quaternion rotation;
 	Vector3 scale;
 
-	uint32 parent;
+	int parent;
 
 	Mat4x4 GetLocalToGlobalMatrix();
 	Mat4x4 GetGlobaltoLocalMatrix();

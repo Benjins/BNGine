@@ -19,6 +19,8 @@ struct GfxResManager {
 	IDTracker<DrawCall> drawCalls;
 
 	GfxResManager();
+
+	void Render();
 };
 
 #endif

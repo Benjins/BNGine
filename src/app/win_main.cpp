@@ -4,6 +4,7 @@
 #include <gl/GL.h>
 
 #include "../core/Scene.h"
+#include "../core/Camera.h"
 #include "../gfx/Shader.h"
 #include "../gfx/Material.h"
 #include "../gfx/Mesh.h"
@@ -47,15 +48,14 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 		OutputDebugStringA("OIh god, no OpenGL cont3ext.\n  :O");
 	}
 
-	glEnable(GL_DEPTH_TEST);
-
 	InitGlExts();
 
 	Scene scn;
 
 	glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	SwapBuffers(hdc);
+	glEnable(GL_DEPTH_TEST);
+	glViewport(0, 0, 1280, 720);
+	glLoadIdentity();
 
 	ReleaseDC(window, hdc);
 
@@ -65,9 +65,11 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 	vs->CompileShader("#version 130\n"
 		"attribute vec3 pos;\n"
 		"uniform float _x;\n"
-		"uniform mat4 _transMat;\n"
+		"uniform mat4 _objMatrix;\n"
+		"uniform mat4 _camMatrix;\n"
+		"uniform mat4 _perspMatrix;\n"
 		"out vec4 _outPos;"
-		"void main(){vec4 outPos = vec4(pos, 1); _outPos = outPos; gl_Position = _transMat * outPos;}", GL_VERTEX_SHADER);
+		"void main(){vec4 outPos = vec4(pos, 1); _outPos = outPos; gl_Position = _perspMatrix * _camMatrix * _objMatrix * outPos;}", GL_VERTEX_SHADER);
 
 	Shader* fs = scn.gfx.shaders.CreateAndAdd();
 	fs->CompileShader("out vec4 FragColor; in vec4 _outPos; void main(){FragColor = (_outPos + vec4(1,1,1,1))/2;}", GL_FRAGMENT_SHADER);
@@ -112,6 +114,63 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 	dc->meshId = mesh->id;
 	dc->matId = mat->id;
 
+	Transform* trans = scn.transforms.CreateAndAdd();
+	trans->parent = -1;
+
+	Entity* ent = scn.entities.CreateAndAdd();
+	ent->transform = trans->id;
+
+	Transform* camTrans = scn.transforms.CreateAndAdd();
+	camTrans->position = Vector3(0, 0, 0);
+	camTrans->rotation = QUAT_IDENTITY;
+	camTrans->scale = Vector3(1, 1, 1);
+	camTrans->parent = -1;
+
+	GlobalScene->cam.transform = camTrans;
+
+	dc->entId = ent->id;
+
+	DrawCall* dc2 = scn.gfx.drawCalls.CreateAndAdd();
+
+	Transform* trans2 = scn.transforms.CreateAndAdd();
+	trans2->parent = -1;
+
+	Entity* ent2 = scn.entities.CreateAndAdd();
+	ent2->transform = trans2->id;
+
+	dc2->entId = ent2->id;
+	dc2->matId = mat->id;
+	dc2->meshId = mesh->id;
+
+	{
+		DrawCall* floorDc = scn.gfx.drawCalls.CreateAndAdd();
+		floorDc->matId = mat->id;
+
+		Mesh* floorMesh = scn.gfx.meshes.CreateAndAdd();
+		floorMesh->vertices.PushBack(Vector3(-5,  5, 0));
+		floorMesh->vertices.PushBack(Vector3( 5,  5, 0));
+		floorMesh->vertices.PushBack(Vector3( 5, -5, 0));
+		floorMesh->vertices.PushBack(Vector3(-5, -5, 0));
+		Face f1 = { 0,1,2 };
+		Face f2 = { 1,2,3 };
+		floorMesh->faces.PushBack(f1);
+		floorMesh->faces.PushBack(f2);
+		floorMesh->UploadToGfxDevice();
+
+		floorDc->meshId = floorMesh->id;
+
+		Entity* floorEnt = scn.entities.CreateAndAdd();
+		Transform* floorTrans = scn.transforms.CreateAndAdd();
+		floorTrans->parent = -1;
+		floorEnt->transform = floorTrans->id;
+		floorDc->entId = floorEnt->id;
+
+		floorTrans->rotation = Quaternion(X_AXIS, 0.2f);
+	}
+
+	Camera cam;
+	cam.transform = camTrans;
+
 	bool isRunning = true;
 	while (isRunning) {
 		tagMSG msg;
@@ -128,30 +187,22 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 
 		HDC hdc = GetDC(window);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		/*
-		glBegin(GL_TRIANGLES);
-		glVertex3f(0, 0, 0);
-		glVertex3f(0, x, 0);
-		glVertex3f(1, 0, 0);
-		glEnd();
-		*/
 		
-		Quaternion rotation = Quaternion(Y_AXIS, 20) * Quaternion(X_AXIS, x);
+		//Quaternion rotation = Quaternion(Y_AXIS, 20) * Quaternion(X_AXIS, x);
 
-		Mat4x4 matrix;
-		matrix.SetColumn(0, Vector4(Rotate(X_AXIS * 0.3f, rotation), 0));
-		matrix.SetColumn(1, Vector4(Rotate(Y_AXIS * 0.3f, rotation), 0));
-		matrix.SetColumn(2, Vector4(Rotate(Z_AXIS * 0.4f, rotation), 0));
-		matrix.SetColumn(3, Vector4(0, x/10, 0, 1));
+		trans->rotation = Quaternion(Y_AXIS, 20) * Quaternion(X_AXIS, x);
+		trans->scale = Vector3(0.3f, .3f, 0.4f);
 
-		mat->SeMatrix4Uniform("_transMat", matrix);
-		ExecuteDrawCalls(dc, 1);
+		trans2->position = Vector3(x / 12, -0.5f, -0.5f);
+		trans2->rotation = Quaternion(X_AXIS, 0.4f) * Quaternion(Z_AXIS, 0.2f + x/15);
+		trans2->scale = Vector3(0.1f, 2.1f, 0.1f);
+
+		scn.gfx.Render();
 
 		x = x + 0.01f;
 
 		if (x > 6.2f) {
-			x -= 1.0f;
+			x -= 6.0f;
 		}
 
 		SwapBuffers(hdc);
@@ -212,6 +263,27 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		int code = wParam;
 		bool wasDown = (lParam & (1 << 30)) != 0;
 		bool  isDown = (lParam & (1 << 31)) == 0;
+
+		Transform* camera = GlobalScene->cam.transform;
+
+		if (code == 'W') {
+			camera->position.z += 0.2;
+		}
+		else if (code == 'S') {
+			camera->position.z -= 0.2;
+		}
+		else if (code == 'A') {
+			camera->position.x -= 0.2;
+		}
+		else if (code == 'D') {
+			camera->position.x += 0.2;
+		}
+		else if (code == 'Q') {
+			camera->position.y += 0.2;
+		}
+		else if (code == 'Z') {
+			camera->position.y -= 0.2;
+		}
 
 		//keyStates[code] = StateFromBools(wasDown, isDown);
 	}break;
