@@ -2,6 +2,8 @@
 #include "../../ext/3dbasics/Mat4.h"
 #include "../../ext/3dbasics/Vector4.h"
 
+#include "Scene.h"
+
 Transform::Transform() {
 	parent = -1;
 	position = Vector3();
@@ -28,7 +30,12 @@ Mat4x4 Transform::GetLocalToGlobalMatrix() {
 	matrix.SetColumn(2, Vector4(Rotate(Z_AXIS * scale.z, rotation), 0));
 	matrix.SetColumn(3, Vector4(position, 1));
 	
-	return matrix;
+	if (parent < 0) {
+		return matrix;
+	}
+	else {
+		return GlobalScene->transforms.GetById(parent)->GetLocalToGlobalMatrix() * matrix;
+	}
 }
 
 Mat4x4 Transform::GetGlobaltoLocalMatrix() {

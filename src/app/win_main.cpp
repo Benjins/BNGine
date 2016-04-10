@@ -133,7 +133,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 	DrawCall* dc2 = scn.gfx.drawCalls.CreateAndAdd();
 
 	Transform* trans2 = scn.transforms.CreateAndAdd();
-	trans2->parent = -1;
+	trans2->parent = trans->id;
 
 	Entity* ent2 = scn.entities.CreateAndAdd();
 	ent2->transform = trans2->id;
@@ -152,7 +152,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 		floorMesh->vertices.PushBack(Vector3( 5, 0, -5));
 		floorMesh->vertices.PushBack(Vector3(-5, 0, -5));
 		Face f1 = { 0,1,2 };
-		Face f2 = { 0,1,3 };
+		Face f2 = { 0,2,3 };
 		floorMesh->faces.PushBack(f1);
 		floorMesh->faces.PushBack(f2);
 		floorMesh->UploadToGfxDevice();
@@ -162,10 +162,11 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 		Entity* floorEnt = scn.entities.CreateAndAdd();
 		Transform* floorTrans = scn.transforms.CreateAndAdd();
 		floorTrans->parent = -1;
+		floorTrans->position.y = -1;
 		floorEnt->transform = floorTrans->id;
 		floorDc->entId = floorEnt->id;
 
-		floorTrans->rotation = Quaternion(X_AXIS, 0.2f);
+		//floorTrans->rotation = Quaternion(X_AXIS, 0.2f);
 	}
 
 	Camera cam;
