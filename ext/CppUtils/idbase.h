@@ -88,6 +88,18 @@ struct IDTracker{
 		
 		return ptr;
 	}
+
+	T* AddWithId(uint32 id) {
+		ASSERT(currentCount < maxCount);
+		ASSERT(id >= currentMaxId);
+
+		T* ptr = new(&vals[currentCount]) T();
+		vals[currentCount].id = id;
+		currentCount++;
+		currentMaxId = id + 1;
+
+		return ptr;
+	}
 	
 	T* GetById(uint32 id){
 		for(int i = 0; i < currentCount; i++){

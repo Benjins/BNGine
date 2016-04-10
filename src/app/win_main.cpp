@@ -11,6 +11,8 @@
 #include "../gfx/DrawCall.h"
 #include "../gfx/GLExtInit.h"
 
+#include "../assets/AssetFile.h"
+
 #include "../../ext/3dbasics/Vector4.h"
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -61,57 +63,20 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 
 	float x = 0;
 
-	Shader* vs = scn.gfx.shaders.CreateAndAdd();
-	vs->CompileShader("#version 130\n"
-		"attribute vec3 pos;\n"
-		"uniform float _x;\n"
-		"uniform mat4 _objMatrix;\n"
-		"uniform mat4 _camMatrix;\n"
-		"uniform mat4 _perspMatrix;\n"
-		"out vec4 _outPos;"
-		"void main(){vec4 outPos = vec4(pos, 1); _outPos = outPos; gl_Position = _perspMatrix * _camMatrix * _objMatrix * outPos;}", GL_VERTEX_SHADER);
+	PackAssetFile("assets", "assets.bna");
 
-	Shader* fs = scn.gfx.shaders.CreateAndAdd();
-	fs->CompileShader("out vec4 FragColor; in vec4 _outPos; void main(){FragColor = (_outPos + vec4(1,1,1,1))/2;}", GL_FRAGMENT_SHADER);
+	scn.gfx.LoadAssetFile("assets.bna");
 
 	Program* prog = scn.gfx.programs.CreateAndAdd();
-	prog->vertShader = vs->id;
-	prog->fragShader = fs->id;
+	prog->vertShader = 0;
+	prog->fragShader = 1;
 	prog->CompileProgram();
 
 	Material* mat = scn.gfx.materials.CreateAndAdd();
 	mat->programId = prog->id;
 
-	Mesh* mesh = scn.gfx.meshes.CreateAndAdd();
-	mesh->vertices.PushBack(Vector3(1, -1, -1));
-	mesh->vertices.PushBack(Vector3(1, -1, 1));
-	mesh->vertices.PushBack(Vector3(-1, -1, 1));
-	mesh->vertices.PushBack(Vector3(-1, -1, -1));
-	mesh->vertices.PushBack(Vector3(1, 1, -1));
-	mesh->vertices.PushBack(Vector3(1, 1, 1));
-	mesh->vertices.PushBack(Vector3(-1, 1, 1));
-	mesh->vertices.PushBack(Vector3(-1, 1, -1));
-
-	int indices[] = { 1, 2, 3,
-					  8, 7, 6,
-					  5, 6, 2,
-					  6, 7, 3,
-					  3, 7, 8,
-					  5, 1, 4,
-					  4, 1, 3,
-					  5, 8, 6,
-					  1, 5, 2,
-					  2, 6, 3,
-					  4, 3, 8,
-					  8, 5, 4 };
-	for (int i = 0; i < 12; i++) {
-		Face f = { indices[3*i]-1, indices[3*i+1]-1, indices[3*i+2]-1};
-		mesh->faces.PushBack(f);
-	}
-	mesh->UploadToGfxDevice();
-
 	DrawCall* dc = scn.gfx.drawCalls.CreateAndAdd();
-	dc->meshId = mesh->id;
+	dc->meshId = 0;
 	dc->matId = mat->id;
 
 	Transform* trans = scn.transforms.CreateAndAdd();
@@ -140,24 +105,13 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 
 	dc2->entId = ent2->id;
 	dc2->matId = mat->id;
-	dc2->meshId = mesh->id;
+	dc2->meshId = 0;
 
 	{
 		DrawCall* floorDc = scn.gfx.drawCalls.CreateAndAdd();
 		floorDc->matId = mat->id;
 
-		Mesh* floorMesh = scn.gfx.meshes.CreateAndAdd();
-		floorMesh->vertices.PushBack(Vector3(-5, 0,  5));
-		floorMesh->vertices.PushBack(Vector3( 5, 0,  5));
-		floorMesh->vertices.PushBack(Vector3( 5, 0, -5));
-		floorMesh->vertices.PushBack(Vector3(-5, 0, -5));
-		Face f1 = { 0,1,2 };
-		Face f2 = { 0,2,3 };
-		floorMesh->faces.PushBack(f1);
-		floorMesh->faces.PushBack(f2);
-		floorMesh->UploadToGfxDevice();
-
-		floorDc->meshId = floorMesh->id;
+		floorDc->meshId = 2;
 
 		Entity* floorEnt = scn.entities.CreateAndAdd();
 		Transform* floorTrans = scn.transforms.CreateAndAdd();

@@ -20,6 +20,12 @@ struct GfxResManager {
 
 	GfxResManager();
 
+	void LoadAssetFile(const char* fileName);
+
+	void LoadMeshFromChunk(unsigned char* meshChunk, int chunkLength, Mesh* outModel);
+	void LoadVShaderFromChunk(unsigned char* shaderChunk, int chunkLength, Shader* outModel);
+	void LoadFShaderFromChunk(unsigned char* shaderChunk, int chunkLength, Shader* outModel);
+
 	void Render();
 };
 
