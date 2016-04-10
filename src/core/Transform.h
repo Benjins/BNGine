@@ -15,6 +15,12 @@ struct Transform : Component{
 
 	int parent;
 
+	Transform();
+	
+	Vector3 Forward();
+	Vector3 Right();
+	Vector3 Up();
+
 	Mat4x4 GetLocalToGlobalMatrix();
 	Mat4x4 GetGlobaltoLocalMatrix();
 	Vector3 GetGlobalPosition();

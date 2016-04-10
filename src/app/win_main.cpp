@@ -121,7 +121,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 	ent->transform = trans->id;
 
 	Transform* camTrans = scn.transforms.CreateAndAdd();
-	camTrans->position = Vector3(0, 0, 0);
+	camTrans->position = Vector3(0, 0, -4);
 	camTrans->rotation = QUAT_IDENTITY;
 	camTrans->scale = Vector3(1, 1, 1);
 	camTrans->parent = -1;
@@ -147,12 +147,12 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 		floorDc->matId = mat->id;
 
 		Mesh* floorMesh = scn.gfx.meshes.CreateAndAdd();
-		floorMesh->vertices.PushBack(Vector3(-5,  5, 0));
-		floorMesh->vertices.PushBack(Vector3( 5,  5, 0));
-		floorMesh->vertices.PushBack(Vector3( 5, -5, 0));
-		floorMesh->vertices.PushBack(Vector3(-5, -5, 0));
+		floorMesh->vertices.PushBack(Vector3(-5, 0,  5));
+		floorMesh->vertices.PushBack(Vector3( 5, 0,  5));
+		floorMesh->vertices.PushBack(Vector3( 5, 0, -5));
+		floorMesh->vertices.PushBack(Vector3(-5, 0, -5));
 		Face f1 = { 0,1,2 };
-		Face f2 = { 1,2,3 };
+		Face f2 = { 0,1,3 };
 		floorMesh->faces.PushBack(f1);
 		floorMesh->faces.PushBack(f2);
 		floorMesh->UploadToGfxDevice();
@@ -193,6 +193,28 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 		trans->rotation = Quaternion(Y_AXIS, 20) * Quaternion(X_AXIS, x);
 		trans->scale = Vector3(0.3f, .3f, 0.4f);
 
+		//Quaternion(Y_AXIS, xRot/80) * Quaternion(X_AXIS, yRot/80 - 3);
+		scn.cam.transform->rotation = Quaternion(Y_AXIS, scn.input.cursorX / 80) * Quaternion(X_AXIS, scn.input.cursorY / 80 - 2);
+
+		Vector3 moveVec;
+
+		if (scn.input.KeyIsDown('W')) {
+			moveVec = moveVec + scn.cam.transform->Forward() / 50.0f;
+		}
+		if (scn.input.KeyIsDown('S')) {
+			moveVec = moveVec - scn.cam.transform->Forward() / 50.0f;
+		}
+		if (scn.input.KeyIsDown('A')) {
+			moveVec = moveVec - scn.cam.transform->Right() / 50.0f;
+		}
+		if (scn.input.KeyIsDown('D')) {
+			moveVec = moveVec + scn.cam.transform->Right() / 50.0f;
+		}
+
+		moveVec.y = 0;
+
+		scn.cam.transform->position = scn.cam.transform->position + moveVec;
+
 		trans2->position = Vector3(x / 12, -0.5f, -0.5f);
 		trans2->rotation = Quaternion(X_AXIS, 0.4f) * Quaternion(Z_AXIS, 0.2f + x/15);
 		trans2->scale = Vector3(0.1f, 2.1f, 0.1f);
@@ -229,31 +251,17 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		int mouseX = GET_X_LPARAM(lParam);
 		int mouseY = GET_Y_LPARAM(lParam);
 
-		//currMouseX = mouseX;
-		//currMouseY = mouseY;
-		//
-		//if (wParam & MK_LBUTTON) {
-		//	mouseState = HOLD;
-		//}
+		GlobalScene->input.SetCursorPos(mouseX, mouseY);
 	}break;
 
 	case WM_LBUTTONDOWN:
 	{
-		int mouseX = GET_X_LPARAM(lParam);
-		int mouseY = GET_Y_LPARAM(lParam);
-		
-		//if (mouseState != HOLD) {
-		//	mouseState = PRESS;
-		//}
+		GlobalScene->input.MouseButtonPressed(MouseButton::PRIMARY);
 	}break;
 
 	case WM_LBUTTONUP:
 	{
-		int mouseX = GET_X_LPARAM(lParam);
-		int mouseY = GET_Y_LPARAM(lParam);
-
-		//mouseState = RELEASE;
-		//MouseDown(mouseX, mouseY);
+		GlobalScene->input.MouseButtonReleased(MouseButton::PRIMARY);
 	}break;
 
 	case WM_SYSKEYDOWN:
@@ -264,25 +272,13 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		bool wasDown = (lParam & (1 << 30)) != 0;
 		bool  isDown = (lParam & (1 << 31)) == 0;
 
-		Transform* camera = GlobalScene->cam.transform;
-
-		if (code == 'W') {
-			camera->position.z += 0.2;
-		}
-		else if (code == 'S') {
-			camera->position.z -= 0.2;
-		}
-		else if (code == 'A') {
-			camera->position.x -= 0.2;
-		}
-		else if (code == 'D') {
-			camera->position.x += 0.2;
-		}
-		else if (code == 'Q') {
-			camera->position.y += 0.2;
-		}
-		else if (code == 'Z') {
-			camera->position.y -= 0.2;
+		if (code < 256) {
+			if (wasDown && !isDown) {
+				GlobalScene->input.KeyReleased(code);
+			}
+			else if (isDown && !wasDown) {
+				GlobalScene->input.KeyPressed(code);
+			}
 		}
 
 		//keyStates[code] = StateFromBools(wasDown, isDown);
