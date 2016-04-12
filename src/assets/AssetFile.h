@@ -16,6 +16,9 @@ Version 4 bytes
 header:
 list of origin file names and their asset id's
 
+the file name is the file name and extension, not including directory.  
+Collisions are possible if two files have the same name but are in different directories. 
+
 number of files 4 bytes
 for each file:
 asset id
@@ -58,5 +61,10 @@ void PackAssetFile(const char* assetDir, const char* packedFileName);
 void WriteMeshChunk(const char* meshFileName, int id, FILE* assetFileHandle);
 void WriteVShaderChunk(const char* shaderFileName, int id, FILE* assetFileHandle);
 void WriteFShaderChunk(const char* shaderFileName, int id, FILE* assetFileHandle);
+
+template<typename T>
+struct StringMap;
+
+void WriteAssetNameIdMap(const StringMap<int>& map, FILE* assetFileHandle);
 
 #endif

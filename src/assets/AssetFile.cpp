@@ -22,25 +22,36 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 	Vector<File*> meshFiles;
 	assetDir.FindFilesWithExt("obj", &meshFiles);
 
-	for (int i = 0; i < meshFiles.count; i++) {
-		WriteMeshChunk(meshFiles.data[i]->fullName, i, assetFile);
-		assetFileIds.Insert(meshFiles.data[i]->fullName, i);
-	}
-	
 	Vector<File*> vShaderFiles;
 	assetDir.FindFilesWithExt("vs", &vShaderFiles);
-
-	for (int i = 0; i < vShaderFiles.count; i++) {
-		WriteVShaderChunk(vShaderFiles.data[i]->fullName, i, assetFile);
-		assetFileIds.Insert(vShaderFiles.data[i]->fullName, i);
-	}
 
 	Vector<File*> fShaderFiles;
 	assetDir.FindFilesWithExt("fs", &fShaderFiles);
 
+	for (int i = 0; i < meshFiles.count; i++) {
+		assetFileIds.Insert(meshFiles.data[i]->fileName, i);
+	}
+
+	for (int i = 0; i < vShaderFiles.count; i++) {
+		assetFileIds.Insert(vShaderFiles.data[i]->fileName, i);
+	}
+
+	for (int i = 0; i < fShaderFiles.count; i++) {
+		assetFileIds.Insert(fShaderFiles.data[i]->fileName, vShaderFiles.count + i);
+	}
+
+	WriteAssetNameIdMap(assetFileIds, assetFile);
+
+	for (int i = 0; i < meshFiles.count; i++) {
+		WriteMeshChunk(meshFiles.data[i]->fullName, i, assetFile);
+	}
+
+	for (int i = 0; i < vShaderFiles.count; i++) {
+		WriteVShaderChunk(vShaderFiles.data[i]->fullName, i, assetFile);
+	}
+
 	for (int i = 0; i < fShaderFiles.count; i++) {
 		WriteFShaderChunk(fShaderFiles.data[i]->fullName, vShaderFiles.count + i, assetFile);
-		assetFileIds.Insert(fShaderFiles.data[i]->fullName, vShaderFiles.count + i);
 	}
 
 	int bnsaNegated = ~*(int*)fileId;
@@ -49,6 +60,18 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 	fclose(assetFile);
 
 	assetDir.Unload();
+}
+
+void WriteAssetNameIdMap(const StringMap<int>& map, FILE* assetFileHandle) {
+	int nameCount = map.count;
+	fwrite(&nameCount, 1, sizeof(int), assetFileHandle);
+
+	for (int i = 0; i < nameCount; i++) {
+		int nameLength = map.names[i].GetLength() + 1;
+		fwrite(&nameLength, 1, sizeof(int), assetFileHandle);
+		fwrite(&map.values[i], 1, sizeof(int), assetFileHandle);
+		fwrite(map.names[i].string, 1, nameLength, assetFileHandle);
+	}
 }
 
 void WriteMeshChunk(const char* modelFileName, int id, FILE* assetFileHandle) {

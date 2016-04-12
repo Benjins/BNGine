@@ -18,6 +18,8 @@ struct GfxResManager {
 	IDTracker<Mesh> meshes;
 	IDTracker<DrawCall> drawCalls;
 
+	StringMap<int> assetIdMap;
+
 	GfxResManager();
 
 	void LoadAssetFile(const char* fileName);

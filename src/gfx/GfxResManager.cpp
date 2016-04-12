@@ -27,6 +27,28 @@ void GfxResManager::LoadAssetFile(const char* fileName) {
 	int version = *(int*)fileCursor;
 	fileCursor += 4;
 
+	int assetNameCount = *(int*)fileCursor;
+	fileCursor += 4;
+
+	assetIdMap.EnsureCapacity(assetNameCount);
+	for (int i = 0; i < assetNameCount; i++) {
+		int nameLength = *(int*)fileCursor;
+		fileCursor += 4;
+
+		int assetId = *(int*)fileCursor;
+		fileCursor += 4;
+
+		char* assetName = (char*)malloc(nameLength);
+		MemCpy(assetName, fileCursor, nameLength);
+		assetName[nameLength] = '\0';
+
+		assetIdMap.Insert(assetName, assetId);
+
+		fileCursor += nameLength;
+
+		free(assetName);
+	}
+
 	while (fileCursor - assetFile < fileLength - 4) {
 		char* chunkId = (char*)fileCursor;
 		fileCursor += 4;

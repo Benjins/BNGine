@@ -19,6 +19,10 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 
 int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmdShow) {
 
+	//MessageBox(0, "And text here", "MessageBox caption", MB_OK);
+
+	//ASSERT(1 == 2);
+
 	WNDCLASS windowCls = {};
 	windowCls.hInstance = instance;
 	windowCls.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
@@ -27,9 +31,15 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 
 	RegisterClass(&windowCls);
 
+	//MessageBox(0, "Step 2", "MessageBox caption", MB_OK);
+
 	HWND window = CreateWindow(windowCls.lpszClassName, "BNgine Runtime", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 50, 50, 1280, 720, 0, 0, instance, 0);
 
+	//MessageBox(0, "Step 3", "MessageBox caption", MB_OK);
+
 	HDC hdc = GetDC(window);
+
+	//MessageBox(window, "Step 4", "MessageBox caption", MB_OK);
 
 	PIXELFORMATDESCRIPTOR desiredPixelFormat = {};
 	desiredPixelFormat.nSize = sizeof(desiredPixelFormat);
@@ -59,13 +69,19 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 	glViewport(0, 0, 1280, 720);
 	glLoadIdentity();
 
+	//MessageBox(0, "Step 5", "MessageBox caption", MB_OK);
+
 	ReleaseDC(window, hdc);
+
+	//MessageBox(0, "Step 6", "MessageBox caption", MB_OK);
 
 	float x = 0;
 
 	PackAssetFile("assets", "assets.bna");
 
 	scn.gfx.LoadAssetFile("assets.bna");
+
+	//ASSERT(1 == 2);
 
 	Program* prog = scn.gfx.programs.CreateAndAdd();
 	prog->vertShader = 0;
@@ -75,8 +91,14 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 	Material* mat = scn.gfx.materials.CreateAndAdd();
 	mat->programId = prog->id;
 
+	int boxMesh = -1;
+	scn.gfx.assetIdMap.LookUp("test_2.obj", &boxMesh);
+
+	int floorMesh = -1;
+	scn.gfx.assetIdMap.LookUp("floor.obj", &floorMesh);
+
 	DrawCall* dc = scn.gfx.drawCalls.CreateAndAdd();
-	dc->meshId = 0;
+	dc->meshId = boxMesh;
 	dc->matId = mat->id;
 
 	Transform* trans = scn.transforms.CreateAndAdd();
@@ -105,13 +127,13 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 
 	dc2->entId = ent2->id;
 	dc2->matId = mat->id;
-	dc2->meshId = 0;
+	dc2->meshId = boxMesh;
 
 	{
 		DrawCall* floorDc = scn.gfx.drawCalls.CreateAndAdd();
 		floorDc->matId = mat->id;
 
-		floorDc->meshId = 2;
+		floorDc->meshId = floorMesh;
 
 		Entity* floorEnt = scn.entities.CreateAndAdd();
 		Transform* floorTrans = scn.transforms.CreateAndAdd();
@@ -143,12 +165,9 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 		HDC hdc = GetDC(window);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
-		//Quaternion rotation = Quaternion(Y_AXIS, 20) * Quaternion(X_AXIS, x);
-
 		trans->rotation = Quaternion(Y_AXIS, 20) * Quaternion(X_AXIS, x);
 		trans->scale = Vector3(0.3f, .3f, 0.4f);
 
-		//Quaternion(Y_AXIS, xRot/80) * Quaternion(X_AXIS, yRot/80 - 3);
 		scn.cam.transform->rotation = Quaternion(Y_AXIS, scn.input.cursorX / 80) * Quaternion(X_AXIS, scn.input.cursorY / 80 - 2);
 
 		Vector3 moveVec;
