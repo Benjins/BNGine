@@ -11,6 +11,8 @@
 #include "DrawCall.h"
 #include "Material.h"
 
+struct MemStream;
+
 struct GfxResManager {
 	IDTracker<Shader> shaders;
 	IDTracker<Program> programs;
@@ -24,9 +26,9 @@ struct GfxResManager {
 
 	void LoadAssetFile(const char* fileName);
 
-	void LoadMeshFromChunk(unsigned char* meshChunk, int chunkLength, Mesh* outModel);
-	void LoadVShaderFromChunk(unsigned char* shaderChunk, int chunkLength, Shader* outModel);
-	void LoadFShaderFromChunk(unsigned char* shaderChunk, int chunkLength, Shader* outModel);
+	void LoadMeshFromChunk(MemStream& stream, Mesh* outModel);
+	void LoadVShaderFromChunk(MemStream& stream, Shader* outModel);
+	void LoadFShaderFromChunk(MemStream& stream, Shader* outModel);
 
 	void Render();
 };

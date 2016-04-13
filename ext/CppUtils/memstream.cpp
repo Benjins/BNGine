@@ -1,5 +1,6 @@
 #include "memstream.h"
 
+#include <stdio.h>
 
 void MemStream::EnsureCapacity(int newCapacity){
 	if(newCapacity > capacity){
@@ -34,6 +35,24 @@ void MemStream::WriteString(const char* str, int len){
 	writeHead = VOID_PTR_ADD(writeHead, len);
 }
 
+void MemStream::ReadInFromFile(const char* fileName){
+	FILE* fIn = fopen(fileName, "rb");
+	
+	if(fIn == NULL){
+		return;
+	}
+	
+	fseek(fIn, 0, SEEK_END);
+	int fileSize = ftell(fIn);
+	fseek(fIn, 0, SEEK_SET);
+	
+	base = malloc(fileSize);
+	fread(base, 1, fileSize, fIn);
+	writeHead = VOID_PTR_ADD(base, fileSize);
+	readHead = base;
+	
+	fclose(fIn);
+}
 
 #if defined(MEMSTREAM_TEST_MAIN)
 

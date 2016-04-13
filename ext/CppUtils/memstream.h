@@ -26,8 +26,24 @@ struct MemStream{
 	}
 	
 	int GetLength(){
-		return VOID_PTR_DIST(readHead, writeHead);
+		return VOID_PTR_DIST(writeHead, readHead);
 	}
+	
+	char* ReadStringInPlace(){
+		void* oldReadHead = readHead;
+		
+		int len = 0;
+		while(*(char*)readHead != '\0'){
+			readHead = VOID_PTR_ADD(readHead, 1);
+		}
+		
+		//Advance past the null byte
+		readHead = VOID_PTR_ADD(readHead, 1);
+		
+		return (char*)oldReadHead;
+	}
+	
+	void ReadInFromFile(const char* fileName);
 	
 	void EnsureCapacity(int newCapacity);
 	
