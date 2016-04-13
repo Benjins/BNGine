@@ -88,6 +88,53 @@ int main(int argc, char** argv){
 		}
 	}
 	
+	{
+		MemStream str;
+		
+		const int arrLength = 16;
+		
+		int arr[arrLength];
+		for(int i = 0; i < arrLength; i++){
+			arr[i] = i * i;
+		}
+		
+		str.WriteArray(arr, arrLength);
+		
+		int otherArr[arrLength];
+		
+		str.ReadArray(otherArr, arrLength);
+		
+		for(int i = 0; i < arrLength; i++){
+			ASSERT(arr[i] == otherArr[i]);
+		}
+	}
+	
+	{
+		const char* testStr = "This is a test string. La la la#$^@$^@ l2  46246ga la la ";
+		int testStrLen = StrLen(testStr);
+		
+		MemStream str;
+		str.Write(-12345);
+		str.WriteString(testStr);
+		str.Write(54321);
+		
+		ASSERT(str.Read<int>() == -12345);
+		
+		str.WriteString(testStr);
+		
+		char buffer[512] = {0};
+		
+		str.ReadArray<char>(buffer, testStrLen);
+		
+		ASSERT(StrEqualN(buffer, testStr, testStrLen));
+		
+		ASSERT(str.Read<int>() == 54321);
+		
+		str.ReadArray<char>(buffer, testStrLen);
+		
+		ASSERT(StrEqualN(buffer, testStr, testStrLen));
+	}
+	
 	return 0;
 }
 
