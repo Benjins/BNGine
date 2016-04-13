@@ -8,6 +8,12 @@ void Material::SetFloatUniform(const char* name, float val) {
 	glUniform1f(loc, val);
 }
 
+void Material::SetIntUniform(const char* name, int val) {
+	GLint loc = GetUniformLocation(name);
+
+	glUniform1i(loc, val);
+}
+
 void Material::SeMatrix4Uniform(const char* name, Mat4x4 val) {
 	GLint loc = GetUniformLocation(name);
 

@@ -10,15 +10,30 @@
 
 #include "GLWrap.h"
 
+#define MAX_TEXTURES_PER_MATERIAL 14
+
 struct Material : IDBase {
 	char name[64];
-	uint32 programId;
 
+	int texIds[MAX_TEXTURES_PER_MATERIAL];
+	uint32 programId;
+	int texCount;
+	
 	StringMap<GLint> uniformCache;
+
+	Material() : IDBase() {
+		texCount = 0;
+	}
+
+	void AddTexture(int texId) {
+		texIds[texCount] = texId;
+		texCount++;
+	}
 
 	GLint GetUniformLocation(const char* name);
 
 	void SetFloatUniform(const char* name, float val);
+	void SetIntUniform(const char* name, int val);
 	void SeMatrix4Uniform(const char* name, Mat4x4 val);
 };
 

@@ -91,6 +91,10 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 	Material* mat = scn.gfx.materials.CreateAndAdd();
 	mat->programId = prog->id;
 
+	int scribbleTex = -1;
+	scn.gfx.assetIdMap.LookUp("scribble.bmp", &scribbleTex);
+	mat->AddTexture(scribbleTex);
+
 	int boxMesh = -1;
 	scn.gfx.assetIdMap.LookUp("test_2.obj", &boxMesh);
 

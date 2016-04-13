@@ -1,5 +1,9 @@
 out vec4 FragColor;
-in vec4 _outPos;
+
+in vec2 outUv;
+
+uniform sampler2D _mainTex;
+
 void main(){
-	FragColor = (_outPos + vec4(1,1,1,1))/2;
+	FragColor = texture2D(_mainTex, outUv);
 }

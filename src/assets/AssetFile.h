@@ -30,7 +30,6 @@ string including null terminator (n bytes)
 Chunks:
 Chunk type
 Asset id
-Chunk length
 Chunk data
 Chunk footer (bitwise negation of type)
 
@@ -61,6 +60,7 @@ void PackAssetFile(const char* assetDir, const char* packedFileName);
 void WriteMeshChunk(const char* meshFileName, int id, FILE* assetFileHandle);
 void WriteVShaderChunk(const char* shaderFileName, int id, FILE* assetFileHandle);
 void WriteFShaderChunk(const char* shaderFileName, int id, FILE* assetFileHandle);
+void WriteTextureChunk(const char* textureFileName, int id, FILE* assetFileHandle);
 
 template<typename T>
 struct StringMap;

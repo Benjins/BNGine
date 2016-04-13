@@ -1,6 +1,7 @@
 #include "AssetFile.h"
 #include "../../ext/CppUtils/filesys.h"
 #include "../../ext/CppUtils/stringmap.h"
+#include "../../ext/CppUtils/memstream.h"
 
 #include "../../ext/3dbasics/Vector3.h"
 #include "../../ext/3dbasics/Vector2.h"
@@ -28,6 +29,9 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 	Vector<File*> fShaderFiles;
 	assetDir.FindFilesWithExt("fs", &fShaderFiles);
 
+	Vector<File*> textureFiles;
+	assetDir.FindFilesWithExt("bmp", &textureFiles);
+
 	for (int i = 0; i < meshFiles.count; i++) {
 		assetFileIds.Insert(meshFiles.data[i]->fileName, i);
 	}
@@ -38,6 +42,10 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 
 	for (int i = 0; i < fShaderFiles.count; i++) {
 		assetFileIds.Insert(fShaderFiles.data[i]->fileName, vShaderFiles.count + i);
+	}
+
+	for (int i = 0; i < textureFiles.count; i++) {
+		assetFileIds.Insert(textureFiles.data[i]->fileName, i);
 	}
 
 	WriteAssetNameIdMap(assetFileIds, assetFile);
@@ -52,6 +60,10 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 
 	for (int i = 0; i < fShaderFiles.count; i++) {
 		WriteFShaderChunk(fShaderFiles.data[i]->fullName, vShaderFiles.count + i, assetFile);
+	}
+
+	for (int i = 0; i < textureFiles.count; i++) {
+		WriteTextureChunk(textureFiles.data[i]->fullName, i, assetFile);
 	}
 
 	int bnsaNegated = ~*(int*)fileId;
@@ -149,7 +161,6 @@ void WriteMeshChunk(const char* modelFileName, int id, FILE* assetFileHandle) {
 	char chunkId[] = "BNMD";
 	fwrite(chunkId, 1, 4, assetFileHandle);
 	fwrite(&id, 1, 4, assetFileHandle);
-	fwrite(&dataSize, 1, 4, assetFileHandle);
 	fwrite(&flags, 1, 4, assetFileHandle);
 
 	fwrite(&positions.count, 1, 4, assetFileHandle);
@@ -173,7 +184,6 @@ void WriteVShaderChunk(const char* shaderFileName, int id, FILE* assetFileHandle
 	char chunkId[] = "BNVS";
 	fwrite(chunkId, 1, 4, assetFileHandle);
 	fwrite(&id, 1, 4, assetFileHandle);
-	fwrite(&shaderFileSize, 1, 4, assetFileHandle);
 	fwrite(shaderFileText, 1, shaderFileSize, assetFileHandle);
 
 	free(shaderFileText);
@@ -190,7 +200,6 @@ void WriteFShaderChunk(const char* shaderFileName, int id, FILE* assetFileHandle
 	char chunkId[] = "BNFS";
 	fwrite(chunkId, 1, 4, assetFileHandle);
 	fwrite(&id, 1, 4, assetFileHandle);
-	fwrite(&shaderFileSize, 1, 4, assetFileHandle);
 	fwrite(shaderFileText, 1, shaderFileSize, assetFileHandle);
 
 	free(shaderFileText);
@@ -199,4 +208,56 @@ void WriteFShaderChunk(const char* shaderFileName, int id, FILE* assetFileHandle
 	fwrite(&chunkIdFlipped, 1, 4, assetFileHandle);
 }
 
+#if defined(_MSC_VER)
+
+#pragma pack(1)
+struct BitMapHeader {
+#else
+typedef struct __attribute((packed))__{
+#endif
+	short fileTag;
+	int fileSize;
+	short reservedA;
+	short reservedB;
+	int imageDataOffset;
+
+	int headerSize;
+	int imageWidth;
+	int imageHeight;
+	short numColorPlanes;
+	short bitDepth;
+	int compressionMethod;
+	int imageDataSize;
+	int horizontalResolution;
+	int verticalResolution;
+	int numPaletteColors;
+	int numImportantColors;
+#if defined(_MSC_VER)
+};
+#pragma pack()
+#else
+} BitMapHeader;
+#endif
+
+void WriteTextureChunk(const char* textureFileName, int id, FILE* assetFileHandle) {
+	MemStream stream;
+	stream.ReadInFromFile(textureFileName);
+
+	BitMapHeader hdr;
+	stream.ReadArray(&hdr, 1);
+
+	//Jump to the image data
+	stream.readHead = VOID_PTR_ADD(stream.base, hdr.imageDataOffset);
+
+	char chunkId[] = "BNTX";
+	fwrite(chunkId, 1, 4, assetFileHandle);
+	fwrite(&id, 1, 4, assetFileHandle);
+
+	fwrite(&hdr.imageWidth, 1, sizeof(int), assetFileHandle);
+	fwrite(&hdr.imageHeight, 1, sizeof(int), assetFileHandle);
+	fwrite(stream.readHead, 3, hdr.imageWidth * hdr.imageHeight, assetFileHandle);	
+
+	int chunkIdFlipped = ~*(int*)chunkId;
+	fwrite(&chunkIdFlipped, 1, 4, assetFileHandle);
+}
 

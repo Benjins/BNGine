@@ -12,21 +12,17 @@
 #include "GLWrap.h"
 
 struct Face {
-	int indices[3];
-};
-
-struct Vertex {
-	Vector3 position;
-
-	Vertex(const Vector3& pos) : position(pos) {
-	}
+	int posIndices[3];
+	int uvIndices[3];
 };
 
 struct Mesh : IDBase {
-	Vector<Vertex> vertices;
+	Vector<Vector3> positions;
+	Vector<Vector2> uvs;
 	Vector<Face> faces;
 	
-	GLuint vbo;
+	GLuint posVbo;
+	GLuint uvVbo;
 
 	void UploadToGfxDevice();
 };

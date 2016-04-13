@@ -7,7 +7,7 @@
 #include "../../ext/CppUtils/memstream.h"
 
 GfxResManager::GfxResManager() 
-	: programs(20), shaders(30), materials(15), meshes(30), drawCalls(40){
+	: programs(20), shaders(30), materials(15), meshes(30), drawCalls(40), textures(20){
 
 }
 
@@ -50,8 +50,6 @@ void GfxResManager::LoadAssetFile(const char* fileName) {
 
 		int assetId = fileBufferStream.Read<int>();
 
-		int chunkLength = fileBufferStream.Read<int>();
-
 		void* oldReadHead = fileBufferStream.readHead;
 
 		if (memcmp(chunkId, "BNMD", 4) == 0) {
@@ -66,11 +64,13 @@ void GfxResManager::LoadAssetFile(const char* fileName) {
 			Shader* shader = shaders.AddWithId(assetId);
 			LoadFShaderFromChunk(fileBufferStream, shader);
 		}
+		else if (memcmp(chunkId, "BNTX", 4) == 0) {
+			Texture* texture = textures.AddWithId(assetId);
+			LoadTextureFromChunk(fileBufferStream, texture);
+		}
 		else {
 			ASSERT_WARN("Unkown chunk id: '%.*s'", 4, chunkId);
 		}
-
-		ASSERT(VOID_PTR_DIST(fileBufferStream.readHead, oldReadHead) == chunkLength);
 
 		int chunkFooter = fileBufferStream.Read<int>();
 		int expectedChunkFooter = ~*(int*)chunkId;
@@ -88,12 +88,15 @@ void GfxResManager::LoadMeshFromChunk(MemStream& stream, Mesh* outMesh) {
 
 	int posCount = stream.Read<int>();
 
-	outMesh->vertices.EnsureCapacity(posCount);
-	stream.ReadArray<Vertex>(outMesh->vertices.data, posCount);
-	outMesh->vertices.count = posCount;
+	outMesh->positions.EnsureCapacity(posCount);
+	stream.ReadArray<Vector3>(outMesh->positions.data, posCount);
+	outMesh->positions.count = posCount;
 	
 	int uvCount = stream.Read<int>();
-	stream.readHead = VOID_PTR_ADD(stream.readHead, uvCount * sizeof(Vector2));
+	
+	outMesh->uvs.EnsureCapacity(uvCount);
+	stream.ReadArray<Vector2>(outMesh->uvs.data, uvCount);
+	outMesh->uvs.count = uvCount;
 
 	int indexCount = stream.Read<int>();
 
@@ -110,8 +113,13 @@ void GfxResManager::LoadMeshFromChunk(MemStream& stream, Mesh* outMesh) {
 	int faceIndex = 0;
 	for (int i = 0; i < faceCount; i++) {
 		for (int j = 0; j < 3; j++) {
-			outMesh->faces.data[i].indices[j] = indices.data[faceIndex];
-			faceIndex += skipCount;
+			outMesh->faces.data[i].posIndices[j] = indices.data[faceIndex];
+			faceIndex++;
+
+			if (flags & MCF_UVS) {
+				outMesh->faces.data[i].uvIndices[j] = indices.data[faceIndex];
+				faceIndex++;
+			}
 		}
 	}
 
@@ -126,10 +134,21 @@ void GfxResManager::LoadFShaderFromChunk(MemStream& stream, Shader* outShader) {
 	outShader->CompileShader(stream.ReadStringInPlace(), GL_FRAGMENT_SHADER);
 }
 
+void GfxResManager::LoadTextureFromChunk(MemStream& stream, Texture* outTexture) {
+	int width = stream.Read<int>();
+	int height = stream.Read<int>();
+
+	outTexture->width = width;
+	outTexture->height = height;
+	outTexture->texMem = (unsigned char*) malloc(width * height * 3);
+	stream.ReadArray<unsigned char>(outTexture->texMem, width * height * 3);
+
+	outTexture->textureType = GL_TEXTURE_2D;
+	outTexture->UploadToGraphicsDevice();
+}
+
 void GfxResManager::Render() {
 	glViewport(0, 0, (int)GlobalScene->cam.widthPixels, (int)GlobalScene->cam.heightPixels);
-
-	//TODO: Camera matrix
 
 	ExecuteDrawCalls(drawCalls.vals, drawCalls.currentCount);
 }

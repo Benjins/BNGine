@@ -1,5 +1,6 @@
 #include "DrawCall.h"
 #include "Material.h"
+#include "Texture.h"
 #include "Mesh.h"
 #include "../core/Scene.h"
 #include "../core/Camera.h"
@@ -24,13 +25,32 @@ void ExecuteDrawCalls(DrawCall* calls, int count) {
 		mat->SeMatrix4Uniform("_camMatrix", camera);
 		mat->SeMatrix4Uniform("_perspMatrix", persp);
 
+		for (int i = 0; i < mat->texCount; i++) {
+			Texture* tex =  GlobalScene->gfx.textures.GetById(mat->texIds[i]);
+			tex->Bind(GL_TEXTURE0 + i);
+		}
+
+		//HACK
+		mat->SetIntUniform("_mainTex", 0);
+
 		GLint posAttribLoc = glGetAttribLocation(prog->programObj, "pos");
 		glEnableVertexAttribArray(posAttribLoc);
-		glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
+		glBindBuffer(GL_ARRAY_BUFFER, mesh->posVbo);
 		glVertexAttribPointer(posAttribLoc, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+		GLint uvAttribLoc = glGetAttribLocation(prog->programObj, "uv");
+		if (uvAttribLoc > 0) {
+			glEnableVertexAttribArray(uvAttribLoc);
+			glBindBuffer(GL_ARRAY_BUFFER, mesh->uvVbo);
+			glVertexAttribPointer(uvAttribLoc, 2, GL_FLOAT, GL_FALSE, 0, 0);
+		}
 
 		glDrawArrays(GL_TRIANGLES,0,mesh->faces.count*3);
 
 		glDisableVertexAttribArray(posAttribLoc);
+
+		if (uvAttribLoc > 0) {
+			glDisableVertexAttribArray(uvAttribLoc);
+		}
 	}
 }
