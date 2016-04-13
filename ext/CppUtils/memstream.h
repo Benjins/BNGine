@@ -25,6 +25,10 @@ struct MemStream{
 		capacity = 0;
 	}
 	
+	int GetLength(){
+		return VOID_PTR_DIST(readHead, writeHead);
+	}
+	
 	void EnsureCapacity(int newCapacity);
 	
 	void WriteString(const char* str);
