@@ -20,7 +20,7 @@ void assertFrom(const char* cond, const char* function, const char* file, int li
 	exit(-1);
 #else
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && 0
 
 	char messageBoxBuffer[2048];
 	char* messageBoxCursor = messageBoxBuffer;

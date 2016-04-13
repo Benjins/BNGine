@@ -128,7 +128,7 @@ bool StrEqualN(const char* s1, const char* s2, unsigned int len){
 		counter++;
 	}
 	
-	return counter == len;
+	return counter == len || *s1 == *s2;
 }
 
 void MemCpy(void* dest, const void* src, int bytes){
