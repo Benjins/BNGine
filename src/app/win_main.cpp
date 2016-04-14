@@ -98,11 +98,14 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 	int boxMesh = -1;
 	scn.gfx.assetIdMap.LookUp("test_2.obj", &boxMesh);
 
+	int monkeyMesh = -1;
+	scn.gfx.assetIdMap.LookUp("monkey.obj", &monkeyMesh);
+
 	int floorMesh = -1;
 	scn.gfx.assetIdMap.LookUp("floor.obj", &floorMesh);
 
 	DrawCall* dc = scn.gfx.drawCalls.CreateAndAdd();
-	dc->meshId = boxMesh;
+	dc->meshId = monkeyMesh;
 	dc->matId = mat->id;
 
 	Transform* trans = scn.transforms.CreateAndAdd();

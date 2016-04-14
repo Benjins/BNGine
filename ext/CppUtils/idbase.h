@@ -79,7 +79,9 @@ struct IDTracker{
 	}
 	
 	T* CreateAndAdd(){
-		ASSERT(currentCount < maxCount);
+		if (currentCount >= maxCount) {
+			SetSize(maxCount > 0 ? maxCount * 2 : 2);
+		}
 		
 		T* ptr = new(&vals[currentCount]) T();
 		vals[currentCount].id = currentMaxId;
@@ -90,8 +92,11 @@ struct IDTracker{
 	}
 
 	T* AddWithId(uint32 id) {
-		ASSERT(currentCount < maxCount);
 		ASSERT(id >= currentMaxId);
+
+		if (currentCount >= maxCount) {
+			SetSize(maxCount > 0 ? maxCount * 2 : 2);
+		}
 
 		T* ptr = new(&vals[currentCount]) T();
 		vals[currentCount].id = id;

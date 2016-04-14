@@ -54,10 +54,16 @@ if %ERRORLEVEL% NEQ 0 goto somethingbad
 combined_test.exe
 if %ERRORLEVEL% NEQ 0 goto somethingbad
 
-cl /Od /Zi /DBNS_DEBUG /DEXIT__ON_ASSERT /DMEMSTREAM_TEST_MAIN strings.cpp assert.cpp memstream.cpp /Fememstream_test
+cl /Od /Zi /DBNS_DEBUG /DEXIT_ON_ASSERT /DMEMSTREAM_TEST_MAIN strings.cpp assert.cpp memstream.cpp /Fememstream_test
 if %ERRORLEVEL% NEQ 0 goto somethingbad
 
 memstream_test.exe
+if %ERRORLEVEL% NEQ 0 goto somethingbad
+
+cl /Od /Zi /DBNS_DEBUG /DEXIT_ON_ASSERT /DXML_TEST_MAIN strings.cpp assert.cpp hash.cpp xml.cpp /Fexml_test
+if %ERRORLEVEL% NEQ 0 goto somethingbad
+
+xml_test.exe
 if %ERRORLEVEL% NEQ 0 goto somethingbad
 
 echo Success!
