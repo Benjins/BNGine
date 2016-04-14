@@ -159,7 +159,9 @@ struct SubString{
 		start = other.start;
 		length = other.length;
 		
-		Retain();
+		if (ref != nullptr) {
+			Retain();
+		}
 	}
 	
 	~SubString(){

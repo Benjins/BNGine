@@ -57,7 +57,7 @@ struct IDTracker{
 			T* newVals = (T*)malloc(maxCount*sizeof(T));
 			
 			for(int i = 0; i < currentCount; i++){
-				newVals[i] = vals[i];
+				new(&newVals[i]) T(vals[i]);
 			}
 			
 			for(int i = 0; i < currentCount; i++){

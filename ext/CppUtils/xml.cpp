@@ -53,7 +53,8 @@ XMLError ParseXMLString(String& xmlString, XMLDocument* outDoc) {
 					elem->name = tokens.Get(i);
 
 					if (elemIdStack.count > 0) {
-						outDoc->elements.GetById(elemIdStack.data[elemIdStack.count - 1])->childrenIds.PushBack(elem->id);
+						XMLElement* parentElem = outDoc->elements.GetById(elemIdStack.data[elemIdStack.count - 1]);
+						parentElem->childrenIds.PushBack(elem->id);
 					}
 
 					elemIdStack.PushBack(elem->id);
@@ -240,6 +241,34 @@ int main(int argc, char** argv) {
 	ASSERT(doc3.elements.GetById(childId)->name == "flur");
 	String attrVal;
 	ASSERT(doc3.elements.GetById(childId)->attributes.LookUp("syn", &attrVal) && attrVal == "Bah");
+
+	String xmmlMatStr =
+		"<Material vs='posCol.vs' fs='texCol.fs'>\n"
+		"\t<uniform name='mainTex' type='tex2D' val='scribble.bmp'/>\n"
+		"\t<uniform name='tintCol' type='vec4' val='0.4,0.7,0.3,1.0'/>\n"
+		"</Material>\n";
+
+	XMLDocument doc4;
+	ParseXMLString(xmmlMatStr, &doc4);
+
+	ASSERT(doc4.elements.GetById(0)->attributes.count == 2);
+	ASSERT(doc4.elements.GetById(0)->childrenIds.count == 2);
+	String vsVal;
+	ASSERT(doc4.elements.GetById(0)->attributes.LookUp("vs", &vsVal) && vsVal == "posCol.vs");
+	String fsVal;
+	ASSERT(doc4.elements.GetById(0)->attributes.LookUp("fs", &fsVal) && fsVal == "texCol.fs");
+
+	uint32 uniformId = doc4.elements.GetById(0)->childrenIds.Get(0);
+	ASSERT(doc4.elements.GetById(uniformId)->attributes.count == 3);
+
+	String typeVal;
+	ASSERT(doc4.elements.GetById(uniformId)->attributes.LookUp("type", &typeVal) && typeVal == "tex2D");
+
+	uint32 uniformId2 = doc4.elements.GetById(0)->childrenIds.Get(1);
+	ASSERT(doc4.elements.GetById(uniformId2)->attributes.count == 3);
+
+	String typeVal2;
+	ASSERT(doc4.elements.GetById(uniformId2)->attributes.LookUp("type", &typeVal2) && typeVal2 == "vec4");
 
 	return 0;
 }

@@ -23,7 +23,7 @@ struct XMLElement : IDBase {
 	}
 
 	XMLElement(const XMLElement& other) 
-		: name(other.name), attributes(other.attributes), childrenIds(other.childrenIds), plainText(other.plainText){
+		: IDBase(other), name(other.name), attributes(other.attributes), childrenIds(other.childrenIds), plainText(other.plainText){
 		doc = other.doc;
 	}
 };
