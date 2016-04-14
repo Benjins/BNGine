@@ -17,7 +17,10 @@ void String::SetSize(int size){
 	*length = size;
 }
 
-String::String(const SubString& substr)
+// FML.
+// cppcheck-suppress unmatchedSuppression
+// cppcheck-suppress uninitVar
+String::String(const SubString& substr) 
 	: String(substr.start, substr.length) {
 }
 
@@ -271,6 +274,8 @@ String ReadStringFromFile(const char* fileName) {
 	str.SetSize(fileLength);
 	fread(str.string, 1, fileLength, fIn);
 	str.string[fileLength] = '\0';
+
+	fclose(fIn);
 
 	str.Retain();
 
