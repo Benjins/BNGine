@@ -16,11 +16,11 @@ void Mesh::UploadToGfxDevice() {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3)*positionsData.count, positionsData.data, GL_STATIC_DRAW);
 
 	if (uvs.count > 0) {
-		Vector<Vector3> uvData;
+		Vector<Vector2> uvData;
 		uvData.EnsureCapacity(faces.count * 3);
 		for (int i = 0; i < faces.count; i++) {
 			for (int j = 0; j < 3; j++) {
-				uvData.PushBack(positions.data[faces.data[i].uvIndices[j]]);
+				uvData.PushBack(uvs.data[faces.data[i].uvIndices[j]]);
 			}
 		}
 
