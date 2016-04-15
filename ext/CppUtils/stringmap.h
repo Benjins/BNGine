@@ -133,7 +133,7 @@ struct StringMap{
 		
 	}
 	
-	bool LookUp(const String& name, T* out){
+	bool LookUp(const String& name, T* out) const{
 		Hash hash = ComputeHash(name.string);
 		
 		int low = 0;

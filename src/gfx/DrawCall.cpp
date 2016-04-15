@@ -30,8 +30,7 @@ void ExecuteDrawCalls(DrawCall* calls, int count) {
 			tex->Bind(GL_TEXTURE0 + i);
 		}
 
-		//HACK
-		mat->SetIntUniform("_mainTex", 0);
+		mat->UpdateUniforms();
 
 		GLint posAttribLoc = glGetAttribLocation(prog->programObj, "pos");
 		glEnableVertexAttribArray(posAttribLoc);

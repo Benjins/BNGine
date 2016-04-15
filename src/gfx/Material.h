@@ -5,6 +5,7 @@
 
 #include "../../ext/CppUtils/stringmap.h"
 #include "../../ext/CppUtils/idbase.h"
+#include "../../ext/CppUtils/memstream.h"
 
 #include "../../ext/3dbasics/Mat4.h"
 
@@ -13,13 +14,13 @@
 #define MAX_TEXTURES_PER_MATERIAL 14
 
 struct Material : IDBase {
-	char name[64];
-
 	int texIds[MAX_TEXTURES_PER_MATERIAL];
 	uint32 programId;
 	int texCount;
 	
 	StringMap<GLint> uniformCache;
+
+	MemStream uniformValues;
 
 	Material() : IDBase() {
 		texCount = 0;
@@ -30,6 +31,8 @@ struct Material : IDBase {
 		texCount++;
 	}
 
+	void UpdateUniforms();
+
 	GLint GetUniformLocation(const char* name);
 
 	void SetFloatUniform(const char* name, float val);
@@ -37,5 +40,15 @@ struct Material : IDBase {
 	void SeMatrix4Uniform(const char* name, Mat4x4 val);
 };
 
+enum UniformType{
+	UT_UNKNOWN,
+	UT_INTEGER,
+	UT_FLOAT,
+	UT_TEXTURE2D,
+	UT_MATRIX4,
+	UT_VEC2,
+	UT_VEC3,
+	UT_VEC4,
+};
 
 #endif

@@ -68,6 +68,10 @@ void GfxResManager::LoadAssetFile(const char* fileName) {
 			Texture* texture = textures.AddWithId(assetId);
 			LoadTextureFromChunk(fileBufferStream, texture);
 		}
+		else if (memcmp(chunkId, "BNMT", 4) == 0) {
+			Material* material = materials.AddWithId(assetId);
+			LoadMaterialFromChunk(fileBufferStream, material);
+		}
 		else {
 			ASSERT_WARN("Unkown chunk id: '%.*s'", 4, chunkId);
 		}
@@ -145,6 +149,51 @@ void GfxResManager::LoadTextureFromChunk(MemStream& stream, Texture* outTexture)
 
 	outTexture->textureType = GL_TEXTURE_2D;
 	outTexture->UploadToGraphicsDevice();
+}
+
+void GfxResManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat) {
+	int vShaderId = stream.Read<int>();
+	int fShaderId = stream.Read<int>();
+
+	Program* prog = nullptr;
+	for (int i = 0; i < programs.currentCount; i++) {
+		if (programs.vals[i].vertShader == vShaderId && programs.vals[i].fragShader == fShaderId) {
+			prog = &programs.vals[i];
+			break;
+		}
+	}
+
+	if (prog == nullptr) {
+		prog = programs.CreateAndAdd();
+		prog->vertShader = vShaderId;
+		prog->fragShader = fShaderId;
+		prog->CompileProgram();
+	}
+
+	outMat->programId = prog->id;
+
+	int uniformCount = stream.Read<int>();
+
+	for (int i = 0; i < uniformCount; i++) {
+		int strLength = stream.Read<int>();
+		char* uniformName = stream.ReadStringInPlace();
+
+		UniformType uniformType = stream.Read<UniformType>();
+		if (uniformType == UT_TEXTURE2D) {
+			int texId = stream.Read<uint32>();
+			outMat->AddTexture(texId);
+
+			outMat->SetIntUniform(uniformName, outMat->texCount - 1);
+		}
+		else if (uniformType == UT_INTEGER) {
+			int val = stream.Read<int>();
+			outMat->SetIntUniform(uniformName, val);
+		}
+		else if (uniformType == UT_FLOAT) {
+			float val = stream.Read<float>();
+			outMat->SetFloatUniform(uniformName, val);
+		}
+	}
 }
 
 void GfxResManager::Render() {

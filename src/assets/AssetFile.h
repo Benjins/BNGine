@@ -55,15 +55,16 @@ enum AssetType {
 	AT_MODEL
 };
 
+template<typename T>
+struct StringMap;
+
 void PackAssetFile(const char* assetDir, const char* packedFileName);
 
 void WriteMeshChunk(const char* meshFileName, int id, FILE* assetFileHandle);
 void WriteVShaderChunk(const char* shaderFileName, int id, FILE* assetFileHandle);
 void WriteFShaderChunk(const char* shaderFileName, int id, FILE* assetFileHandle);
 void WriteTextureChunk(const char* textureFileName, int id, FILE* assetFileHandle);
-
-template<typename T>
-struct StringMap;
+void WriteMaterialChunk(const char* materialFileName, const StringMap<int>& assetIds, int id, FILE* assetFileHandle);
 
 void WriteAssetNameIdMap(const StringMap<int>& map, FILE* assetFileHandle);
 

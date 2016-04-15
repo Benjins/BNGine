@@ -83,17 +83,8 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 
 	//ASSERT(1 == 2);
 
-	Program* prog = scn.gfx.programs.CreateAndAdd();
-	prog->vertShader = 0;
-	prog->fragShader = 1;
-	prog->CompileProgram();
-
-	Material* mat = scn.gfx.materials.CreateAndAdd();
-	mat->programId = prog->id;
-
-	int scribbleTex = -1;
-	scn.gfx.assetIdMap.LookUp("scribble.bmp", &scribbleTex);
-	mat->AddTexture(scribbleTex);
+	int matId = -1;
+	scn.gfx.assetIdMap.LookUp("standard.mat", &matId);
 
 	int boxMesh = -1;
 	scn.gfx.assetIdMap.LookUp("test_2.obj", &boxMesh);
@@ -106,7 +97,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 
 	DrawCall* dc = scn.gfx.drawCalls.CreateAndAdd();
 	dc->meshId = monkeyMesh;
-	dc->matId = mat->id;
+	dc->matId = matId;
 
 	Transform* trans = scn.transforms.CreateAndAdd();
 	trans->parent = -1;
@@ -133,12 +124,15 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 	ent2->transform = trans2->id;
 
 	dc2->entId = ent2->id;
-	dc2->matId = mat->id;
+	dc2->matId = matId;
 	dc2->meshId = boxMesh;
+
+	int floorMatId = -1;
+	scn.gfx.assetIdMap.LookUp("floor.mat", &floorMatId);
 
 	{
 		DrawCall* floorDc = scn.gfx.drawCalls.CreateAndAdd();
-		floorDc->matId = mat->id;
+		floorDc->matId = floorMatId;
 
 		floorDc->meshId = floorMesh;
 
@@ -148,8 +142,6 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 		floorTrans->position.y = -1;
 		floorEnt->transform = floorTrans->id;
 		floorDc->entId = floorEnt->id;
-
-		//floorTrans->rotation = Quaternion(X_AXIS, 0.2f);
 	}
 
 	Camera cam;

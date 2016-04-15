@@ -1,7 +1,7 @@
 #include "xml.h"
 
 
-XMLError ParseXMLString(String& xmlString, XMLDocument* outDoc) {
+XMLError ParseXMLString(String& xmlString, XMLDoc* outDoc) {
 	Vector<SubString> tokens;
 
 	XMLError err = LexXMLString(xmlString, &tokens);
@@ -102,7 +102,7 @@ XMLError ParseXMLString(String& xmlString, XMLDocument* outDoc) {
 	return XMLE_NONE;
 }
 
-XMLError ParseXMLStringFromFile(const char* fileName, XMLDocument* outDoc) {
+XMLError ParseXMLStringFromFile(const char* fileName, XMLDoc* outDoc) {
 	String str = ReadStringFromFile(fileName);
 
 	if (str.string == nullptr) {
@@ -228,10 +228,10 @@ int main(int argc, char** argv) {
 	LexXMLString(xmlStr2, &lex2);
 	LexXMLString(xmlStr3, &lex3);
 
-	XMLDocument doc1;
+	XMLDoc doc1;
 	ParseXMLString(xmlStr1, &doc1);
 
-	XMLDocument doc3;
+	XMLDoc doc3;
 	ParseXMLString(xmlStr3, &doc3);
 
 	ASSERT(doc3.elements.currentCount == 2);
@@ -250,7 +250,7 @@ int main(int argc, char** argv) {
 		"\t<uniform name='tintCol' type='vec4' val='0.4,0.7,0.3,1.0'/>\n"
 		"</Material>\n";
 
-	XMLDocument doc4;
+	XMLDoc doc4;
 	ParseXMLString(xmmlMatStr, &doc4);
 
 	ASSERT(doc4.elements.GetById(0)->attributes.count == 2);

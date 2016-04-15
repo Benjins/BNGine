@@ -32,6 +32,7 @@ struct GfxResManager {
 	void LoadVShaderFromChunk(MemStream& stream, Shader* outShader);
 	void LoadFShaderFromChunk(MemStream& stream, Shader* outShader);
 	void LoadTextureFromChunk(MemStream& stream, Texture* outTexture);
+	void LoadMaterialFromChunk(MemStream& stream, Material* outMat);
 
 	void Render();
 };
