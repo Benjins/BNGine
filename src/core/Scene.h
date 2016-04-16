@@ -12,6 +12,8 @@
 #include "Camera.h"
 #include "Input.h"
 
+#include "../game/Player.h"
+
 #include "../gfx/GfxResManager.h"
 
 struct Scene {
@@ -20,6 +22,8 @@ struct Scene {
 	GfxResManager gfx;
 
 	Input input;
+
+	Player player;
 
 	Camera cam;
 

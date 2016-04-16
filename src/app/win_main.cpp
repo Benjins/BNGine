@@ -167,26 +167,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 		trans->rotation = Quaternion(Y_AXIS, 20) * Quaternion(X_AXIS, x);
 		trans->scale = Vector3(0.3f, .3f, 0.4f);
 
-		scn.cam.transform->rotation = Quaternion(Y_AXIS, scn.input.cursorX / 80) * Quaternion(X_AXIS, scn.input.cursorY / 80 - 2);
-
-		Vector3 moveVec;
-
-		if (scn.input.KeyIsDown('W')) {
-			moveVec = moveVec + scn.cam.transform->Forward() / 50.0f;
-		}
-		if (scn.input.KeyIsDown('S')) {
-			moveVec = moveVec - scn.cam.transform->Forward() / 50.0f;
-		}
-		if (scn.input.KeyIsDown('A')) {
-			moveVec = moveVec - scn.cam.transform->Right() / 50.0f;
-		}
-		if (scn.input.KeyIsDown('D')) {
-			moveVec = moveVec + scn.cam.transform->Right() / 50.0f;
-		}
-
-		moveVec.y = 0;
-
-		scn.cam.transform->position = scn.cam.transform->position + moveVec;
+		scn.player.Update();
 
 		trans2->position = Vector3(x / 12, -0.5f, -0.5f);
 		trans2->rotation = Quaternion(X_AXIS, 0.4f) * Quaternion(Z_AXIS, 0.2f + x/15);
@@ -196,8 +177,8 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 
 		x = x + 0.01f;
 
-		if (x > 6.2f) {
-			x -= 6.0f;
+		if (x > 6.28f) {
+			x -= 6.28f;
 		}
 
 		SwapBuffers(hdc);

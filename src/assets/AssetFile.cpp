@@ -120,7 +120,7 @@ void WriteMeshChunk(const char* modelFileName, int id, FILE* assetFileHandle) {
 	while (fileCursor != nullptr && fileCursor - modelFileText < modelFileSize) {
 		fileCursor += strspn(fileCursor, whitespace);
 		
-		int lineKeyLen = strcspn(fileCursor, whitespace);
+		size_t lineKeyLen = strcspn(fileCursor, whitespace);
 		char* lineKey = fileCursor;
 
 		fileCursor += lineKeyLen;
@@ -130,7 +130,7 @@ void WriteMeshChunk(const char* modelFileName, int id, FILE* assetFileHandle) {
 			Vector3 pos;
 			for (int i = 0; i < 3; i++) {
 				fileCursor += strcspn(fileCursor, numbers);
-				((float*)&pos)[i] = atof(fileCursor);
+				((float*)&pos)[i] = (float)atof(fileCursor);
 				fileCursor += strspn(fileCursor, numbers);
 			}
 
@@ -141,7 +141,7 @@ void WriteMeshChunk(const char* modelFileName, int id, FILE* assetFileHandle) {
 			Vector2 uv;
 			for (int i = 0; i < 2; i++) {
 				fileCursor += strcspn(fileCursor, numbers);
-				((float*)&uv)[i] = atof(fileCursor);
+				((float*)&uv)[i] = (float)atof(fileCursor);
 				fileCursor += strspn(fileCursor, numbers);
 			}
 
@@ -370,7 +370,7 @@ void WriteMaterialChunk(const char* materialFileName, const StringMap<int>& asse
 			switch (type) {
 
 			case UT_FLOAT: {
-				float val = atof(valString.string);
+				float val = (float)atof(valString.string);
 				fwrite(&val, 1, sizeof(float), assetFileHandle);
 			} break;
 
