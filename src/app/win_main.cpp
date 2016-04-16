@@ -120,8 +120,6 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 				GlobalScene->input.KeyPressed(code);
 			}
 		}
-
-		//keyStates[code] = StateFromBools(wasDown, isDown);
 	}break;
 
 	case WM_SIZE: {
@@ -136,16 +134,8 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		}
 	} break;
 
-	case WM_PAINT: {
-		//WindowsPaintWindow(hwnd);
-	}break;
-
-
-	case WM_ACTIVATEAPP: {
-
-	}break;
-
 	case WM_MOUSEWHEEL: {
+		// Todo: yes.
 		float zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
 	}
 
