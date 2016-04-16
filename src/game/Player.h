@@ -15,12 +15,14 @@ struct Player : Component{
 	float yVelocity;
 
 	float playerHeight;
+	float playerWidth;
 	float jumpVelocity;
 
 	ControlState currState;
 
 	Player() {
 		playerHeight = 0.6f;
+		playerWidth = 0.2f;
 		jumpVelocity = 3.0f;
 		yVelocity = 0.0f;
 

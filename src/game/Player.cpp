@@ -66,5 +66,20 @@ void Player::Update() {
 		}
 	}
 
+	float heightDiff = moveVec.y;
+	moveVec.y = 0;
+
+	RaycastHit moveCast = GlobalScene->phys.Raycast(camTrans->position, moveVec.Normalized());
+	if (moveCast.wasHit && moveCast.depth <= playerWidth + moveVec.Magnitude()) {
+		Vector3 goodVec = moveVec.Normalized() * (moveCast.depth - playerWidth - 0.001f);
+		Vector3 badVec = moveVec - goodVec;
+
+		Vector3 projectedVec = badVec - VectorProject(badVec, moveCast.globalNormal);
+
+		moveVec = goodVec + projectedVec;
+	}
+
+	moveVec.y = heightDiff;
+
 	camTrans->position = camTrans->position + moveVec;
 }

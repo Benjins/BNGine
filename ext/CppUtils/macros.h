@@ -6,3 +6,5 @@
 
 #define BNS_MIN(a,b) ((a) < (b) ? (a) : (b))
 #define BNS_MAX(a,b) ((a) > (b) ? (a) : (b))
+
+#define BNS_ABS(x) (((x) < 0) ? -(x) : (x))

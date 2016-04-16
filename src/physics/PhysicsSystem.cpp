@@ -79,9 +79,34 @@ RaycastHit RaycastBox(Vector3 origin, Vector3 direction, BoxCollider* boxCol) {
 		RaycastHit hit;
 		hit.wasHit = true;
 
+		Mat4x4 loc2glob = trans->GetLocalToGlobalMatrix();
+
 		float localDepth = minDepth;
 		Vector3 localHitPos = localOrigin + (localDirection * localDepth);
-		Vector3 globalHitPos = trans->GetLocalToGlobalMatrix().MultiplyAsPosition(localHitPos);
+		Vector3 globalHitPos = loc2glob.MultiplyAsPosition(localHitPos);
+
+		Vector3 boxSpaceHitLoc = localHitPos - boxCol->position;
+
+		int maxIndicesFlags = 0;
+		float maxVal = 0;
+		for (int i = 0; i < 3; i++) {
+			if (BNS_ABS(boxSpaceHitLoc[i]) > BNS_ABS(maxVal)) {
+				maxIndicesFlags = (1 << i);
+				maxVal = boxSpaceHitLoc[i];
+			}
+			else if (BNS_ABS(boxSpaceHitLoc[i]) == BNS_ABS(maxVal)) {
+				maxIndicesFlags |= (1 << i);
+			}
+		}
+
+		Vector3 localNormal;
+		for (int i = 0; i < 3; i++) {
+			if ((1 << i) & maxIndicesFlags) {
+				localNormal[i] = boxSpaceHitLoc[i];
+			}
+		}
+
+		hit.globalNormal = loc2glob.MultiplyAsDirection(localNormal).Normalized();
 
 		hit.depth = (globalHitPos - origin).Magnitude();
 		hit.globalPos = globalHitPos;
