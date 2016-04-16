@@ -5,6 +5,8 @@
 #include "../../ext/CppUtils/strings.h"
 #include "../../ext/CppUtils/assert.h"
 
+#include <string.h>
+
 Vector3 ParseVector3(const char* str) {
 	const char* firstNum = str;
 	ASSERT(firstNum != nullptr);

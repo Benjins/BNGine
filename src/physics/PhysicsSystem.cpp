@@ -4,6 +4,8 @@
 
 #include "../../ext/CppUtils/macros.h"
 
+#include <cfloat>
+
 RaycastHit PhysicsSystem::Raycast(Vector3 origin, Vector3 direction) {
 	RaycastHit finalHit;
 	finalHit.wasHit = false;

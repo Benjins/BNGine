@@ -9,6 +9,8 @@
 #include <gl/glext.h>
 #elif defined(__APPLE__)
 #else
+#include<GL/gl.h>
+#include<GL/glx.h>
 #endif
 
 static_assert(sizeof(GLuint) == sizeof(GLuint), "Opengl headers not found");

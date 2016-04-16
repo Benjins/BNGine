@@ -4,10 +4,14 @@
 
 #include "../../ext/CppUtils/assert.h"
 
-#if defined(_WIN32)
-
 void InitGlExts() {
+#if defined(_WIN32)
 #define EXTENSION_PROC(type,name) name = (type)wglGetProcAddress(#name); ASSERT(name != nullptr);
+#elif defined(__APPLE__)
+#define EXTENSION_PROC(type,name) ASSERT(name != nullptr);
+#else
+#define EXTENSION_PROC(type,name) name = (type)glXGetProcAddress((const unsigned char*)#name); ASSERT(name != nullptr);
+#endif
 	EXTENSION_PROC(PFNGLCREATESHADERPROC, glCreateShader);
 	EXTENSION_PROC(PFNGLSHADERSOURCEPROC, glShaderSource);
 	EXTENSION_PROC(PFNGLCOMPILESHADERPROC, glCompileShader);
@@ -31,10 +35,10 @@ void InitGlExts() {
 	EXTENSION_PROC(PFNGLUNIFORM1IPROC, glUniform1i);
 	EXTENSION_PROC(PFNGLGETUNIFORMLOCATIONPROC, glGetUniformLocation);
 	EXTENSION_PROC(PFNGLUNIFORMMATRIX4FVPROC, glUniformMatrix4fv);
+#if defined(_WIN32)
 	EXTENSION_PROC(PFNGLACTIVETEXTUREPROC, glActiveTexture);
+#endif
 #undef EXTENSION_PROC
 }
 
-#elif defined(__APPLE__)
-#else
-#endif
+

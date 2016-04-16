@@ -56,7 +56,7 @@ void Scene::Update() {
 }
 
 void Scene::LoadLevel(const char* name) {
-	int levelId;
+	int levelId = -1;
 	ASSERT(res.assetIdMap.LookUp(name, &levelId));
 
 	Level* level = res.levels.GetById(levelId);
