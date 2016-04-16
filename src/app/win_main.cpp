@@ -72,6 +72,8 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 		
 		scn.Update();
 
+		scn.Render();
+
 		SwapBuffers(hdc);
 		ReleaseDC(window, hdc);
 		

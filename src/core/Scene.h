@@ -36,6 +36,10 @@ struct Scene {
 
 	void Update();
 
+	void Render();
+
+	Entity* AddVisibleEntity(uint32 matId, uint32 meshId);
+
 	//Maybe later.  How to go from transform to global transform? 
 	//Cache global pos in transform struct?
 	//Vector<Mat4x4> cachedTransforms;
