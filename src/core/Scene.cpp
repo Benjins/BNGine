@@ -36,7 +36,7 @@ void Scene::StartUp() {
 	ent->transform = trans->id;
 
 	Transform* camTrans = transforms.CreateAndAdd();
-	camTrans->position = Vector3(0, 0, -4);
+	camTrans->position = Vector3(0, 1.2f, -4);
 	camTrans->rotation = QUAT_IDENTITY;
 	camTrans->scale = Vector3(1, 1, 1);
 	camTrans->parent = -1;
@@ -72,6 +72,30 @@ void Scene::StartUp() {
 		floorTrans->position.y = -1;
 		floorEnt->transform = floorTrans->id;
 		floorDc->entId = floorEnt->id;
+
+		BoxCollider* floorCol = phys.boxCols.CreateAndAdd();
+		floorCol->entity = floorEnt->id;
+		floorCol->position = Vector3(0, -0.25f, 0);
+		floorCol->size = Vector3(5, 0.2f, 5);
+	}
+
+	{
+		DrawCall* boxDc = gfx.drawCalls.CreateAndAdd();
+		boxDc->matId = floorMatId;
+		boxDc->meshId = boxMesh;
+
+		Entity* boxEnt = entities.CreateAndAdd();
+		Transform* boxTrans = transforms.CreateAndAdd();
+		boxTrans->parent = -1;
+		boxTrans->position = Vector3(2, -0.4f, 2);
+		boxTrans->scale = Vector3(0.6f, 0.3f, 0.6f);
+		boxEnt->transform = boxTrans->id;
+		boxDc->entId = boxEnt->id;
+
+		BoxCollider* boxCol = phys.boxCols.CreateAndAdd();
+		boxCol->entity = boxEnt->id;
+		boxCol->position = Vector3(0, 0, 0);
+		boxCol->size = Vector3(1, 1, 1);
 	}
 }
 

@@ -20,8 +20,8 @@ struct Player : Component{
 	ControlState currState;
 
 	Player() {
-		playerHeight = 1.2f;
-		jumpVelocity = 1.5f;
+		playerHeight = 0.6f;
+		jumpVelocity = 3.0f;
 		yVelocity = 0.0f;
 
 		currState = CS_GROUNDED;

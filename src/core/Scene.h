@@ -15,6 +15,7 @@
 #include "../game/Player.h"
 
 #include "../gfx/GfxResManager.h"
+#include "../physics/PhysicsSystem.h"
 
 struct Scene {
 	IDTracker<Entity> entities;
@@ -24,6 +25,8 @@ struct Scene {
 	Input input;
 
 	Player player;
+
+	PhysicsSystem phys;
 
 	Camera cam;
 

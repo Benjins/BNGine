@@ -54,6 +54,11 @@ struct Vector3 {
 	bool operator==(const Vector3& compareVec) const;
 	bool operator!=(const Vector3& compareVec) const;
 
+	//Get the index-th element (x = 0, y = 1, z = 2)
+	inline float& operator[](const int index) {
+		return ((float*)this)[index];
+	}
+
 	//The length of the vector
 	float Magnitude() const;
 

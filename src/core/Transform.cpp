@@ -39,11 +39,30 @@ Mat4x4 Transform::GetLocalToGlobalMatrix() {
 }
 
 Mat4x4 Transform::GetGlobaltoLocalMatrix() {
-	//TODO
-	return Mat4x4();
+	Mat4x4 linMat;
+	Mat4x4 affMat;
+
+	linMat.SetColumn(0, Vector4(Rotate(X_AXIS, rotation.Conjugate()) / scale.x, 0));
+	linMat.SetColumn(1, Vector4(Rotate(Y_AXIS, rotation.Conjugate()) / scale.y, 0));
+	linMat.SetColumn(2, Vector4(Rotate(Z_AXIS, rotation.Conjugate()) / scale.z, 0));
+	linMat.SetColumn(3, Vector4(0, 0, 0, 1));
+
+	affMat.SetRow(0, Vector4(X_AXIS, -position.x));
+	affMat.SetRow(1, Vector4(Y_AXIS, -position.y));
+	affMat.SetRow(2, Vector4(Z_AXIS, -position.z));
+	affMat.SetRow(3, Vector4(0, 0, 0, 1));
+
+	Mat4x4 transMat = linMat * affMat;
+
+	if (parent < 0) {
+		return transMat;
+	}
+	else {
+		return transMat * GlobalScene->transforms.GetById(parent)->GetGlobaltoLocalMatrix();
+	}
 }
 
 Vector3 Transform::GetGlobalPosition() {
-	//TODO
-	return Vector3();
+	Mat4x4 loc2glob = GetLocalToGlobalMatrix();
+	return loc2glob.MultiplyAsPosition(Vector3(0, 0, 0));
 }
