@@ -4,24 +4,11 @@
 #include <gl/GL.h>
 
 #include "../core/Scene.h"
-#include "../core/Camera.h"
-#include "../gfx/Shader.h"
-#include "../gfx/Material.h"
-#include "../gfx/Mesh.h"
-#include "../gfx/DrawCall.h"
 #include "../gfx/GLExtInit.h"
-
-#include "../assets/AssetFile.h"
-
-#include "../../ext/3dbasics/Vector4.h"
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmdShow) {
-
-	//MessageBox(0, "And text here", "MessageBox caption", MB_OK);
-
-	//ASSERT(1 == 2);
 
 	WNDCLASS windowCls = {};
 	windowCls.hInstance = instance;
@@ -31,15 +18,9 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 
 	RegisterClass(&windowCls);
 
-	//MessageBox(0, "Step 2", "MessageBox caption", MB_OK);
-
 	HWND window = CreateWindow(windowCls.lpszClassName, "BNgine Runtime", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 50, 50, 1280, 720, 0, 0, instance, 0);
 
-	//MessageBox(0, "Step 3", "MessageBox caption", MB_OK);
-
 	HDC hdc = GetDC(window);
-
-	//MessageBox(window, "Step 4", "MessageBox caption", MB_OK);
 
 	PIXELFORMATDESCRIPTOR desiredPixelFormat = {};
 	desiredPixelFormat.nSize = sizeof(desiredPixelFormat);
@@ -69,83 +50,9 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 	glViewport(0, 0, 1280, 720);
 	glLoadIdentity();
 
-	//MessageBox(0, "Step 5", "MessageBox caption", MB_OK);
-
 	ReleaseDC(window, hdc);
 
-	//MessageBox(0, "Step 6", "MessageBox caption", MB_OK);
-
-	float x = 0;
-
-	PackAssetFile("assets", "assets.bna");
-
-	scn.gfx.LoadAssetFile("assets.bna");
-
-	//ASSERT(1 == 2);
-
-	int matId = -1;
-	scn.gfx.assetIdMap.LookUp("standard.mat", &matId);
-
-	int boxMesh = -1;
-	scn.gfx.assetIdMap.LookUp("test_2.obj", &boxMesh);
-
-	int monkeyMesh = -1;
-	scn.gfx.assetIdMap.LookUp("monkey.obj", &monkeyMesh);
-
-	int floorMesh = -1;
-	scn.gfx.assetIdMap.LookUp("floor.obj", &floorMesh);
-
-	DrawCall* dc = scn.gfx.drawCalls.CreateAndAdd();
-	dc->meshId = monkeyMesh;
-	dc->matId = matId;
-
-	Transform* trans = scn.transforms.CreateAndAdd();
-	trans->parent = -1;
-
-	Entity* ent = scn.entities.CreateAndAdd();
-	ent->transform = trans->id;
-
-	Transform* camTrans = scn.transforms.CreateAndAdd();
-	camTrans->position = Vector3(0, 0, -4);
-	camTrans->rotation = QUAT_IDENTITY;
-	camTrans->scale = Vector3(1, 1, 1);
-	camTrans->parent = -1;
-
-	GlobalScene->cam.transform = camTrans;
-
-	dc->entId = ent->id;
-
-	DrawCall* dc2 = scn.gfx.drawCalls.CreateAndAdd();
-
-	Transform* trans2 = scn.transforms.CreateAndAdd();
-	trans2->parent = trans->id;
-
-	Entity* ent2 = scn.entities.CreateAndAdd();
-	ent2->transform = trans2->id;
-
-	dc2->entId = ent2->id;
-	dc2->matId = matId;
-	dc2->meshId = boxMesh;
-
-	int floorMatId = -1;
-	scn.gfx.assetIdMap.LookUp("floor.mat", &floorMatId);
-
-	{
-		DrawCall* floorDc = scn.gfx.drawCalls.CreateAndAdd();
-		floorDc->matId = floorMatId;
-
-		floorDc->meshId = floorMesh;
-
-		Entity* floorEnt = scn.entities.CreateAndAdd();
-		Transform* floorTrans = scn.transforms.CreateAndAdd();
-		floorTrans->parent = -1;
-		floorTrans->position.y = -1;
-		floorEnt->transform = floorTrans->id;
-		floorDc->entId = floorEnt->id;
-	}
-
-	Camera cam;
-	cam.transform = camTrans;
+	scn.StartUp();
 
 	bool isRunning = true;
 	while (isRunning) {
@@ -162,24 +69,8 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 		}
 
 		HDC hdc = GetDC(window);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
-		trans->rotation = Quaternion(Y_AXIS, 20) * Quaternion(X_AXIS, x);
-		trans->scale = Vector3(0.3f, .3f, 0.4f);
-
-		scn.player.Update();
-
-		trans2->position = Vector3(x / 12, -0.5f, -0.5f);
-		trans2->rotation = Quaternion(X_AXIS, 0.4f) * Quaternion(Z_AXIS, 0.2f + x/15);
-		trans2->scale = Vector3(0.1f, 2.1f, 0.1f);
-
-		scn.gfx.Render();
-
-		x = x + 0.01f;
-
-		if (x > 6.28f) {
-			x -= 6.28f;
-		}
+		scn.Update();
 
 		SwapBuffers(hdc);
 		ReleaseDC(window, hdc);
@@ -194,11 +85,6 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 	LRESULT result = 0;
 
 	switch (message) {
-	case WM_SIZE: {
-		RECT clientRect;
-		GetClientRect(hwnd, &clientRect);
-		//ResizeWindow(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
-	}break;
 
 	case WM_MOUSEMOVE:
 	{
@@ -238,6 +124,17 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		//keyStates[code] = StateFromBools(wasDown, isDown);
 	}break;
 
+	case WM_SIZE: {
+		int width = LOWORD(lParam);
+		int height = HIWORD(lParam);
+
+		//When we first create the window, we don't actually have a scene pointer
+		//because we have no GL context
+		if (GlobalScene) {
+			GlobalScene->cam.widthPixels = width;
+			GlobalScene->cam.heightPixels = height;
+		}
+	} break;
 
 	case WM_PAINT: {
 		//WindowsPaintWindow(hwnd);
@@ -250,7 +147,6 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 
 	case WM_MOUSEWHEEL: {
 		float zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
-		//printf("Whell delta: %f\n", zDelta);
 	}
 
 	default: {
