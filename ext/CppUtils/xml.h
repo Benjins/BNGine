@@ -26,6 +26,8 @@ struct XMLElement : IDBase {
 		: IDBase(other), name(other.name), plainText(other.plainText), attributes(other.attributes), childrenIds(other.childrenIds){
 		doc = other.doc;
 	}
+
+	XMLElement* GetChild(const char* name, unsigned int index = 0);
 };
 
 struct XMLDoc {

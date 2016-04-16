@@ -7,8 +7,8 @@
 void Program::CompileProgram() {
 	programObj = glCreateProgram();
 
-	Shader* vertProg = GlobalScene->gfx.shaders.GetById(vertShader);
-	Shader* fragProg = GlobalScene->gfx.shaders.GetById(fragShader);
+	Shader* vertProg = GlobalScene->res.shaders.GetById(vertShader);
+	Shader* fragProg = GlobalScene->res.shaders.GetById(fragShader);
 
 	ASSERT(vertProg->shaderType == GL_VERTEX_SHADER);
 	ASSERT(fragProg->shaderType == GL_FRAGMENT_SHADER);

@@ -2,12 +2,15 @@
 
 #include "../gfx/Material.h"
 
+#include "../util/Serialization.h"
+
 #include "../../ext/CppUtils/filesys.h"
 #include "../../ext/CppUtils/stringmap.h"
 #include "../../ext/CppUtils/memstream.h"
 #include "../../ext/CppUtils/xml.h"
 
 #include "../../ext/3dbasics/Vector3.h"
+#include "../../ext/3dbasics/Quaternion.h"
 #include "../../ext/3dbasics/Vector2.h"
 
 void PackAssetFile(const char* assetDirName, const char* packedFileName) {
@@ -39,6 +42,9 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 	Vector<File*> materialFiles;
 	assetDir.FindFilesWithExt("mat", &materialFiles);
 
+	Vector<File*> levelFiles;
+	assetDir.FindFilesWithExt("lvl", &levelFiles);
+
 	for (int i = 0; i < meshFiles.count; i++) {
 		assetFileIds.Insert(meshFiles.data[i]->fileName, i);
 	}
@@ -57,6 +63,10 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 
 	for (int i = 0; i < materialFiles.count; i++) {
 		assetFileIds.Insert(materialFiles.data[i]->fileName, i);
+	}
+
+	for (int i = 0; i < levelFiles.count; i++) {
+		assetFileIds.Insert(levelFiles.data[i]->fileName, i);
 	}
 
 	WriteAssetNameIdMap(assetFileIds, assetFile);
@@ -79,6 +89,10 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 
 	for (int i = 0; i < materialFiles.count; i++) {
 		WriteMaterialChunk(materialFiles.data[i]->fullName, assetFileIds, i, assetFile);
+	}
+
+	for (int i = 0; i < levelFiles.count; i++) {
+		WriteLevelChunk(levelFiles.data[i]->fullName, assetFileIds, i, assetFile);
 	}
 
 	int bnsaNegated = ~*(int*)fileId;
@@ -388,6 +402,128 @@ void WriteMaterialChunk(const char* materialFileName, const StringMap<int>& asse
 			default:
 				break;
 			}
+		}
+	}
+
+	int chunkIdFlipped = ~*(int*)chunkId;
+	fwrite(&chunkIdFlipped, 1, 4, assetFileHandle);
+}
+
+#define XML_PARSE_FLOAT_ATTR(xmlElem,varName,attrName) {String varName##_str; xmlElem->attributes.LookUp(attrName, &varName##_str); varName = (float)atof(varName##_str.string);}
+#define XML_PARSE_SERIAL_ATTR(xmlElem,varName,attrName,parseFunc) {String varName##_str; xmlElem->attributes.LookUp(attrName, &varName##_str); varName = parseFunc(varName##_str.string);}
+
+void WriteTransformData(XMLElement* transElem, FILE* assetFileHandle) {
+	int id;
+	XML_PARSE_SERIAL_ATTR(transElem, id, "id", Atoi);
+
+	int parent;
+	XML_PARSE_SERIAL_ATTR(transElem, parent, "parent", Atoi);
+
+	Vector3 pos;
+	Quaternion rot;
+	Vector3 scale;
+
+	XML_PARSE_SERIAL_ATTR(transElem, pos, "pos", ParseVector3);
+	XML_PARSE_SERIAL_ATTR(transElem, rot, "rotation", ParseQuaternion);
+	XML_PARSE_SERIAL_ATTR(transElem, scale, "scale", ParseVector3);
+
+	fwrite(&id, 1, sizeof(int), assetFileHandle);
+	fwrite(&parent, 1, sizeof(int), assetFileHandle);
+	fwrite(&pos, 1, sizeof(Vector3), assetFileHandle);
+	fwrite(&rot, 1, sizeof(Quaternion), assetFileHandle);
+	fwrite(&scale, 1, sizeof(Vector3), assetFileHandle);
+}
+
+void WriteCameraSubChunk(XMLElement* entElem, FILE* assetFileHandle) {
+	ASSERT(entElem->childrenIds.count == 1);
+	XMLElement* transElem = entElem->doc->elements.GetById(entElem->childrenIds.data[0]);
+	ASSERT(transElem->name == "Transform");
+
+	char subChunkId[] = "CMRA";
+	fwrite(subChunkId, 1, 4, assetFileHandle);
+	
+	float fov, nearClip, farClip;
+	XML_PARSE_FLOAT_ATTR(entElem, fov, "fov");
+	XML_PARSE_FLOAT_ATTR(entElem, nearClip, "nearClip");
+	XML_PARSE_FLOAT_ATTR(entElem, farClip, "farClip");
+
+	fwrite(&fov, 1, sizeof(float), assetFileHandle);
+	fwrite(&nearClip, 1, sizeof(float), assetFileHandle);
+	fwrite(&farClip, 1, sizeof(float), assetFileHandle);
+
+	WriteTransformData(transElem, assetFileHandle);
+
+	int subChunkIdFlipped = ~*(int*)subChunkId;
+	fwrite(&subChunkIdFlipped, 1, sizeof(int), assetFileHandle);
+}
+
+void WriteEntitySubChunk(XMLElement* entElem, const StringMap<int>& assetIds, FILE* assetFileHandle) {
+	char subChunkId[] = "ENTT";
+	fwrite(subChunkId, 1, 4, assetFileHandle);
+
+	XMLElement* transElem = entElem->GetChild("Transform");
+	ASSERT(transElem != nullptr);
+
+	int id;
+	XML_PARSE_SERIAL_ATTR(entElem, id, "id", Atoi);
+	fwrite(&id, 1, sizeof(int), assetFileHandle);
+
+	WriteTransformData(transElem, assetFileHandle);
+
+	int meshId = -1;
+	int matId = -1;
+
+	if (XMLElement* matElem = entElem->GetChild("Material")) {
+		String matSrc;
+		if (matElem->attributes.LookUp("src", &matSrc)) {
+			assetIds.LookUp(matSrc, &matId);
+		}
+	}
+
+	if (XMLElement* meshElem = entElem->GetChild("Mesh")) {
+		String meshSrc;
+		if (meshElem->attributes.LookUp("src", &meshSrc)) {
+			assetIds.LookUp(meshSrc, &meshId);
+		}
+	}
+
+	fwrite(&meshId, 1, sizeof(int), assetFileHandle);
+	fwrite(&matId, 1, sizeof(int), assetFileHandle);
+
+	int subChunkIdFlipped = ~*(int*)subChunkId;
+	fwrite(&subChunkIdFlipped, 1, sizeof(int), assetFileHandle);
+}
+
+void WriteLevelChunk(const char* levelFileName, const StringMap<int>& assetIds, int id, FILE* assetFileHandle){
+	XMLDoc lvlDoc;
+	XMLError err = ParseXMLStringFromFile(levelFileName, &lvlDoc);
+	ASSERT_MSG(err == XMLE_NONE, "Error %d when parsing level file: '%s'", (int)err, levelFileName);
+
+	XMLElement* rootElem = lvlDoc.elements.GetById(0);
+	ASSERT(rootElem != nullptr);
+	ASSERT(rootElem->name == "Scene");
+	char chunkId[] = "BNLV";
+	fwrite(chunkId, 1, 4, assetFileHandle);
+	fwrite(&id, 1, 4, assetFileHandle);
+
+	XMLElement* camElem = rootElem->GetChild("Camera");
+	WriteCameraSubChunk(camElem, assetFileHandle);
+
+	int entCount = 0;
+
+	for (int i = 0; i < rootElem->childrenIds.count; i++) {
+		XMLElement* childElem = lvlDoc.elements.GetById(rootElem->childrenIds.data[i]);
+		if (childElem->name == "Entity") {
+			entCount++;
+		}
+	}
+
+	fwrite(&entCount, 1, 4, assetFileHandle);
+
+	for (int i = 0; i < rootElem->childrenIds.count; i++) {
+		XMLElement* childElem = lvlDoc.elements.GetById(rootElem->childrenIds.data[i]);
+		if (childElem->name == "Entity") {
+			WriteEntitySubChunk(childElem, assetIds, assetFileHandle);
 		}
 	}
 

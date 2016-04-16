@@ -14,13 +14,13 @@
 
 #include "../game/Player.h"
 
-#include "../gfx/GfxResManager.h"
+#include "../gfx/ResourceManager.h"
 #include "../physics/PhysicsSystem.h"
 
 struct Scene {
 	IDTracker<Entity> entities;
 	IDTracker<Transform> transforms;
-	GfxResManager gfx;
+	ResourceManager res;
 
 	Input input;
 
@@ -37,6 +37,8 @@ struct Scene {
 	void Update();
 
 	void Render();
+
+	void LoadLevel(const char* name);
 
 	Entity* AddVisibleEntity(uint32 matId, uint32 meshId);
 

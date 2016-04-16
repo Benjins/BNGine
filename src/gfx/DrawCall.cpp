@@ -12,11 +12,11 @@ void ExecuteDrawCalls(DrawCall* calls, int count) {
 	Mat4x4 persp = GlobalScene->cam.GetPerspectiveMatrix();
 
 	for (int i = 0; i < count; i++) {
-		Material* mat = GlobalScene->gfx.materials.GetById(calls[i].matId);
-		Program* prog = GlobalScene->gfx.programs.GetById(mat->programId);
+		Material* mat = GlobalScene->res.materials.GetById(calls[i].matId);
+		Program* prog = GlobalScene->res.programs.GetById(mat->programId);
 		glUseProgram(prog->programObj);
 
-		Mesh* mesh = GlobalScene->gfx.meshes.GetById(calls[i].meshId);
+		Mesh* mesh = GlobalScene->res.meshes.GetById(calls[i].meshId);
 
 		Entity* ent = GlobalScene->entities.GetById(calls[i].entId);
 		Transform* trans = GlobalScene->transforms.GetById(ent->transform);
@@ -26,7 +26,7 @@ void ExecuteDrawCalls(DrawCall* calls, int count) {
 		mat->SeMatrix4Uniform("_perspMatrix", persp);
 
 		for (int i = 0; i < mat->texCount; i++) {
-			Texture* tex =  GlobalScene->gfx.textures.GetById(mat->texIds[i]);
+			Texture* tex =  GlobalScene->res.textures.GetById(mat->texIds[i]);
 			tex->Bind(GL_TEXTURE0 + i);
 		}
 

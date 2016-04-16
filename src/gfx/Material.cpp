@@ -60,7 +60,7 @@ GLint Material::GetUniformLocation(const char* name) {
 		return loc;
 	}
 	else {
-		Program* prog = GlobalScene->gfx.programs.GetById(programId);
+		Program* prog = GlobalScene->res.programs.GetById(programId);
 		loc = glGetUniformLocation(prog->programObj, name);
 		uniformCache.Insert(name, loc);
 

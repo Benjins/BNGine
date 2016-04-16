@@ -210,6 +210,22 @@ XMLError LexXMLString(String& xmlString, Vector<SubString>* outTokens) {
 #undef EMIT_TOKEN
 }
 
+XMLElement* XMLElement::GetChild(const char* name, unsigned int index /*= 0*/) {
+	for (int i = 0; i < childrenIds.count; i++) {
+		XMLElement* child = doc->elements.GetById(childrenIds.Get(i));
+		if (child->name == name) {
+			if (index == 0) {
+				return child;
+			}
+			else {
+				index--;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
 #if defined(XML_TEST_MAIN)
 
 int main(int argc, char** argv) {

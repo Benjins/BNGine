@@ -7,12 +7,13 @@ struct Transform;
 struct Mat4x4;
 
 struct Camera {
-	Transform* transform;
 	float fov;
 	float nearClip;
 	float farClip;
 	float widthPixels;
 	float heightPixels;
+
+	int transform;
 
 	Camera();
 

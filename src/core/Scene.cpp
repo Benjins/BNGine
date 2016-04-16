@@ -4,7 +4,7 @@
 
 Scene* GlobalScene = nullptr;
 
-Scene::Scene() : entities(100), transforms(120), gfx() {
+Scene::Scene() : entities(100), transforms(120), res() {
 	GlobalScene = this;
 }
 
@@ -14,10 +14,10 @@ Entity* Scene::AddVisibleEntity(uint32 matId, uint32 meshId) {
 	newEnt->transform = newTrans->id;
 	newTrans->entity = newEnt->id;
 
-	ASSERT(gfx.materials.GetById(matId) != nullptr);
-	ASSERT(gfx.meshes.GetById(meshId) != nullptr);
+	ASSERT(res.materials.GetById(matId) != nullptr);
+	ASSERT(res.meshes.GetById(meshId) != nullptr);
 
-	DrawCall* newDc = gfx.drawCalls.CreateAndAdd();
+	DrawCall* newDc = res.drawCalls.CreateAndAdd();
 	newDc->entId = newEnt->id;
 	newDc->matId = matId;
 	newDc->meshId = meshId;
@@ -28,39 +28,12 @@ Entity* Scene::AddVisibleEntity(uint32 matId, uint32 meshId) {
 void Scene::StartUp() {
 	PackAssetFile("assets", "assets.bna");
 
-	gfx.LoadAssetFile("assets.bna");
+	res.LoadAssetFile("assets.bna");
 
-	int matId = -1;
-	gfx.assetIdMap.LookUp("standard.mat", &matId);
-
-	int boxMesh = -1;
-	gfx.assetIdMap.LookUp("test_2.obj", &boxMesh);
-
-	int monkeyMesh = -1;
-	gfx.assetIdMap.LookUp("monkey.obj", &monkeyMesh);
-
-	int floorMesh = -1;
-	gfx.assetIdMap.LookUp("floor.obj", &floorMesh);
-
-	AddVisibleEntity(matId, monkeyMesh);
-
-	Transform* camTrans = transforms.CreateAndAdd();
-	camTrans->position = Vector3(0, 1.2f, -4);
-	camTrans->rotation = QUAT_IDENTITY;
-	camTrans->scale = Vector3(1, 1, 1);
-	camTrans->parent = -1;
-
-	cam.transform = camTrans;
-
-	AddVisibleEntity(matId, boxMesh);
-
-	int floorMatId = -1;
-	gfx.assetIdMap.LookUp("floor.mat", &floorMatId);
+	LoadLevel("Level1.lvl");
 
 	{
-		Entity* floorEnt = AddVisibleEntity(floorMatId, floorMesh);
-		Transform* floorTrans = transforms.GetById(floorEnt->transform);
-		floorTrans->position.y = -1;
+		Entity* floorEnt = entities.GetById(3);
 
 		BoxCollider* floorCol = phys.boxCols.CreateAndAdd();
 		floorCol->entity = floorEnt->id;
@@ -69,10 +42,7 @@ void Scene::StartUp() {
 	}
 
 	{
-		Entity* boxEnt = AddVisibleEntity(floorMatId, boxMesh);
-		Transform* boxTrans = transforms.GetById(boxEnt->transform);
-		boxTrans->position = Vector3(2, -0.4f, 2);
-		boxTrans->scale = Vector3(0.6f, 0.3f, 0.6f);
+		Entity* boxEnt = entities.GetById(4);
 
 		BoxCollider* boxCol = phys.boxCols.CreateAndAdd();
 		boxCol->entity = boxEnt->id;
@@ -85,8 +55,45 @@ void Scene::Update() {
 	player.Update();
 }
 
+void Scene::LoadLevel(const char* name) {
+	int levelId;
+	ASSERT(res.assetIdMap.LookUp(name, &levelId));
+
+	Level* level = res.levels.GetById(levelId);
+
+	entities.Reset();
+	transforms.Reset();
+	res.drawCalls.Reset();
+	phys.boxCols.Reset();
+	phys.sphereCols.Reset();
+
+	cam = level->cam;
+
+	entities.SetSize(level->entities.count);
+	MemCpy(entities.vals, level->entities.data, sizeof(Entity)*level->entities.count);
+	entities.currentCount = level->entities.count;
+	entities.currentMaxId = entities.vals[entities.currentCount - 1].id;
+
+	ASSERT(level->meshIds.count == level->entities.count);
+	ASSERT(level->matIds.count == level->entities.count);
+
+	for (int i = 0; i < entities.currentCount; i++) {
+		if (level->meshIds.Get(i) >= 0 && level->matIds.Get(i) >= 0) {
+			DrawCall* dc = res.drawCalls.CreateAndAdd();
+			dc->entId = entities.vals[i].id;
+			dc->matId = level->matIds.Get(i);
+			dc->meshId = level->meshIds.Get(i);
+		}
+	}
+
+	transforms.SetSize(level->transforms.count);
+	MemCpy(transforms.vals, level->transforms.data, sizeof(Transform)*level->transforms.count);
+	transforms.currentCount = level->transforms.count;
+	transforms.currentMaxId = transforms.vals[transforms.currentCount - 1].id;
+}
+
 void Scene::Render() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	gfx.Render();
+	res.Render();
 }

@@ -153,12 +153,18 @@ int Atoi(const char* str){
 	ASSERT(str != nullptr);
 	
 	int val = 0;
+	int sign = 1;
+	if (*str == '-') {
+		sign = -1;
+		str++;
+	}
+
 	while(*str >= '0' && *str <= '9'){
 		val = (val * 10) + (*str - '0');
 		str++;
 	}
 	
-	return val;
+	return val*sign;
 }
 
 int StrFind(const char* haystack, const char* needle) {

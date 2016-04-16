@@ -3,6 +3,8 @@
 #include "../../ext/3dbasics/Mat4.h"
 #include "../../ext/3dbasics/Vector4.h"
 
+#include "Scene.h"
+
 Camera::Camera() {
 	farClip = 1000.0f;
 	nearClip = 0.01f;
@@ -17,14 +19,16 @@ Mat4x4 Camera::GetCameraMatrix() const {
 	Mat4x4 linMat;
 	Mat4x4 affMat;
 
-	linMat.SetColumn(0, Vector4(Rotate(X_AXIS, transform->rotation.Conjugate()), 0));
-	linMat.SetColumn(1, Vector4(Rotate(Y_AXIS, transform->rotation.Conjugate()), 0));
-	linMat.SetColumn(2, Vector4(Rotate(Z_AXIS, transform->rotation.Conjugate()), 0));
+	Transform* camTrans = GlobalScene->transforms.GetById(transform);
+
+	linMat.SetColumn(0, Vector4(Rotate(X_AXIS, camTrans->rotation.Conjugate()), 0));
+	linMat.SetColumn(1, Vector4(Rotate(Y_AXIS, camTrans->rotation.Conjugate()), 0));
+	linMat.SetColumn(2, Vector4(Rotate(Z_AXIS, camTrans->rotation.Conjugate()), 0));
 	linMat.SetColumn(3, Vector4(0, 0, 0, 1));
 
-	affMat.SetRow(0, Vector4(X_AXIS, -transform->position.x));
-	affMat.SetRow(1, Vector4(Y_AXIS, -transform->position.y));
-	affMat.SetRow(2, Vector4(Z_AXIS, -transform->position.z));
+	affMat.SetRow(0, Vector4(X_AXIS, -camTrans->position.x));
+	affMat.SetRow(1, Vector4(Y_AXIS, -camTrans->position.y));
+	affMat.SetRow(2, Vector4(Z_AXIS, -camTrans->position.z));
 	affMat.SetRow(3, Vector4(0, 0, 0, 1));
 
 	transMat = linMat * affMat;

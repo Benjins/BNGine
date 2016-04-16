@@ -1,4 +1,4 @@
-#include "GfxResManager.h"
+#include "ResourceManager.h"
 #include "../core/Scene.h"
 #include "../assets/AssetFile.h"
 
@@ -6,12 +6,12 @@
 #include "../../ext/CppUtils/assert.h"
 #include "../../ext/CppUtils/memstream.h"
 
-GfxResManager::GfxResManager() 
-	: programs(20), shaders(30), materials(15), meshes(30), drawCalls(40), textures(20){
+ResourceManager::ResourceManager() 
+	: programs(20), shaders(30), materials(15), meshes(30), drawCalls(40), textures(20), levels(10){
 
 }
 
-void GfxResManager::LoadAssetFile(const char* fileName) {
+void ResourceManager::LoadAssetFile(const char* fileName) {
 	typedef unsigned char byte;
 
 	char fileIdx[] = "BNSA";
@@ -72,6 +72,10 @@ void GfxResManager::LoadAssetFile(const char* fileName) {
 			Material* material = materials.AddWithId(assetId);
 			LoadMaterialFromChunk(fileBufferStream, material);
 		}
+		else if (memcmp(chunkId, "BNLV", 4) == 0) {
+			Level* level = levels.AddWithId(assetId);
+			LoadLevelFromChunk(fileBufferStream, level);
+		}
 		else {
 			ASSERT_WARN("Unkown chunk id: '%.*s'", 4, chunkId);
 		}
@@ -87,7 +91,7 @@ void GfxResManager::LoadAssetFile(const char* fileName) {
 	ASSERT(chunkFooter == expectedChunkFooter);
 }
 
-void GfxResManager::LoadMeshFromChunk(MemStream& stream, Mesh* outMesh) {
+void ResourceManager::LoadMeshFromChunk(MemStream& stream, Mesh* outMesh) {
 	int flags = stream.Read<int>();
 
 	int posCount = stream.Read<int>();
@@ -130,15 +134,15 @@ void GfxResManager::LoadMeshFromChunk(MemStream& stream, Mesh* outMesh) {
 	outMesh->UploadToGfxDevice();
 }
 
-void GfxResManager::LoadVShaderFromChunk(MemStream& stream, Shader* outShader) {
+void ResourceManager::LoadVShaderFromChunk(MemStream& stream, Shader* outShader) {
 	outShader->CompileShader(stream.ReadStringInPlace(), GL_VERTEX_SHADER);
 }
 
-void GfxResManager::LoadFShaderFromChunk(MemStream& stream, Shader* outShader) {
+void ResourceManager::LoadFShaderFromChunk(MemStream& stream, Shader* outShader) {
 	outShader->CompileShader(stream.ReadStringInPlace(), GL_FRAGMENT_SHADER);
 }
 
-void GfxResManager::LoadTextureFromChunk(MemStream& stream, Texture* outTexture) {
+void ResourceManager::LoadTextureFromChunk(MemStream& stream, Texture* outTexture) {
 	int width = stream.Read<int>();
 	int height = stream.Read<int>();
 
@@ -151,7 +155,7 @@ void GfxResManager::LoadTextureFromChunk(MemStream& stream, Texture* outTexture)
 	outTexture->UploadToGraphicsDevice();
 }
 
-void GfxResManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat) {
+void ResourceManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat) {
 	int vShaderId = stream.Read<int>();
 	int fShaderId = stream.Read<int>();
 
@@ -196,7 +200,61 @@ void GfxResManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat) {
 	}
 }
 
-void GfxResManager::Render() {
+void ResourceManager::LoadTransform(MemStream& stream, Transform* outTrans) {
+	outTrans->id = stream.Read<int>();
+	outTrans->parent= stream.Read<int>();
+	outTrans->position = stream.Read<Vector3>();
+	outTrans->rotation = stream.Read<Quaternion>();
+	outTrans->scale	= stream.Read<Vector3>();
+}
+
+void ResourceManager::LoadLevelFromChunk(MemStream& stream, Level* outLevel) {
+	{
+		char camChunkId[4];
+		stream.ReadArray<char>(camChunkId, 4);
+		ASSERT(memcmp(camChunkId, "CMRA", 4) == 0);
+
+		outLevel->cam.fov = stream.Read<float>();
+		outLevel->cam.nearClip = stream.Read<float>();
+		outLevel->cam.farClip = stream.Read<float>();
+
+		Transform trans;
+		LoadTransform(stream, &trans);
+		outLevel->transforms.PushBack(trans);
+
+		outLevel->cam.transform = trans.id;
+
+		ASSERT(stream.Read<int>() == ~*(int*)camChunkId);
+	}
+
+	int entCount = stream.Read<int>();
+
+	for (int i = 0; i < entCount; i++) {
+		char enttChunkId[4];
+		stream.ReadArray<char>(enttChunkId, 4);
+		ASSERT(memcmp(enttChunkId, "ENTT", 4) == 0);
+
+		Entity ent;
+		ent.id = stream.Read<int>();
+
+		Transform entTrans;
+		LoadTransform(stream, &entTrans);
+		entTrans.entity = ent.id;
+
+		outLevel->transforms.PushBack(entTrans);
+
+		ent.transform = entTrans.id;
+
+		outLevel->entities.PushBack(ent);
+
+		outLevel->meshIds.PushBack(stream.Read<int>());
+		outLevel->matIds.PushBack(stream.Read<int>());
+
+		ASSERT(stream.Read<int>() == ~*(int*)enttChunkId);
+	}
+}
+
+void ResourceManager::Render() {
 	glViewport(0, 0, (int)GlobalScene->cam.widthPixels, (int)GlobalScene->cam.heightPixels);
 
 	ExecuteDrawCalls(drawCalls.vals, drawCalls.currentCount);
