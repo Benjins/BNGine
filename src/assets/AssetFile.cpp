@@ -333,13 +333,18 @@ void WriteMaterialChunk(const char* materialFileName, const StringMap<int>& asse
 	String vShader;
 	String fShader;
 
-	ASSERT(rootElem->attributes.LookUp("vs", &vShader));
-	ASSERT(rootElem->attributes.LookUp("fs", &fShader));
+	bool found = rootElem->attributes.LookUp("vs", &vShader);
+	ASSERT(found);
+	found = rootElem->attributes.LookUp("fs", &fShader);
+	ASSERT(found);
 
 	int vShaderId;
 	int fShaderId;
-	ASSERT(assetIds.LookUp(vShader, &vShaderId));
-	ASSERT(assetIds.LookUp(fShader, &fShaderId));
+	
+	found = assetIds.LookUp(vShader, &vShaderId);
+	ASSERT(found);
+	found = assetIds.LookUp(fShader, &fShaderId);
+	ASSERT(found);
 
 	int uniformCount = 0;
 	for (int i = 0; i < rootElem->childrenIds.count; i++) {

@@ -22,5 +22,5 @@ CXXFLAGS=-g -DBNS_DEBUG -std=c++11 -Wall -pedantic
 %.o: %.c $(HEADERS)
 	$(CXX) -c -o $@ $< $(CFLAGS)
 	
-BNGine.out: $(OBJS)
+BNGine.out: $(OBJS) $(HEADERS)
 	$(CXX) $(OBJS) -lX11 -lGL -o BNGine.out
