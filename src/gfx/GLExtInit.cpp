@@ -4,8 +4,14 @@
 
 #include "../../ext/CppUtils/assert.h"
 
+#if defined(BNS_OS_MESA)
+#include <GL/osmesa.h>
+#endif
+
 void InitGlExts() {
-#if defined(_WIN32)
+#if defined(BNS_OS_MESA)
+#define EXTENSION_PROC(type,name) name = (type)OSMesaGetProcAddress(#name); ASSERT(name != nullptr);
+#elif defined(_WIN32)
 #define EXTENSION_PROC(type,name) name = (type)wglGetProcAddress(#name); ASSERT(name != nullptr);
 #elif defined(__APPLE__)
 #define EXTENSION_PROC(type,name) ASSERT(name != nullptr);
