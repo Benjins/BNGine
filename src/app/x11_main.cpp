@@ -1,5 +1,6 @@
 #include<X11/X.h>
 #include<X11/Xlib.h>
+#include <X11/XKBlib.h>
 
 #include "../core/Scene.h"
 #include "../gfx/GLExtInit.h"
@@ -10,6 +11,18 @@
 
 int evtPred(Display* d, XEvent* evt, XPointer xp){
 	return 1;
+}
+
+unsigned char KeyCodeToAscii(Display* display, int keycode){
+	KeySym ksym = XkbKeycodeToKeysym( display, keycode, 0, keycode & ShiftMask ? 1 : 0);
+	
+	//There's got to be a better way.  In fact there is.  I just haven't done it yet.
+	if(ksym >= 'a' && ksym <= 'z'){
+		return ksym & ~('a' ^ 'A');
+	}
+	else{	
+		return ksym;
+	}
 }
 
 int main(int argc, char** argv){
@@ -39,11 +52,14 @@ int main(int argc, char** argv){
 	
 	XSetWindowAttributes swa;
 	swa.colormap = cmap;
-	swa.event_mask = ExposureMask | KeyPressMask;
+	swa.event_mask = KeyPressMask | KeyReleaseMask | StructureNotifyMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
 	
 	Window win = XCreateWindow(dpy, root, 50, 50, 1280, 720, 0, vi->depth, InputOutput, vi->visual, CWColormap | CWEventMask, &swa);
 	
 	XMapWindow(dpy, win);
+	
+	Atom WM_DELETE_WINDOW = XInternAtom(dpy, "WM_DELETE_WINDOW", 0); 
+    XSetWMProtocols(dpy, win, &WM_DELETE_WINDOW, 1);
 	
 	XStoreName(dpy, win, "BNGine Runtime");
 	
@@ -83,12 +99,12 @@ int main(int argc, char** argv){
 		    	GlobalScene->input.SetCursorPos(currMouseX, currMouseY);
 		    }
 		    else if (ev.type == KeyPress){
-		    	//unsigned char key = KeyCodeToAscii(display, ev.xkey.keycode);
-		    	//keyStates[key] = PRESS;
+		    	unsigned char key = KeyCodeToAscii(dpy, ev.xkey.keycode);
+				GlobalScene->input.KeyPressed(key);
 		    }
 		    else if (ev.type == KeyRelease){
-		    	//unsigned char key = KeyCodeToAscii(display, ev.xkey.keycode);
-		    	//keyStates[key] = RELEASE;
+		    	unsigned char key = KeyCodeToAscii(dpy, ev.xkey.keycode);
+				GlobalScene->input.KeyReleased(key);
 		    }
 		    else if (ev.type == ConfigureNotify) {
 		       // XConfigureEvent xce = ev.xconfigure;
