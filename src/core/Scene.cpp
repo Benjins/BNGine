@@ -57,9 +57,12 @@ void Scene::Update() {
 
 void Scene::LoadLevel(const char* name) {
 	int levelId = -1;
-	ASSERT(res.assetIdMap.LookUp(name, &levelId));
+	bool exists = res.assetIdMap.LookUp(name, &levelId);
+	ASSERT_MSG(exists, "Could not load scene '%s'", name);
 
 	Level* level = res.levels.GetById(levelId);
+	
+	printf("Level: %p", level);
 
 	entities.Reset();
 	transforms.Reset();

@@ -17,10 +17,10 @@ CXX ?= g++
 HEADERS := $(shell find src -name '*.h')
 HEADERS += $(shell find ext -name '*.h')
 
-CXXFLAGS=-g -DBNS_DEBUG -std=c++11 -Wall -pedantic
+CXXFLAGS=-g -O0 -DBNS_DEBUG -std=c++11 -Wall -pedantic
 
-%.o: %.c $(HEADERS)
+%.o: %.c $(HEADERS) Makefile
 	$(CXX) -c -o $@ $< $(CFLAGS)
 	
-BNGine.out: $(OBJS) $(HEADERS)
+BNGine.out: $(OBJS) $(HEADERS) Makefile
 	$(CXX) $(OBJS) -lX11 -lGL -o BNGine.out

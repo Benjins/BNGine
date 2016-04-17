@@ -59,7 +59,6 @@ int main(int argc, char** argv){
 	glViewport(0, 0, 1280, 720);
 	glLoadIdentity();
 
-	XEvent xev;
 	XWindowAttributes gwa;
 
 	scn.StartUp();
@@ -79,8 +78,9 @@ int main(int argc, char** argv){
 		    	}
 		    }
 		    else if(ev.type == MotionNotify){
-		    	//currMouseX = ev.xmotion.x;
-		    	//currMouseY = ev.xmotion.y;
+		    	int currMouseX = ev.xmotion.x;
+		    	int currMouseY = ev.xmotion.y;
+		    	GlobalScene->input.SetCursorPos(currMouseX, currMouseY);
 		    }
 		    else if (ev.type == KeyPress){
 		    	//unsigned char key = KeyCodeToAscii(display, ev.xkey.keycode);
@@ -91,7 +91,7 @@ int main(int argc, char** argv){
 		    	//keyStates[key] = RELEASE;
 		    }
 		    else if (ev.type == ConfigureNotify) {
-		        //XConfigureEvent xce = ev.xconfigure;
+		       // XConfigureEvent xce = ev.xconfigure;
 		        
 		    }
 		    else if (ev.type == ClientMessage){
@@ -100,7 +100,8 @@ int main(int argc, char** argv){
 		}
 		
 		XGetWindowAttributes(dpy, win, &gwa);
-		glViewport(0, 0, gwa.width, gwa.height);
+		GlobalScene->cam.widthPixels = gwa.width;
+		GlobalScene->cam.heightPixels = gwa.height;
 		
 		scn.Update();
 		scn.Render();

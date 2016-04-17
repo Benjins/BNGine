@@ -1,6 +1,6 @@
 <Scene>
 	<Camera fov='80' nearClip='0.01' farClip='1000'>
-		<Transform id='1' pos='0,1.2,-4' rotation='1,0,0,0' scale='1,1,1' parent='-1'/>
+		<Transform id='1' pos='0,1.2,1' rotation='1,0,0,0' scale='1,1,1' parent='-1'/>
 	</Camera>
 	
 	<Entity id='0'>
