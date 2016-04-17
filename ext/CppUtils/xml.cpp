@@ -109,7 +109,11 @@ XMLError ParseXMLStringFromFile(const char* fileName, XMLDoc* outDoc) {
 		return XMLE_FILENOTFOUND;
 	}
 
-	return ParseXMLString(str, outDoc);
+	XMLError err = ParseXMLString(str, outDoc);
+	short* ref = (short*)(str.string - 6);
+	(*ref)--;
+	
+	return err;
 }
 
 XMLError LexXMLString(String& xmlString, Vector<SubString>* outTokens) {

@@ -19,9 +19,10 @@ void String::SetSize(int size){
 
 // FML.
 // cppcheck-suppress unmatchedSuppression
+// cppcheck-suppress uninitMemberVar
 // cppcheck-suppress uninitVar
 String::String(const SubString& substr) 
-	: String(substr.start, substr.length) {
+	:  String(substr.start, substr.length) {
 }
 
 int String::GetRef() const{
@@ -66,9 +67,8 @@ void String::Release(){
 		
 		if(*ref == 0){
 			free(ref);
+			string = nullptr;
 		}
-		
-		string = nullptr;
 	}
 }
 
@@ -84,12 +84,10 @@ void SubString::Release(){
 		
 		if(*ref == 0){
 			free(ref);
-			
+			ref = nullptr;
+			start = nullptr;
+			length = 0;
 		}
-		
-		ref = nullptr;
-		start = nullptr;
-		length = 0;
 	}
 }
 
@@ -641,6 +639,8 @@ int main(int argc, char** argv){
 		
 		ASSERT(substr1.GetRef() == 5);
 		ASSERT(substr4.GetRef() == 5);
+		str1.Retain();
+		ASSERT(str1.GetRef() == 6);
 	}
 	
 	{
@@ -651,6 +651,7 @@ int main(int argc, char** argv){
 		str1.Release();
 		
 		ASSERT(substr.GetRef() == 1);
+		str1.Retain();
 		ASSERT(StrEqualN(substr.start, "EF", 2));
 	}
 	

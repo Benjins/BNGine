@@ -153,6 +153,9 @@ void ResourceManager::LoadTextureFromChunk(MemStream& stream, Texture* outTextur
 
 	outTexture->textureType = GL_TEXTURE_2D;
 	outTexture->UploadToGraphicsDevice();
+	
+	free(outTexture->texMem);
+	outTexture->texMem = nullptr;
 }
 
 void ResourceManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat) {

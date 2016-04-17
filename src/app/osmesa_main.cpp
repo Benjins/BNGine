@@ -18,7 +18,9 @@ int main(int argc, char** argv){
 	
 	scn.StartUp();
 	
-	for(int i = 0; i < 10; i++){
+	scn.input.SetCursorPos(0, 0);
+	
+	for(int i = 0; i < 2; i++){
 		scn.Update();
 		scn.Render();
 	}
