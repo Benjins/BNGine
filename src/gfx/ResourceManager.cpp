@@ -35,7 +35,7 @@ void ResourceManager::LoadAssetFile(const char* fileName) {
 
 		int assetId = fileBufferStream.Read<int>();
 
-		char* assetName = (char*)malloc(nameLength);
+		char* assetName = (char*)malloc(nameLength+1);
 		fileBufferStream.ReadArray<char>(assetName, nameLength);
 		assetName[nameLength] = '\0';
 
