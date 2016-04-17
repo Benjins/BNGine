@@ -61,8 +61,6 @@ void Scene::LoadLevel(const char* name) {
 	ASSERT_MSG(exists, "Could not load scene '%s'", name);
 
 	Level* level = res.levels.GetById(levelId);
-	
-	printf("Level: %p", level);
 
 	entities.Reset();
 	transforms.Reset();
