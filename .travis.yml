@@ -28,6 +28,9 @@ before_script:
 
 script: 
   - . ./test-all.sh
+  - cd ext/CppUtils
+  - . ./test-all.sh
+  - cd ../..
 
 after_success:
   - cd ${TRAVIS_BUILD_DIR}
