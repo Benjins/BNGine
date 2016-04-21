@@ -1,13 +1,9 @@
+#include "lexer.h"
+
 #include <stdio.h>
 #include <time.h>
 
-#include "vector.h"
 #include "macros.h"
-
-typedef struct{
-	const char* start;
-	int length;
-} Token;
 
 int TokenEqual(Token a, Token b){
 	if(a.length == b.length){
@@ -47,12 +43,7 @@ typedef enum{
 	ANNOTATION_WS,
 	BLOCKCOMMENT,
 	WHITESPACE
-} ParseState;
-
-#define COMPARE_STRING(ptr, reference) (memcmp(ptr, reference, (sizeof(reference) - 1)) == 0)
-#define COMPARE_STRING_N(ptr, reference, len) (memcmp(ptr, reference, BNS_MIN(sizeof(reference) - 1, len)) == 0)
-
-#define TOKEN_IS(token, str) (COMPARE_STRING_N(token.start, str, token.length) && token.length == (sizeof(str)-1))
+} LexerState;
 
 #define MAKE_TOKEN(str) {str, sizeof(str)-1}
 
@@ -67,7 +58,7 @@ Vector<Token> LexString(const char* string){
 	static const Token annoEnd   = {"]*/", 3};
 	
 	Vector<Token> tokens;	
-	ParseState currState = WHITESPACE;
+	LexerState currState = WHITESPACE;
 	
 	#define EMIT_TOKEN() {currToken.length = fileCursor - currToken.start+1;tokens.PushBack(currToken);\
 						  currToken.length = 0; currToken.start = fileCursor+1;}
