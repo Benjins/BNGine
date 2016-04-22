@@ -3,10 +3,10 @@
 
 #pragma once
 
-enum ComponentType {
-	CT_BoxCollider,
-	CT_SphereCollider,
-	CT_Count
+enum CustomComponentType{
+	CCT_BoxCollider,
+	CCT_SphereCollider,
+	CCT_Count
 };
 
 #endif

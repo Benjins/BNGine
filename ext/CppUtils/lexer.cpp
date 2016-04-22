@@ -50,7 +50,7 @@ Vector<SubString> LexString(String string){
 	Vector<SubString> tokens;	
 	LexerState currState = WHITESPACE;
 	
-	#define EMIT_TOKEN() {currToken.length = fileCursor - currToken.start+1;tokens.PushBack(currToken);\
+	#define EMIT_TOKEN() {currToken.length = (int)(fileCursor - currToken.start+1);tokens.PushBack(currToken);\
 						  currToken.length = 0; currToken.start = fileCursor+1;}
 	
 	int fileSize = string.GetLength();

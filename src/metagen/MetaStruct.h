@@ -33,6 +33,7 @@ struct MetaStruct {
 	MetaStruct* parent;
 	const MetaField* fields;
 	int fieldCount;
+	int size;
 };
 
 #endif

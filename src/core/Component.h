@@ -10,6 +10,7 @@ struct Entity;
 struct Component : IDBase{
 	uint32 entity;
 	uint32 flags;
+	int type;
 };
 
 #endif

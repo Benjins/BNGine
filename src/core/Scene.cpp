@@ -30,38 +30,6 @@ Entity* Scene::AddVisibleEntity(uint32 matId, uint32 meshId) {
 }
 
 void Scene::StartUp() {
-
-	Vector<ParseMetaStruct> structDefs = ParseStructDefsFromFile("src/metagen/MetaParse.h");
-
-	for (int i = 0; i < structDefs.count; i++) {
-		StringStackBuffer<256> strName("struct %.*s:\n", structDefs.data[i].name.length, structDefs.data[i].name.start);
-		OutputDebugStringA(strName.buffer);
-		for (int j = 0; j < structDefs.data[i].fields.count; j++) {
-			ParseMetaField mf = structDefs.data[i].fields.data[j];
-			
-			StringStackBuffer<256> fieldDef("\t%.*s", mf.type.length, mf.type.start);
-
-			if (mf.typeParam.start != nullptr) {
-				fieldDef.AppendFormat("<%.*s>", mf.typeParam.length, mf.typeParam.start);
-			}
-
-			for (int i = 0; i < mf.indirectionLevel; i++) {
-				fieldDef.AppendFormat("*");
-			}
-
-			fieldDef.AppendFormat(" %.*s", mf.name.length, mf.name.start);
-
-			if (mf.arrayCount != NOT_AN_ARRAY) {
-				fieldDef.AppendFormat("[%d]", mf.arrayCount);
-			}
-
-			fieldDef.AppendFormat("\n");
-
-			OutputDebugStringA(fieldDef.buffer);
-		}
-		OutputDebugStringA("\n");
-	}
-
 	PackAssetFile("assets", "assets.bna");
 
 	res.LoadAssetFile("assets.bna");
@@ -91,7 +59,7 @@ void Scene::Update() {
 	player.Update();
 }
 
-void Reset() {
+void Scene::Reset() {
 	entities.Reset();
 	transforms.Reset();
 	res.drawCalls.Reset();

@@ -282,7 +282,7 @@ String ReadStringFromFile(const char* fileName) {
 	fclose(fIn);
 
 	str.Retain();
-
+	
 	return str;
 }
 
