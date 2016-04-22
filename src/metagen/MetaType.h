@@ -3,17 +3,19 @@
 
 #pragma once
 
-enum FundamentalType {
-	FT_Unknown = -1,
-	FT_Begin = 0,
-	FT_Int = FT_Begin,
-	FT_Float,
-	FT_String,
-	FT_Vector2,
-	FT_Vector3,
-	FT_Vector4,
-	FT_Quaternion,
-	FT_FundamentalEnd
+enum MetaType {
+	MT_Unknown = -1,
+	MT_FundamentalBegin = 0,
+	MT_Int = MT_FundamentalBegin,
+	MT_Float,
+	MT_String,
+	MT_StringRef,
+	MT_SubStringRef,
+	MT_Vector2,
+	MT_Vector3,
+	MT_Vector4,
+	MT_Quaternion,
+	MT_FundamentalEnd
 };
 
 #endif

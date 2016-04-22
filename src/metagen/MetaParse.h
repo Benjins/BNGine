@@ -21,6 +21,16 @@ struct ParseMetaField {
 	Vector<ParseMetaAttribute> attrs;
 };
 
+struct ParseMetaFieldSub : ParseMetaField {
+	int testyy[200];
+
+	Vector<float> lols;
+
+	Vector<Token> nott;
+
+	int compOd;
+};
+
 #define NOT_AN_ARRAY -1
 
 struct ParseMetaEnumEntry {

@@ -14,7 +14,7 @@ struct MetaAttribute {
 struct MetaField {
 	const char* name;
 	int offset;
-	FundamentalType type;
+	MetaType type;
 };
 
 struct MetaEnumEntry {

@@ -27,7 +27,7 @@ Vector<ParseMetaStruct> ParseStructDefsFromFile(const char* fileName) {
 					inStruct = false;
 				}
 			}
-			else if (TOKEN_IS(tokens.data[i], ";")) {
+			else if (TOKEN_IS(tokens.data[i], ";") && braceCount == 1) {
 				Token prevTok = tokens.data[i-1];
 
 				//If it's not a method declaration, we're assuming its a field declaration.
@@ -64,13 +64,13 @@ Vector<ParseMetaStruct> ParseStructDefsFromFile(const char* fileName) {
 			}
 		}
 		else {
-			if (TOKEN_IS(tokens.data[i], "struct")) {
+			if (TOKEN_IS(tokens.data[i], "struct") && !TOKEN_IS(tokens.data[i + 2], ";")) {
 				inStruct = true;
 				Token structName = tokens.data[i+1];
 				ParseMetaStruct structDef = { 0 };
 				structDef.name = structName;
 				if (TOKEN_IS(tokens.data[i + 2], ":")) {
-					structDef.parentName = tokens.data[i + 2];
+					structDef.parentName = tokens.data[i + 3];
 				}
 
 				parsedStructs.PushBack(structDef);

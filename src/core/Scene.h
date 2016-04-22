@@ -33,10 +33,12 @@ struct Scene {
 	Scene();
 
 	void StartUp();
-
 	void Update();
 
 	void Render();
+
+	void Reset();
+	void ResetComponents();
 
 	void LoadLevel(const char* name);
 

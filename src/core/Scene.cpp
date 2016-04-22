@@ -91,6 +91,16 @@ void Scene::Update() {
 	player.Update();
 }
 
+void Reset() {
+	entities.Reset();
+	transforms.Reset();
+	res.drawCalls.Reset();
+
+	ResetComponents();
+	//phys.boxCols.Reset();
+	//phys.sphereCols.Reset();
+}
+
 void Scene::LoadLevel(const char* name) {
 	int levelId = -1;
 	bool exists = res.assetIdMap.LookUp(name, &levelId);
@@ -98,11 +108,7 @@ void Scene::LoadLevel(const char* name) {
 
 	Level* level = res.levels.GetById(levelId);
 
-	entities.Reset();
-	transforms.Reset();
-	res.drawCalls.Reset();
-	phys.boxCols.Reset();
-	phys.sphereCols.Reset();
+	Reset();
 
 	cam = level->cam;
 
