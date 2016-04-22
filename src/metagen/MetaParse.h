@@ -7,18 +7,25 @@
 #include "../../ext/CppUtils/vector.h"
 #include "../../ext/CppUtils/lexer.h"
 
+#define NOT_AN_ARRAY -1
+
 struct ParseMetaAttribute {
-	Token name;
-	Vector<Token> args;
+	SubString name;
+	Vector<SubString> args;
 };
 
 struct ParseMetaField {
-	Token name;
-	Token type;
-	Token typeParam;
+	SubString name;
+	SubString type;
+	SubString typeParam;
 	int indirectionLevel;
 	int arrayCount;
 	Vector<ParseMetaAttribute> attrs;
+
+	ParseMetaField() {
+		indirectionLevel = 0;
+		arrayCount = NOT_AN_ARRAY;
+	}
 };
 
 struct ParseMetaFieldSub : ParseMetaField {
@@ -26,27 +33,25 @@ struct ParseMetaFieldSub : ParseMetaField {
 
 	Vector<float> lols;
 
-	Vector<Token> nott;
+	Vector<SubString> nott;
 
 	int compOd;
 };
 
-#define NOT_AN_ARRAY -1
-
 struct ParseMetaEnumEntry {
-	Token value;
+	SubString value;
 	Vector<ParseMetaAttribute> attrs;
 };
 
 struct ParseMetaEnum {
-	Token name;
+	SubString name;
 	Vector<ParseMetaEnumEntry> entries;
 	Vector<ParseMetaAttribute> attrs;
 };
 
 struct ParseMetaStruct {
-	Token name;
-	Token parentName;
+	SubString name;
+	SubString parentName;
 	Vector<ParseMetaField> fields;
 	Vector<ParseMetaAttribute> attrs;
 };

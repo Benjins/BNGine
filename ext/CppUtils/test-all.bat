@@ -66,7 +66,7 @@ if %ERRORLEVEL% NEQ 0 goto somethingbad
 xml_test.exe
 if %ERRORLEVEL% NEQ 0 goto somethingbad
 
-cl /Od /Zi /DBNS_DEBUG /DEXIT__ON_ASSERT /DLEXER_TEST_MAIN lexer.cpp assert.cpp vector.cpp /Felex_test
+cl /Od /Zi /DBNS_DEBUG /DEXIT__ON_ASSERT /DLEXER_TEST_MAIN lexer.cpp strings.cpp assert.cpp vector.cpp /Felex_test
 if %ERRORLEVEL% NEQ 0 goto somethingbad
 
 lex_test.exe

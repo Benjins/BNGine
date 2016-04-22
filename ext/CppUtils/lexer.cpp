@@ -5,14 +5,6 @@
 
 #include "macros.h"
 
-int TokenEqual(Token a, Token b){
-	if(a.length == b.length){
-		return memcmp(a.start, b.start, a.length) == 0;
-	}
-	
-	return 0;
-}
-
 // TODO: Move this into strings.h
 size_t FindChar(const char* str, char c){
 	const char* cursor = str;
@@ -45,30 +37,28 @@ typedef enum{
 	WHITESPACE
 } LexerState;
 
-#define MAKE_TOKEN(str) {str, sizeof(str)-1}
-
 static const char* whitespace = "\t\r\n ";
 
-Vector<Token> LexString(const char* string){
+Vector<SubString> LexString(String string){
 	static const char* operators[] = {",", "++", "--", "*", "/", "->", "+", "-", "&", "|", "&&", "||", "#", "%", "{", "}", ";", "(", ")"
 									 "~", "^", "!=", "==", "=", "!", ".", "?", ":", "<", ">", "<<", ">>", "<=", ">=", "[", "]", "+=",
 									 "-=", "*=", "/=", "^=", "|=", "&=", "##"};
 	
-	static const Token annoStart = {"/*[", 3};
-	static const Token annoEnd   = {"]*/", 3};
+	String annoStart = "/*[";
+	String annoEnd = "]*/";
 	
-	Vector<Token> tokens;	
+	Vector<SubString> tokens;	
 	LexerState currState = WHITESPACE;
 	
 	#define EMIT_TOKEN() {currToken.length = fileCursor - currToken.start+1;tokens.PushBack(currToken);\
 						  currToken.length = 0; currToken.start = fileCursor+1;}
 	
-	int fileSize = strlen(string);
+	int fileSize = string.GetLength();
 	
-	const char* fileCursor = string;
-	Token currToken = {fileCursor, 0};
-	
-	while(fileCursor - string < fileSize){
+	char* fileCursor = string.string;
+	SubString currToken = string.GetSubString(0, 0);
+
+	while(fileCursor - string.string < fileSize){
 		switch(currState){
 			case STRING:{
 				if(*fileCursor == '\\'){
@@ -187,7 +177,7 @@ Vector<Token> LexString(const char* string){
 				if(*fileCursor == ']'){
 					fileCursor--;
 					EMIT_TOKEN();
-					tokens.PushBack(annoEnd);
+					tokens.PushBack(annoEnd.GetSubString(0,3));
 					currState = BLOCKCOMMENT;
 				}
 				else if(FindChar(whitespace, *fileCursor) != -1 || *fileCursor == '('){
@@ -199,12 +189,12 @@ Vector<Token> LexString(const char* string){
 
 			case ANNOTATION_WS:{
 				if(*fileCursor == ']'){
-					tokens.PushBack(annoEnd);
+					tokens.PushBack(annoEnd.GetSubString(0,3));
 					currState = BLOCKCOMMENT;
 					break;
 				}
 				else if(*fileCursor == '(' || *fileCursor == ')'){
-					Token thisTok = {fileCursor, 1};
+					SubString thisTok = string.GetSubString(fileCursor - string.string, 1);
 					tokens.PushBack(thisTok);
 					break;
 				}
@@ -217,13 +207,13 @@ Vector<Token> LexString(const char* string){
 			}
 			
 			case BLOCKCOMMENT:{
-				if(fileCursor - string < fileSize - 2 && fileCursor[0] == '*' && fileCursor[1] == '/'){
+				if(fileCursor - string.string < fileSize - 2 && fileCursor[0] == '*' && fileCursor[1] == '/'){
 					currState = WHITESPACE;
 					fileCursor += 2;
 					currToken.start += 2;
 				}
 				else if(*fileCursor == '[' && *(fileCursor - 1) == '*' && *(fileCursor - 2) == '/'){
-					tokens.PushBack(annoStart);
+					tokens.PushBack(annoStart.GetSubString(0,3));
 					currState = ANNOTATION_WS;
 				}
 				
@@ -232,10 +222,10 @@ Vector<Token> LexString(const char* string){
 			
 			case WHITESPACE:{
 				currToken.start = fileCursor;
-				if(fileCursor - string < fileSize - 2 && fileCursor[0] == '/' && fileCursor[1] == '/'){
+				if(fileCursor - string.string < fileSize - 2 && fileCursor[0] == '/' && fileCursor[1] == '/'){
 					currState = LINECOMMENT;
 				}
-				else if(fileCursor - string < fileSize - 2 && fileCursor[0] == '/' && fileCursor[1] == '*'){
+				else if(fileCursor - string.string < fileSize - 2 && fileCursor[0] == '/' && fileCursor[1] == '*'){
 					currState = BLOCKCOMMENT;
 				}
 				else if(FindChar(whitespace, *fileCursor) == -1){
@@ -306,65 +296,39 @@ int main(int argc, char** argv){
 	}
 	
 	{
-		Vector<Token> lexedToks = LexString("1+2*3");
+		Vector<SubString> lexedToks = LexString("1+2*3");
 		
 		ASSERT(lexedToks.count == 5);
-		ASSERT(TOKEN_IS(lexedToks.data[0], "1"));
-		ASSERT(TOKEN_IS(lexedToks.data[1], "+"));
-		ASSERT(TOKEN_IS(lexedToks.data[2], "2"));
+		ASSERT(lexedToks.data[0] == "1");
+		ASSERT(lexedToks.data[1] == "+");
+		ASSERT(lexedToks.data[2] == "2");
 	}
 	
 	{
-		Vector<Token> lexedToks = LexString("if (x == 2)  \t\t\t\n\n\n\n334");
+		Vector<SubString> lexedToks = LexString("if (x == 2)  \t\t\t\n\n\n\n334");
 		
 		ASSERT(lexedToks.count == 7);
 		
-		ASSERT(TOKEN_IS(lexedToks.data[6], "334"));
+		ASSERT(lexedToks.data[6] == "334");
 	}
 	
 	{
-		Token tok = MAKE_TOKEN("55543");
-		ASSERT(TOKEN_IS(tok, "55543"));
-		
 		const char* string = "if(this.Marvel() == that->goal()){iter++;}";
-		const Token expectedToks[] = {MAKE_TOKEN("if"), MAKE_TOKEN("("), MAKE_TOKEN("this"), MAKE_TOKEN("."),
-									  MAKE_TOKEN("Marvel"), MAKE_TOKEN("("), MAKE_TOKEN(")"), MAKE_TOKEN("=="), 
-									  MAKE_TOKEN("that"), MAKE_TOKEN("->"), MAKE_TOKEN("goal"), MAKE_TOKEN("("), 
-									  MAKE_TOKEN(")"), MAKE_TOKEN(")"), MAKE_TOKEN("{"), MAKE_TOKEN("iter"), 
-									  MAKE_TOKEN("++"), MAKE_TOKEN(";"), MAKE_TOKEN("}")}; 
+		const char* expectedToks[] = {"if", "(", "this", ".",
+									 "Marvel", "(", ")", "==", 
+									 "that", "->", "goal", "(", 
+									 ")", ")", "{", "iter", 
+									 "++", ";", "}"}; 
 								   
-		Vector<Token> actualToks = LexString(string);
+		Vector<SubString> actualToks = LexString(string);
 		
 		ASSERT(BNS_ARRAY_COUNT(expectedToks) == actualToks.count);
 		
 		for(int i = 0; i < actualToks.count; i++){
-			ASSERT(TokenEqual(actualToks.data[i], expectedToks[i]));
+			ASSERT(actualToks.data[i] == expectedToks[i]);
 		}
 	}
 
-#if 0
-	{
-		FILE* thisFile = fopen("lexer.cpp", "rb");
-		
-		fseek(thisFile, 0, SEEK_END);
-		int fileLength = ftell(thisFile);
-		fseek(thisFile, 0, SEEK_SET);
-		
-		char* fileContents = (char*)malloc(fileLength + 1);
-		fread(fileContents, 1, fileLength, thisFile);
-		fileContents[fileLength] = '\0';
-		fclose(thisFile);
-		
-		Vector<Token> lexedFile = LexString(fileContents);
-		
-		for(int i = 0; i < lexedFile.count; i++){
-			printf("|%.*s|\n", lexedFile.data[i].length, lexedFile.data[i].start);
-		}
-		
-		free(fileContents);
-	}
-#endif
-	
 	return 0;
 }
 

@@ -5,10 +5,9 @@
 
 
 Vector<ParseMetaStruct> ParseStructDefsFromFile(const char* fileName) {
-	int fileLength = 0;
-	char* fileContents = ReadTextFile(fileName, &fileLength);
+	String fileContents = ReadStringFromFile(fileName);
 
-	Vector<Token> tokens = LexString(fileContents);
+	Vector<SubString> tokens = LexString(fileContents);
 
 	Vector<ParseMetaStruct> parsedStructs;
 
@@ -17,29 +16,27 @@ Vector<ParseMetaStruct> ParseStructDefsFromFile(const char* fileName) {
 	for (int i = 0; i < tokens.count; i++) {
 		
 		if (inStruct) {
-			if (TOKEN_IS(tokens.data[i], "{")) {
+			if (tokens.data[i] == "{") {
 				braceCount++;
 			}
-			else if (TOKEN_IS(tokens.data[i], "}")) {
+			else if (tokens.data[i] == "}") {
 				braceCount--;
 
 				if (braceCount == 0) {
 					inStruct = false;
 				}
 			}
-			else if (TOKEN_IS(tokens.data[i], ";") && braceCount == 1) {
-				Token prevTok = tokens.data[i-1];
+			else if (tokens.data[i] == ";" && braceCount == 1) {
+				SubString prevTok = tokens.data[i-1];
 
 				//If it's not a method declaration, we're assuming its a field declaration.
-				//TODO: Could be a typedef, or an internal struct/enum
-				if (!TOKEN_IS(prevTok, ")") && !TOKEN_IS(prevTok, "const")
-					&& !TOKEN_IS(prevTok, "override") && !TOKEN_IS(prevTok, "final")) {
-					ParseMetaField structField = { 0 };
-					structField.arrayCount = NOT_AN_ARRAY;
+				//TODO: Could be a typedef
+				if (prevTok != ")" && prevTok != "const" && prevTok != "override" && prevTok != "final" && prevTok != "}"){
+					ParseMetaField structField;
 
 					int fieldNameIndex = i - 1;
 
-					if (TOKEN_IS(prevTok, "]")) {
+					if (prevTok == "]") {
 						fieldNameIndex -= 3;
 						structField.arrayCount = Atoi(tokens.data[i - 2].start);
 					}
@@ -47,12 +44,12 @@ Vector<ParseMetaStruct> ParseStructDefsFromFile(const char* fileName) {
 					structField.name = tokens.data[fieldNameIndex];
 
 					int typeNameIndex = fieldNameIndex - 1;
-					while (TOKEN_IS(tokens.data[typeNameIndex], "*")) {
+					while (tokens.data[typeNameIndex] == "*") {
 						structField.indirectionLevel++;
 						typeNameIndex--;
 					}
 
-					if (TOKEN_IS(tokens.data[typeNameIndex], ">")) {
+					if (tokens.data[typeNameIndex] == ">") {
 						structField.typeParam = tokens.data[typeNameIndex - 1];
 						typeNameIndex -= 3;
 					}
@@ -64,12 +61,12 @@ Vector<ParseMetaStruct> ParseStructDefsFromFile(const char* fileName) {
 			}
 		}
 		else {
-			if (TOKEN_IS(tokens.data[i], "struct") && !TOKEN_IS(tokens.data[i + 2], ";")) {
+			if (tokens.data[i] == "struct" && tokens.data[i + 2] != ";") {
 				inStruct = true;
-				Token structName = tokens.data[i+1];
-				ParseMetaStruct structDef = { 0 };
+				SubString structName = tokens.data[i+1];
+				ParseMetaStruct structDef;
 				structDef.name = structName;
-				if (TOKEN_IS(tokens.data[i + 2], ":")) {
+				if (tokens.data[i + 2] == ":") {
 					structDef.parentName = tokens.data[i + 3];
 				}
 
