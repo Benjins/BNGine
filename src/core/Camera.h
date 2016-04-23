@@ -12,6 +12,8 @@ struct Camera {
 	float farClip;
 	float widthPixels;
 	float heightPixels;
+	float xOffset;
+	float yOffset;
 
 	int transform;
 

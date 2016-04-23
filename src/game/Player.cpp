@@ -13,10 +13,6 @@ void Player::Update() {
 	if (downCast.wasHit) {
 		floorHeight = downCast.globalPos.y + playerHeight;
 	}
-	else {
-		int xx = 9;
-		BNS_UNUSED(xx);
-	}
 
 	camTrans->rotation = Quaternion(Y_AXIS, GlobalScene->input.cursorX / 80) * Quaternion(X_AXIS, GlobalScene->input.cursorY / 80 - 2);
 

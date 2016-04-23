@@ -8,22 +8,8 @@
 #include "../ext/CppUtils/memstream.h"
 #include "ComponentType.h"
 
-#include "../src/physics/SphereCollider.h"//SphereCollider
 #include "../src/physics/BoxCollider.h"//BoxCollider
-Component* SphereCollider_getComponentArray(){
-	return GlobalScene->phys.sphereCols.vals;
-}
-
-Component* SphereCollider_getComponentById(uint32 id){
-	return GlobalScene->phys.sphereCols.GetById(id);
-}
-
-Component* SphereCollider_createAndAdd(){
-	Component* comp = GlobalScene->phys.sphereCols.CreateAndAdd();
-	comp->type = CCT_SphereCollider;
-	return comp;
-}
-
+#include "../src/physics/SphereCollider.h"//SphereCollider
 Component* BoxCollider_getComponentArray(){
 	return GlobalScene->phys.boxCols.vals;
 }
@@ -38,18 +24,19 @@ Component* BoxCollider_createAndAdd(){
 	return comp;
 }
 
-MetaField SphereCollider_metaFields[] = {
-	{"position", (int)(size_t)(&((SphereCollider*)0)->position), (MetaType)6},
-	{"radius", (int)(size_t)(&((SphereCollider*)0)->radius), (MetaType)1},
-};
+Component* SphereCollider_getComponentArray(){
+	return GlobalScene->phys.sphereCols.vals;
+}
 
-MetaStruct SphereCollider_meta = {
-	"SphereCollider",
-	nullptr,
-	SphereCollider_metaFields,
-	2,
-	sizeof(SphereCollider)
-};
+Component* SphereCollider_getComponentById(uint32 id){
+	return GlobalScene->phys.sphereCols.GetById(id);
+}
+
+Component* SphereCollider_createAndAdd(){
+	Component* comp = GlobalScene->phys.sphereCols.CreateAndAdd();
+	comp->type = CCT_SphereCollider;
+	return comp;
+}
 
 MetaField BoxCollider_metaFields[] = {
 	{"position", (int)(size_t)(&((BoxCollider*)0)->position), (MetaType)6},
@@ -64,41 +51,18 @@ MetaStruct BoxCollider_meta = {
 	sizeof(BoxCollider)
 };
 
-void SphereCollider_XMLDeserialize(Component* comp, const XMLElement* elem){
-	SphereCollider* compCast = static_cast<SphereCollider*>(comp);
-	String temp;
-	if(elem->attributes.LookUp("position", &temp)){
-		compCast->position = ParseVector3(temp.string);
-	}
-	if(elem->attributes.LookUp("radius", &temp)){
-		compCast->radius = atof(temp.string);
-	}
-}
+MetaField SphereCollider_metaFields[] = {
+	{"position", (int)(size_t)(&((SphereCollider*)0)->position), (MetaType)6},
+	{"radius", (int)(size_t)(&((SphereCollider*)0)->radius), (MetaType)1},
+};
 
-void SphereCollider_XMLSerialize(const Component* comp, XMLElement* elem){
-	const SphereCollider* compCast = static_cast<const SphereCollider*>(comp);
-	elem->attributes.Insert("position", EncodeVector3(compCast->position));
-	elem->attributes.Insert("radius", Ftoa(compCast->radius));
-}
-
-void SphereCollider_MemSerialize(const Component* comp, MemStream* stream){
-	const SphereCollider* compCast = static_cast<const SphereCollider*>(comp);
-	stream->Write<Vector3>(compCast->position);
-	stream->Write<float>(compCast->radius);
-}
-
-void SphereCollider_MemDeserialize(Component* comp, MemStream* stream){
-	SphereCollider* compCast = static_cast<SphereCollider*>(comp);
-	compCast->position = stream->Read<Vector3>();
-	compCast->radius = stream->Read<float>();
-}
-
-Component* SphereCollider_addToLevel(Level* lvl){
-	
-lvl->sphereCols.EnsureCapacity(lvl->sphereCols.count+1);
-	lvl->sphereCols.count++;
-	return &lvl->sphereCols.data[lvl->sphereCols.count-1];
-}
+MetaStruct SphereCollider_meta = {
+	"SphereCollider",
+	nullptr,
+	SphereCollider_metaFields,
+	2,
+	sizeof(SphereCollider)
+};
 
 void BoxCollider_XMLDeserialize(Component* comp, const XMLElement* elem){
 	BoxCollider* compCast = static_cast<BoxCollider*>(comp);
@@ -136,31 +100,67 @@ lvl->boxCols.EnsureCapacity(lvl->boxCols.count+1);
 	return &lvl->boxCols.data[lvl->boxCols.count-1];
 }
 
+void SphereCollider_XMLDeserialize(Component* comp, const XMLElement* elem){
+	SphereCollider* compCast = static_cast<SphereCollider*>(comp);
+	String temp;
+	if(elem->attributes.LookUp("position", &temp)){
+		compCast->position = ParseVector3(temp.string);
+	}
+	if(elem->attributes.LookUp("radius", &temp)){
+		compCast->radius = atof(temp.string);
+	}
+}
+
+void SphereCollider_XMLSerialize(const Component* comp, XMLElement* elem){
+	const SphereCollider* compCast = static_cast<const SphereCollider*>(comp);
+	elem->attributes.Insert("position", EncodeVector3(compCast->position));
+	elem->attributes.Insert("radius", Ftoa(compCast->radius));
+}
+
+void SphereCollider_MemSerialize(const Component* comp, MemStream* stream){
+	const SphereCollider* compCast = static_cast<const SphereCollider*>(comp);
+	stream->Write<Vector3>(compCast->position);
+	stream->Write<float>(compCast->radius);
+}
+
+void SphereCollider_MemDeserialize(Component* comp, MemStream* stream){
+	SphereCollider* compCast = static_cast<SphereCollider*>(comp);
+	compCast->position = stream->Read<Vector3>();
+	compCast->radius = stream->Read<float>();
+}
+
+Component* SphereCollider_addToLevel(Level* lvl){
+	
+lvl->sphereCols.EnsureCapacity(lvl->sphereCols.count+1);
+	lvl->sphereCols.count++;
+	return &lvl->sphereCols.data[lvl->sphereCols.count-1];
+}
+
 AddComponentToLevelFunc* addComponentToLevelFuncs[CCT_Count] = {
-	SphereCollider_addToLevel,
 	BoxCollider_addToLevel,
+	SphereCollider_addToLevel,
 };
 AddComponentFunc* addComponentFuncs[CCT_Count] = {
-	SphereCollider_createAndAdd,
 	BoxCollider_createAndAdd,
+	SphereCollider_createAndAdd,
 };
 ComponentXMLDeserializeFunc* componentXMLDeserializeFuncs[CCT_Count] = {
-	SphereCollider_XMLDeserialize,
 	BoxCollider_XMLDeserialize,
+	SphereCollider_XMLDeserialize,
 };
 ComponentXMLSerializeFunc* componentXMLSerializeFuncs[CCT_Count] = {
-	SphereCollider_XMLSerialize,
 	BoxCollider_XMLSerialize,
+	SphereCollider_XMLSerialize,
 };
 ComponentMemDeserializeFunc* componentMemDeserializeFuncs[CCT_Count] = {
-	SphereCollider_MemDeserialize,
 	BoxCollider_MemDeserialize,
+	SphereCollider_MemDeserialize,
 };
 ComponentMemSerializeFunc* componentMemSerializeFuncs[CCT_Count] = {
-	SphereCollider_MemSerialize,
 	BoxCollider_MemSerialize,
+	SphereCollider_MemSerialize,
 };
 MetaStruct* componentMetaData[CCT_Count] = {
-	&SphereCollider_meta,
 	&BoxCollider_meta,
+	&SphereCollider_meta,
 };

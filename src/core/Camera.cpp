@@ -11,6 +11,9 @@ Camera::Camera() {
 	fov = 80;
 	widthPixels = 1280;
 	heightPixels = 720;
+
+	xOffset = 0;
+	yOffset = 0;
 }
 
 Mat4x4 Camera::GetCameraMatrix() const {

@@ -268,7 +268,8 @@ void ResourceManager::LoadLevelFromChunk(MemStream& stream, Level* outLevel) {
 }
 
 void ResourceManager::Render() {
-	glViewport(0, 0, (int)GlobalScene->cam.widthPixels, (int)GlobalScene->cam.heightPixels);
+	glViewport((int)GlobalScene->cam.xOffset, (int)GlobalScene->cam.yOffset,
+			   (int)GlobalScene->cam.widthPixels, (int)GlobalScene->cam.heightPixels);
 
 	ExecuteDrawCalls(drawCalls.vals, drawCalls.currentCount);
 }
