@@ -1,10 +1,8 @@
 set -e
 
+make genCode
 make -B BNGine.out
 make -B OS_MESA=1 BNGine.out
-rm -rf gen
-mkdir gen
-make OS_MESA=1 BNGine.out
 ./BNGine.out
 #valgrind --leak-check=full --error-exitcode=12 ./BNGine.out
 

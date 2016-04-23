@@ -4,8 +4,8 @@
 #pragma once
 
 enum CustomComponentType{
-	CCT_BoxCollider,
 	CCT_SphereCollider,
+	CCT_BoxCollider,
 	CCT_Count
 };
 

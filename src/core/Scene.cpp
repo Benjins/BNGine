@@ -6,7 +6,7 @@
 
 #include "../util/LevelLoading.h"
 
-#include <windows.h>
+//#include <windows.h>
 
 Scene* GlobalScene = nullptr;
 
