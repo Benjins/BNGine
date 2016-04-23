@@ -64,7 +64,7 @@ BNGine.out: $(OBJS) $(HEADERS) $(GEN_OBJS)
 	$(CXX) $(OBJS) $(GEN_OBJS) $(LIBFLAGS) -o BNGine.out
 
 
-genCode: $(HEADERS)
+genCode: $(HEADERS) $(METAGEN_EXE_OBJS) $(CPP_UTILS_OBJS)
 	$(CXX) $(METAGEN_EXE_OBJS) $(CPP_UTILS_OBJS) -o BNSMetaGen.out
 	./BNSMetaGen.out
 
