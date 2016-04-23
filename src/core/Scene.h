@@ -41,6 +41,7 @@ struct Scene {
 	void ResetComponents();
 
 	void LoadLevel(const char* name);
+	void LoadCustomComponentsFromLevel(const Level* level);
 
 	Entity* AddVisibleEntity(uint32 matId, uint32 meshId);
 

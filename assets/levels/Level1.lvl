@@ -25,13 +25,13 @@
 		<Transform id='4' pos='0,-1,0' rotation='1,0,0,0' scale='1,1,1' parent='-1'/>
 		<Material src='floor.mat'/>
 		<Mesh src='floor.obj'/>
-		<BoxCollider pos='0,-0.25,0' size='5,0.2,5'/>
+		<BoxCollider position='0,-0.25,0' size='5,0.2,5'/>
 	</Entity>
 	
 	<Entity id='4'>
 		<Transform id='5' pos='2,-0.4,2' rotation='1,0,0,0' scale='0.6,0.3,0.6' parent='-1'/>
 		<Material src='floor.mat'/>
 		<Mesh src='test_2.obj'/>
-		<BoxCollider pos='0,0,0' size='1,1,1'/>
+		<BoxCollider position='0,0,0' size='1,1,1'/>
 	</Entity>
 </Scene>

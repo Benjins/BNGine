@@ -1,6 +1,7 @@
 #include "ResourceManager.h"
 #include "../core/Scene.h"
 #include "../assets/AssetFile.h"
+#include "../metagen/ComponentMeta.h"
 
 #include "../../ext/CppUtils/filesys.h"
 #include "../../ext/CppUtils/assert.h"
@@ -252,6 +253,15 @@ void ResourceManager::LoadLevelFromChunk(MemStream& stream, Level* outLevel) {
 
 		outLevel->meshIds.PushBack(stream.Read<int>());
 		outLevel->matIds.PushBack(stream.Read<int>());
+
+		int customComponentCount = stream.Read<int>();
+		for (int j = 0; j < customComponentCount; j++) {
+			int id = stream.Read<int>();
+			ASSERT(id >= 0 && id < CCT_Count);
+			Component* toAdd = (addComponentToLevelFuncs[id])(outLevel);
+			(componentMemDeserializeFuncs[id])(toAdd, &stream);
+			toAdd->entity = ent.id;
+		}
 
 		ASSERT(stream.Read<int>() == ~*(int*)enttChunkId);
 	}

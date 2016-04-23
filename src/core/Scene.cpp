@@ -4,6 +4,8 @@
 
 #include "../metagen/MetaParse.h"
 
+#include "../util/LevelLoading.h"
+
 #include <windows.h>
 
 Scene* GlobalScene = nullptr;
@@ -35,24 +37,6 @@ void Scene::StartUp() {
 	res.LoadAssetFile("assets.bna");
 
 	LoadLevel("Level1.lvl");
-
-	{
-		Entity* floorEnt = entities.GetById(3);
-
-		BoxCollider* floorCol = phys.boxCols.CreateAndAdd();
-		floorCol->entity = floorEnt->id;
-		floorCol->position = Vector3(0, -0.25f, 0);
-		floorCol->size = Vector3(5, 0.2f, 5);
-	}
-
-	{
-		Entity* boxEnt = entities.GetById(4);
-
-		BoxCollider* boxCol = phys.boxCols.CreateAndAdd();
-		boxCol->entity = boxEnt->id;
-		boxCol->position = Vector3(0, 0, 0);
-		boxCol->size = Vector3(1, 1, 1);
-	}
 }
 
 void Scene::Update() {
@@ -65,8 +49,6 @@ void Scene::Reset() {
 	res.drawCalls.Reset();
 
 	ResetComponents();
-	//phys.boxCols.Reset();
-	//phys.sphereCols.Reset();
 }
 
 void Scene::LoadLevel(const char* name) {
@@ -80,10 +62,7 @@ void Scene::LoadLevel(const char* name) {
 
 	cam = level->cam;
 
-	entities.SetSize(level->entities.count);
-	MemCpy(entities.vals, level->entities.data, sizeof(Entity)*level->entities.count);
-	entities.currentCount = level->entities.count;
-	entities.currentMaxId = entities.vals[entities.currentCount - 1].id;
+	LoadVectorToIDTracker(level->entities, entities);
 
 	ASSERT(level->meshIds.count == level->entities.count);
 	ASSERT(level->matIds.count == level->entities.count);
@@ -97,10 +76,9 @@ void Scene::LoadLevel(const char* name) {
 		}
 	}
 
-	transforms.SetSize(level->transforms.count);
-	MemCpy(transforms.vals, level->transforms.data, sizeof(Transform)*level->transforms.count);
-	transforms.currentCount = level->transforms.count;
-	transforms.currentMaxId = transforms.vals[transforms.currentCount - 1].id;
+	LoadVectorToIDTracker(level->transforms, transforms);
+
+	LoadCustomComponentsFromLevel(level);
 }
 
 void Scene::Render() {

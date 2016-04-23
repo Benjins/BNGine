@@ -46,9 +46,8 @@ MetaType ParseType(const SubString& name, int indirectionLevel, int arrayCount) 
 			return MT_Unknown;
 		}
 	}
-	else {
-		return MT_Unknown;
-	}
+
+	return MT_Unknown;
 }
 
 int main(int arc, char** argv) {
@@ -170,15 +169,27 @@ int main(int arc, char** argv) {
 	fclose(componentTypeFile);
 
 	ParseMetaStruct* sceneStruct = nullptr;
+	ParseMetaStruct* levelStruct = nullptr;
 
-	int sceneIndex = -1;
-	if (typeIndices.LookUp("Scene", &sceneIndex)) {
-		sceneStruct = &allParseMetaStructs.data[sceneIndex];
+	{
+		int sceneIndex = -1;
+		if (typeIndices.LookUp("Scene", &sceneIndex)) {
+			sceneStruct = &allParseMetaStructs.data[sceneIndex];
+		}
+	}
+
+	{
+		int levelIndex = -1;
+		if (typeIndices.LookUp("Level", &levelIndex)) {
+			levelStruct = &allParseMetaStructs.data[levelIndex];
+		}
 	}
 
 	ASSERT(sceneStruct != nullptr);
+	ASSERT(levelStruct != nullptr);
 
 	Vector<String> getComponentPathList;
+	Vector<String> getComponentLevelPathList;
 	
 	for (int i = 0; i < componentIndices.count; i++) {
 		int compIdx = componentIndices.data[i];
@@ -204,17 +215,59 @@ int main(int arc, char** argv) {
 		}
 	}
 
+	for (int i = 0; i < componentIndices.count; i++) {
+		int compIdx = componentIndices.data[i];
+		ParseMetaStruct* ms = &allParseMetaStructs.data[compIdx];
+
+		for (int j = 0; j < levelStruct->fields.count; j++) {
+			int levelFieldIdx = -1;
+			ParseMetaField levelField = levelStruct->fields.data[j];
+			if (levelField.type == "Vector"
+				&& typeIndices.LookUp(levelField.typeParam, &levelFieldIdx)) {
+				ParseMetaStruct* fms = &allParseMetaStructs.data[levelFieldIdx];
+				if (fms == ms) {
+					StringStackBuffer<256> getCompPath("%.*s", levelField.name.length, levelField.name.start);
+					getComponentLevelPathList.PushBack(getCompPath.buffer);
+					break;
+				}
+			}
+		}
+	}
+
+	/*
+	for (int j = 0; j < levelStruct->fields.count; j++) {
+		//getComponentLevelPathList
+		int levelFieldIndex = -1;
+		if (levelStruct->fields.data[j].type == "Vector"
+			&& typeIndices.LookUp(levelStruct->fields.data[j].typeParam, &levelFieldIndex)) {
+			ParseMetaStruct* fms = &allParseMetaStructs.data[levelFieldIndex];
+
+			StringStackBuffer<256> getCompLevelPath("%.*s", fms->name.length, fms->name.start);
+			getComponentLevelPathList.PushBack(getCompLevelPath.buffer);
+		}
+	}
+	*/
 	ASSERT(getComponentPathList.count == componentIndices.count);
+	ASSERT(getComponentLevelPathList.count == componentIndices.count);
 
 	//ComponentReset.cpp
 
 	FILE* componentResetFile = fopen("gen/ComponentReset.cpp", "wb");
 
-	fprintf(componentResetFile, "#include \"../src/core/Scene.h\"\n\n");
+	fprintf(componentResetFile, "#include \"../src/core/Scene.h\"\n");
+	fprintf(componentResetFile, "#include \"../src/util/LevelLoading.h\"\n\n");
 
 	fprintf(componentResetFile, "void Scene::ResetComponents(){\n");
 	for (int i = 0; i < getComponentPathList.count; i++) {
 		fprintf(componentResetFile, "\t%s.Reset();\n", getComponentPathList.data[i].string);
+	}
+	fprintf(componentResetFile, "}\n");
+
+	fprintf(componentResetFile, "void Scene::LoadCustomComponentsFromLevel(const Level* level){\n");
+	for (int i = 0; i < getComponentPathList.count; i++) {
+		SubString compTypeName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
+		fprintf(componentResetFile, "\tLoadVectorToIDTracker<%.*s>(level->%s, %s);\n", compTypeName.length, compTypeName.start,
+			getComponentLevelPathList.data[i].string, getComponentPathList.data[i].string);
 	}
 	fprintf(componentResetFile, "}\n");
 
@@ -227,6 +280,7 @@ int main(int arc, char** argv) {
 	fprintf(componentMetaFile, "#include \"../src/core/Scene.h\"\n");
 	fprintf(componentMetaFile, "#include \"../src/core/Component.h\"\n");
 	fprintf(componentMetaFile, "#include \"../src/metagen/MetaStruct.h\"\n");
+	fprintf(componentMetaFile, "#include \"../src/metagen/ComponentMeta.h\"\n");
 	fprintf(componentMetaFile, "#include \"../src/util/Serialization.h\"\n\n");
 
 	fprintf(componentMetaFile, "#include \"../ext/CppUtils/xml.h\"\n");
@@ -321,8 +375,8 @@ int main(int arc, char** argv) {
 			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount);
 
 			if (fieldType != MT_Unknown) {
-				fprintf(componentMetaFile, "\telem->attributes.LookUp(\"%.*s\", &temp);\n", mf.name.length, mf.name.start);
-				fprintf(componentMetaFile, "\tcompCast->%.*s = %s(temp.string);\n", mf.name.length, mf.name.start, parseFuncs[(int)fieldType]);
+				fprintf(componentMetaFile, "\tif(elem->attributes.LookUp(\"%.*s\", &temp)){\n", mf.name.length, mf.name.start);
+				fprintf(componentMetaFile, "\t\tcompCast->%.*s = %s(temp.string);\n\t}\n", mf.name.length, mf.name.start, parseFuncs[(int)fieldType]);
 			}
 		}
 
@@ -368,7 +422,63 @@ int main(int arc, char** argv) {
 		}
 
 		fprintf(componentMetaFile, "}\n\n");
+
+		const char* lvlPath = getComponentLevelPathList.Get(i).string;
+		fprintf(componentMetaFile, "Component* %.*s_addToLevel(Level* lvl){\n", ms->name.length, ms->name.start);
+		fprintf(componentMetaFile, "\t\nlvl->%s.EnsureCapacity(lvl->%s.count+1);\n", lvlPath, lvlPath);
+		fprintf(componentMetaFile, "\tlvl->%s.count++;\n", lvlPath);
+		fprintf(componentMetaFile, "\treturn &lvl->%s.data[lvl->%s.count-1];\n", lvlPath, lvlPath);
+		fprintf(componentMetaFile, "}\n\n");
 	}
+
+	fprintf(componentMetaFile, "AddComponentToLevelFunc* addComponentToLevelFuncs[CCT_Count] = {\n");
+	for (int i = 0; i < componentIndices.count; i++) {
+		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
+		fprintf(componentMetaFile, "\t%.*s_addToLevel,\n", structName.length, structName.start);
+	}
+	fprintf(componentMetaFile, "};\n");
+
+	fprintf(componentMetaFile, "AddComponentFunc* addComponentFuncs[CCT_Count] = {\n");
+	for (int i = 0; i < componentIndices.count; i++) {
+		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
+		fprintf(componentMetaFile, "\t%.*s_createAndAdd,\n", structName.length, structName.start);
+	}
+	fprintf(componentMetaFile, "};\n");
+
+	fprintf(componentMetaFile, "ComponentXMLDeserializeFunc* componentXMLDeserializeFuncs[CCT_Count] = {\n");
+	for (int i = 0; i < componentIndices.count; i++) {
+		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
+		fprintf(componentMetaFile, "\t%.*s_XMLDeserialize,\n", structName.length, structName.start);
+	}
+	fprintf(componentMetaFile, "};\n");
+
+	fprintf(componentMetaFile, "ComponentXMLSerializeFunc* componentXMLSerializeFuncs[CCT_Count] = {\n");
+	for (int i = 0; i < componentIndices.count; i++) {
+		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
+		fprintf(componentMetaFile, "\t%.*s_XMLSerialize,\n", structName.length, structName.start);
+	}
+	fprintf(componentMetaFile, "};\n");
+
+	fprintf(componentMetaFile, "ComponentMemDeserializeFunc* componentMemDeserializeFuncs[CCT_Count] = {\n");
+	for (int i = 0; i < componentIndices.count; i++) {
+		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
+		fprintf(componentMetaFile, "\t%.*s_MemDeserialize,\n", structName.length, structName.start);
+	}
+	fprintf(componentMetaFile, "};\n");
+
+	fprintf(componentMetaFile, "ComponentMemSerializeFunc* componentMemSerializeFuncs[CCT_Count] = {\n");
+	for (int i = 0; i < componentIndices.count; i++) {
+		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
+		fprintf(componentMetaFile, "\t%.*s_MemSerialize,\n", structName.length, structName.start);
+	}
+	fprintf(componentMetaFile, "};\n");
+
+	fprintf(componentMetaFile, "MetaStruct* componentMetaData[CCT_Count] = {\n");
+	for (int i = 0; i < componentIndices.count; i++) {
+		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
+		fprintf(componentMetaFile, "\t&%.*s_meta,\n", structName.length, structName.start);
+	}
+	fprintf(componentMetaFile, "};\n");
 
 	fclose(componentMetaFile);
 

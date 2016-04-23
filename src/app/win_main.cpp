@@ -76,7 +76,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 
 		SwapBuffers(hdc);
 		ReleaseDC(window, hdc);
-		
+
 		Sleep(16);
 	}
 

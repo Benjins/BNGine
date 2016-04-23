@@ -3,6 +3,8 @@
 #include "../gfx/Material.h"
 
 #include "../util/Serialization.h"
+#include "../metagen/ComponentMeta.h"
+#include "../metagen/MetaStruct.h"
 
 #include "../../ext/CppUtils/filesys.h"
 #include "../../ext/CppUtils/stringmap.h"
@@ -492,8 +494,32 @@ void WriteEntitySubChunk(XMLElement* entElem, const StringMap<int>& assetIds, FI
 		}
 	}
 
+	int customComponentCount = 0;
+	MemStream customComponents;
+	for (int i = 0; i < entElem->childrenIds.count; i++) {
+		XMLElement* childElem = entElem->doc->elements.GetById(entElem->childrenIds.data[i]);
+		String name = childElem->name;
+		int metaDataIndex = FindStructByName(name.string);
+
+		if (metaDataIndex != -1) {
+			customComponentCount++;
+
+			MetaStruct* metaData = componentMetaData[metaDataIndex];
+
+			customComponents.Write(metaDataIndex);
+
+			//TODO: We could re-use this buffer, or at least avoid freeing it every time
+			Component* buffer = (Component*)malloc(metaData->size);
+			(componentXMLDeserializeFuncs[metaDataIndex])(buffer, childElem);
+			(componentMemSerializeFuncs[metaDataIndex])(buffer, &customComponents);
+			free(buffer);
+		}
+	}
+
 	fwrite(&meshId, 1, sizeof(int), assetFileHandle);
 	fwrite(&matId, 1, sizeof(int), assetFileHandle);
+	fwrite(&customComponentCount, 1, sizeof(int), assetFileHandle);
+	fwrite(customComponents.readHead, 1, customComponents.GetLength(), assetFileHandle);
 
 	int subChunkIdFlipped = ~*(int*)subChunkId;
 	fwrite(&subChunkIdFlipped, 1, sizeof(int), assetFileHandle);

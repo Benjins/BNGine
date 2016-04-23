@@ -1,6 +1,7 @@
 #include "../src/core/Scene.h"
 #include "../src/core/Component.h"
 #include "../src/metagen/MetaStruct.h"
+#include "../src/metagen/ComponentMeta.h"
 #include "../src/util/Serialization.h"
 
 #include "../ext/CppUtils/xml.h"
@@ -66,10 +67,12 @@ MetaStruct SphereCollider_meta = {
 void BoxCollider_XMLDeserialize(Component* comp, const XMLElement* elem){
 	BoxCollider* compCast = static_cast<BoxCollider*>(comp);
 	String temp;
-	elem->attributes.LookUp("position", &temp);
-	compCast->position = ParseVector3(temp.string);
-	elem->attributes.LookUp("size", &temp);
-	compCast->size = ParseVector3(temp.string);
+	if(elem->attributes.LookUp("position", &temp)){
+		compCast->position = ParseVector3(temp.string);
+	}
+	if(elem->attributes.LookUp("size", &temp)){
+		compCast->size = ParseVector3(temp.string);
+	}
 }
 
 void BoxCollider_XMLSerialize(const Component* comp, XMLElement* elem){
@@ -90,13 +93,22 @@ void BoxCollider_MemDeserialize(Component* comp, MemStream* stream){
 	compCast->size = stream->Read<Vector3>();
 }
 
+Component* BoxCollider_addToLevel(Level* lvl){
+	
+lvl->boxCols.EnsureCapacity(lvl->boxCols.count+1);
+	lvl->boxCols.count++;
+	return &lvl->boxCols.data[lvl->boxCols.count-1];
+}
+
 void SphereCollider_XMLDeserialize(Component* comp, const XMLElement* elem){
 	SphereCollider* compCast = static_cast<SphereCollider*>(comp);
 	String temp;
-	elem->attributes.LookUp("position", &temp);
-	compCast->position = ParseVector3(temp.string);
-	elem->attributes.LookUp("radius", &temp);
-	compCast->radius = atof(temp.string);
+	if(elem->attributes.LookUp("position", &temp)){
+		compCast->position = ParseVector3(temp.string);
+	}
+	if(elem->attributes.LookUp("radius", &temp)){
+		compCast->radius = atof(temp.string);
+	}
 }
 
 void SphereCollider_XMLSerialize(const Component* comp, XMLElement* elem){
@@ -117,3 +129,38 @@ void SphereCollider_MemDeserialize(Component* comp, MemStream* stream){
 	compCast->radius = stream->Read<float>();
 }
 
+Component* SphereCollider_addToLevel(Level* lvl){
+	
+lvl->sphereCols.EnsureCapacity(lvl->sphereCols.count+1);
+	lvl->sphereCols.count++;
+	return &lvl->sphereCols.data[lvl->sphereCols.count-1];
+}
+
+AddComponentToLevelFunc* addComponentToLevelFuncs[CCT_Count] = {
+	BoxCollider_addToLevel,
+	SphereCollider_addToLevel,
+};
+AddComponentFunc* addComponentFuncs[CCT_Count] = {
+	BoxCollider_createAndAdd,
+	SphereCollider_createAndAdd,
+};
+ComponentXMLDeserializeFunc* componentXMLDeserializeFuncs[CCT_Count] = {
+	BoxCollider_XMLDeserialize,
+	SphereCollider_XMLDeserialize,
+};
+ComponentXMLSerializeFunc* componentXMLSerializeFuncs[CCT_Count] = {
+	BoxCollider_XMLSerialize,
+	SphereCollider_XMLSerialize,
+};
+ComponentMemDeserializeFunc* componentMemDeserializeFuncs[CCT_Count] = {
+	BoxCollider_MemDeserialize,
+	SphereCollider_MemDeserialize,
+};
+ComponentMemSerializeFunc* componentMemSerializeFuncs[CCT_Count] = {
+	BoxCollider_MemSerialize,
+	SphereCollider_MemSerialize,
+};
+MetaStruct* componentMetaData[CCT_Count] = {
+	&BoxCollider_meta,
+	&SphereCollider_meta,
+};
