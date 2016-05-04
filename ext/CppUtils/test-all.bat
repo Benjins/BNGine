@@ -66,10 +66,26 @@ if %ERRORLEVEL% NEQ 0 goto somethingbad
 xml_test.exe
 if %ERRORLEVEL% NEQ 0 goto somethingbad
 
-cl /Od /Zi /DBNS_DEBUG /DEXIT__ON_ASSERT /DLEXER_TEST_MAIN lexer.cpp strings.cpp assert.cpp vector.cpp /Felex_test
+cl /Od /Zi /DBNS_DEBUG /DEXIT_ON_ASSERT /DLEXER_TEST_MAIN lexer.cpp strings.cpp assert.cpp vector.cpp /Felex_test
 if %ERRORLEVEL% NEQ 0 goto somethingbad
 
 lex_test.exe
+if %ERRORLEVEL% NEQ 0 goto somethingbad
+
+cl /Od /Zi /DBNS_DEBUG /DEXIT__ON_ASSERT /DBNVPARSER_TEST_MAIN lexer.cpp strings.cpp assert.cpp hash.cpp vector.cpp bnvm.cpp bnvparser.cpp /Febnvparser_test
+if %ERRORLEVEL% NEQ 0 goto somethingbad
+
+bnvparser_test.exe 
+::> bnvParserOut.txt
+if %ERRORLEVEL% NEQ 0 goto somethingbad
+
+diff bnvParserOut.txt bnvParserExpectedOut.txt
+if %ERRORLEVEL% NEQ 0 goto somethingbad
+
+cl /Od /Zi /DBNS_DEBUG /DEXIT_ON_ASSERT /DBNVM_TEST_MAIN lexer.cpp strings.cpp assert.cpp hash.cpp stringmap.cpp bnvm.cpp vector.cpp bnvparser.cpp /Febnvm_test
+if %ERRORLEVEL% NEQ 0 goto somethingbad
+
+bnvm_test.exe
 if %ERRORLEVEL% NEQ 0 goto somethingbad
 
 echo Success!
