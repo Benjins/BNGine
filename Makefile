@@ -7,6 +7,7 @@ OS_MESA ?= 0
 
 #uh....
 SOURCES := $(filter-out src/app/win_main.cpp,$(SOURCES))
+SOURCES := $(filter-out src/app/win_editor.cpp,$(SOURCES))
 SOURCES := $(filter-out src/app/x11_main.cpp,$(SOURCES))
 SOURCES := $(filter-out src/app/osmesa_main.cpp,$(SOURCES))
 SOURCES := $(filter-out src/app/metagen_main.cpp,$(SOURCES))
