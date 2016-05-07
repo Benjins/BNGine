@@ -7,10 +7,19 @@
 #include "stringmap.h"
 #include "vector.h"
 
+#include "macros.h"
+
 struct BNVToken{
 	SubString substr;
 	String file;
 	int line;
+
+	BNVToken() = default;
+	BNVToken(const BNVToken& orig) {
+		substr = orig.substr;
+		file = orig.file;
+		line = orig.line;
+	}
 };
 
 struct BNVM;
@@ -33,6 +42,7 @@ struct VariableDeclaration : Statement{
 
 	}
 	virtual TypeInfo* TypeCheck(const BNVParser& parser) {
+		BNS_UNUSED(parser);
 		return nullptr;
 	}
 
@@ -49,7 +59,7 @@ struct ReturnStatement : Statement{
 
 struct Scope : Statement{
 	Vector<Statement*> statements;
-	
+
 	virtual void AddByteCode(BNVM& vm);
 	virtual TypeInfo* TypeCheck(const BNVParser& parser);
 
@@ -62,7 +72,7 @@ struct Scope : Statement{
 
 struct IfStatement : Scope{
 	Value* check;
-	
+
 	virtual void AddByteCode(BNVM& vm);
 	virtual TypeInfo* TypeCheck(const BNVParser& parser);
 
@@ -96,9 +106,6 @@ struct IntLiteral : Value {
 struct FloatLiteral : Value {
 	float value;
 
-	FloatLiteral() {
-		value = -12;
-	}
 	virtual void AddByteCode(BNVM& vm);
 	virtual TypeInfo* TypeCheck(const BNVParser& parser);
 
@@ -106,7 +113,7 @@ struct FloatLiteral : Value {
 };
 
 struct VoidLiteral : Value {
-	virtual void AddByteCode(BNVM& vm) {}
+	virtual void AddByteCode(BNVM& vm) {BNS_UNUSED(vm);}
 	virtual TypeInfo* TypeCheck(const BNVParser& parser);
 	virtual ~VoidLiteral(){}
 };
@@ -115,7 +122,7 @@ struct BinaryOp : Value{
 	Value* lVal;
 	Value* rVal;
 	SubString op;
-	
+
 	virtual void AddByteCode(BNVM& vm);
 	virtual TypeInfo* TypeCheck(const BNVParser& parser);
 
@@ -125,7 +132,7 @@ struct BinaryOp : Value{
 struct UnaryOp : Value{
 	Value* val;
 	SubString op;
-	
+
 	virtual void AddByteCode(BNVM& vm);
 	virtual TypeInfo* TypeCheck(const BNVParser& parser);
 
@@ -137,7 +144,7 @@ struct VariableAccess;
 struct Assignment : Statement{
 	VariableAccess* var;
 	Value* val;
-	
+
 	virtual TypeInfo* TypeCheck(const BNVParser& parser);
 	virtual void AddByteCode(BNVM& vm);
 	virtual ~Assignment();
@@ -158,9 +165,11 @@ struct FunctionCall : Value{
 struct VariableAccess : Value {
 	SubString varName;
 	int regOffset;
+	bool isGlobal;
 
 	VariableAccess() {
 		regOffset = -1;
+		isGlobal = false;
 	}
 
 	virtual void AddByteCode(BNVM& vm);
@@ -187,7 +196,7 @@ struct VarDecl{
 struct FuncDef : Scope{
 	virtual void AddByteCode(BNVM& vm);
 	virtual TypeInfo* TypeCheck(const BNVParser& parser);
-	
+
 	SubString name;
 	Vector<VarDecl> params;
 	TypeInfo* retType;
@@ -198,11 +207,10 @@ struct FuncDef : Scope{
 struct ExternFuncDef : FuncDef {
 	virtual void AddByteCode(BNVM& vm) override{}
 	virtual TypeInfo* TypeCheck(const BNVParser& parser) override {
-		return nullptr; 
+		BNS_UNUSED(parser);
+		return nullptr;
 	}
-	virtual ~ExternFuncDef() {
-		int xxg = 0;
-	}
+	virtual ~ExternFuncDef() {}
 };
 
 struct TypeInfo {
@@ -228,21 +236,21 @@ struct BNVParser{
 	Vector<BNVToken> toks;
 	int cursor;
 	Vector<int> cursorFrames;
-	
+
 	StringMap<TypeInfo*> definedTypes;
-	
+
 	Vector<StructDef*> structDefs;
 	Vector<FuncDef*> funcDefs;
-	
-	Scope* currScope;
-	
+
 	Vector<VarDecl> varsInScope;
 	Vector<int> varFrames;
+
+	Vector<VarDecl> globalVars;
 
 	StringMap<int> externFuncNames;
 
 	BNVParser();
-	
+
 	~BNVParser(){
 		for(int i = 0; i < structDefs.count; i++){
 			BNS_SAFE_DELETE(structDefs.data[i]);
@@ -254,14 +262,16 @@ struct BNVParser{
 			BNS_SAFE_DELETE(definedTypes.values[i]);
 		}
 	}
-	
+
 	void ParseFile(const char* filename);
+	Vector<BNVToken> ReadTokenizeProcessFile(String fileName);
 
 	void AddByteCode(BNVM& vm);
 	bool TypeCheck();
-	
+
 	StructDef* ParseStructDef();
 	FuncDef* ParseFuncDef();
+	bool ParseGlobalVar(VarDecl* outDecl);
 	Statement* ParseStatement();
 	ReturnStatement* ParseReturnStatement();
 	IfStatement* ParseIfStatement();
@@ -277,24 +287,24 @@ struct BNVParser{
 			return false;
 		}
 	}
-	
+
 	void PushCursorFrame(){
 		cursorFrames.PushBack(cursor);
 	}
-	
+
 	void PopCursorFrame(){
 		cursor = cursorFrames.data[cursorFrames.count - 1];
 		cursorFrames.PopBack();
 	}
-	
+
 	void PushVarFrame(){
 		varFrames.PushBack(varsInScope.count);
 	}
-	
+
 	void PopVarFrame(){
 		int oldSize = varFrames.data[varFrames.count - 1];
 		varFrames.PopBack();
-		
+
 		while(varsInScope.count > oldSize){
 			varsInScope.PopBack();
 		}
@@ -304,21 +314,24 @@ struct BNVParser{
 	StructDef* GetStructDef(const SubString& name) const;
 	TypeInfo* GetVariableType(const SubString& name) const;
 	int GetVariableOffset(const SubString& name) const;
+	int GetGlobalVariableOffset(const SubString& name) const;
 	int GetStackFrameOffset() const;
+	int GetGlobalVarSize() const;
+	bool VarIsGlobal(const SubString& name) const;
 
 	bool ShuntingYard(const Vector<BNVToken>& inToks, Vector<BNVToken>& outToks);
-	
+
 	Value* ParseValue();
 	Scope* ParseScope();
-	
+
 	TypeInfo* ParseType();
 	TypeInfo* ParseVarName();
 	bool ParseIdentifier(SubString* outStr);
-	
+
 	//Does not include ";" or ","
 	bool ExpectAndEatVarDecl(VarDecl* out){
 		PushCursorFrame();
-		
+
 		if(TypeInfo* info = ParseType()){
 			SubString str;
 			if(ParseIdentifier(&str)){
