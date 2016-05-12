@@ -36,6 +36,8 @@ void Scene::StartUp() {
 
 	res.LoadAssetFile("assets.bna");
 
+	gui.Init();
+	
 	LoadLevel("Level1.lvl");
 }
 
@@ -85,4 +87,6 @@ void Scene::Render() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	res.Render();
+	
+	gui.DrawTextLabel("Hello world", 1, 1, 300, 300);
 }

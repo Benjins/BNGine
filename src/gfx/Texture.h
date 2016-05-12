@@ -11,6 +11,11 @@
 struct Texture : IDBase {
 	GLenum textureType;
 	GLuint textureObj;
+	
+	GLenum internalColourFormat;
+	GLenum externalColourFormat;
+	
+	Texture();
 
 	int width;
 	int height;

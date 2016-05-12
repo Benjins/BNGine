@@ -12,6 +12,7 @@
 #include "Material.h"
 #include "Texture.h"
 #include "Level.h"
+#include "BitmapFont.h"
 
 struct MemStream;
 struct Transform;
@@ -24,6 +25,7 @@ struct ResourceManager {
 	IDTracker<Texture> textures;
 	IDTracker<DrawCall> drawCalls;
 	IDTracker<Level> levels;
+	IDTracker<BitmapFont> fonts;
 
 	StringMap<int> assetIdMap;
 
@@ -38,6 +40,7 @@ struct ResourceManager {
 	void LoadMaterialFromChunk(MemStream& stream, Material* outMat);
 	void LoadLevelFromChunk(MemStream& stream, Level* outLevel);
 	void LoadTransform(MemStream& stream, Transform* outTrans);
+	void LoadBitmapFontFromChunk(MemStream& stream, BitmapFont* outFont);
 
 	void Render();
 };

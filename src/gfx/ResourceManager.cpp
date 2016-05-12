@@ -77,6 +77,10 @@ void ResourceManager::LoadAssetFile(const char* fileName) {
 			Level* level = levels.AddWithId(assetId);
 			LoadLevelFromChunk(fileBufferStream, level);
 		}
+		else if (memcmp(chunkId, "BNBF", 4) == 0) {
+			BitmapFont* font = fonts.AddWithId(assetId);
+			LoadBitmapFontFromChunk(fileBufferStream, font);
+		}
 		else {
 			ASSERT_WARN("Unkown chunk id: '%.*s'", 4, chunkId);
 		}
@@ -265,6 +269,32 @@ void ResourceManager::LoadLevelFromChunk(MemStream& stream, Level* outLevel) {
 
 		ASSERT(stream.Read<int>() == ~*(int*)enttChunkId);
 	}
+}
+
+void ResourceManager::LoadBitmapFontFromChunk(MemStream& stream, BitmapFont* outFont){
+	int bakeWidth = stream.Read<int>();
+	int bakeHeight = stream.Read<int>();
+	
+	unsigned char* bakeTex = (unsigned char*)malloc(bakeWidth*bakeHeight);
+	stream.ReadArray<unsigned char>(bakeTex, bakeWidth*bakeHeight);
+	
+	Texture* fontTex = textures.CreateAndAdd();
+	fontTex->width = bakeWidth;
+	fontTex->height = bakeHeight;
+	fontTex->texMem = bakeTex;
+
+	fontTex->textureType = GL_TEXTURE_2D;
+	fontTex->internalColourFormat = GL_RED;
+	fontTex->externalColourFormat = GL_RED;
+	fontTex->UploadToGraphicsDevice();
+	
+	outFont->textureId = fontTex->id;
+	
+	int codepointCount = stream.Read<int>();
+	
+	outFont->codepointListing.EnsureCapacity(codepointCount);
+	outFont->codepointListing.count = codepointCount;
+	stream.ReadArray<CodepointInfo>(outFont->codepointListing.data, codepointCount); 
 }
 
 void ResourceManager::Render() {

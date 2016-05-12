@@ -66,6 +66,7 @@ void WriteFShaderChunk(const char* shaderFileName, int id, FILE* assetFileHandle
 void WriteTextureChunk(const char* textureFileName, int id, FILE* assetFileHandle);
 void WriteMaterialChunk(const char* materialFileName, const StringMap<int>& assetIds, int id, FILE* assetFileHandle);
 void WriteLevelChunk(const char* levelFileName, const StringMap<int>& assetIds, int id, FILE* assetFileHandle);
+void WriteBitmapFontChunk(const char* fontFileName, int scale, int id, FILE* assetFileHandle);
 
 void WriteAssetNameIdMap(const StringMap<int>& map, FILE* assetFileHandle);
 

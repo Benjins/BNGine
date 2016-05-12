@@ -17,6 +17,8 @@
 #include "../gfx/ResourceManager.h"
 #include "../physics/PhysicsSystem.h"
 
+#include "../gui/GuiSystem.h"
+
 struct Scene {
 	IDTracker<Entity> entities;
 	IDTracker<Transform> transforms;
@@ -27,6 +29,8 @@ struct Scene {
 	Player player;
 
 	PhysicsSystem phys;
+	
+	GuiSystem gui;
 
 	Camera cam;
 

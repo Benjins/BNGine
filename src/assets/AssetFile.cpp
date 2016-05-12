@@ -1,6 +1,7 @@
 #include "AssetFile.h"
 
 #include "../gfx/Material.h"
+#include "../gfx/BitmapFont.h"
 
 #include "../util/Serialization.h"
 #include "../metagen/ComponentMeta.h"
@@ -10,6 +11,8 @@
 #include "../../ext/CppUtils/stringmap.h"
 #include "../../ext/CppUtils/memstream.h"
 #include "../../ext/CppUtils/xml.h"
+
+#include "../../ext/CppUtils/macros.h"
 
 #include "../../ext/3dbasics/Vector3.h"
 #include "../../ext/3dbasics/Quaternion.h"
@@ -46,6 +49,9 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 
 	Vector<File*> levelFiles;
 	assetDir.FindFilesWithExt("lvl", &levelFiles);
+	
+	Vector<File*> fontFiles;
+	assetDir.FindFilesWithExt("ttf", &fontFiles);
 
 	for (int i = 0; i < meshFiles.count; i++) {
 		assetFileIds.Insert(meshFiles.data[i]->fileName, i);
@@ -69,6 +75,10 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 
 	for (int i = 0; i < levelFiles.count; i++) {
 		assetFileIds.Insert(levelFiles.data[i]->fileName, i);
+	}
+	
+	for (int i = 0; i < fontFiles.count; i++) {
+		assetFileIds.Insert(fontFiles.data[i]->fileName, i);
 	}
 
 	WriteAssetNameIdMap(assetFileIds, assetFile);
@@ -95,6 +105,10 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 
 	for (int i = 0; i < levelFiles.count; i++) {
 		WriteLevelChunk(levelFiles.data[i]->fullName, assetFileIds, i, assetFile);
+	}
+	
+	for (int i = 0; i < fontFiles.count; i++) {
+		WriteBitmapFontChunk(fontFiles.data[i]->fullName, 16, i, assetFile);
 	}
 
 	int bnsaNegated = ~*(int*)fileId;
@@ -558,6 +572,103 @@ void WriteLevelChunk(const char* levelFileName, const StringMap<int>& assetIds, 
 		}
 	}
 
+	int chunkIdFlipped = ~*(int*)chunkId;
+	fwrite(&chunkIdFlipped, 1, 4, assetFileHandle);
+}
+
+#define STB_TRUETYPE_IMPLEMENTATION
+#include "../../ext/stb/stb_truetype.h"
+
+void GlyphBlit(unsigned char* dst, int dstWidth, int dstHeight, int dstX, int dstY, unsigned char* src, int srcWidth, int srcHeight){
+	for(int j = 0; j < srcHeight; j++){
+		for(int i = 0; i < srcWidth; i++){
+			int srcIdx = j * srcWidth + i;
+			int dstIdx = (dstY+j)*dstWidth + (dstX+i);
+			
+			dst[dstIdx] = src[srcIdx];
+		}
+	}
+}
+
+void WriteCodePoints(CodepointInfo* codepointData, int codepointCount, FILE* assetFileHandle){
+	fwrite(&codepointCount, 1, sizeof(int), assetFileHandle);
+	
+	fwrite(codepointData, sizeof(CodepointInfo), codepointCount, assetFileHandle);
+}
+
+void WriteBitmapFontChunk(const char* fontFileName, int scale, int id, FILE* assetFileHandle){
+	int fontFileLength = 0;
+	unsigned char* fontFileBuffer = ReadBinaryFile(fontFileName, &fontFileLength);
+
+	stbtt_fontinfo font;
+	stbtt_InitFont(&font, fontFileBuffer, stbtt_GetFontOffsetForIndex(fontFileBuffer,0));
+
+	int fontBakeWidth = 1024;
+	int fontBakeHeight = 1024;
+	
+	unsigned char* fontBakeBuffer = (unsigned char*)malloc(fontBakeWidth*fontBakeHeight);
+	
+	CodepointInfo codepoints[256] = {};
+	int codepointCount = 0;
+	
+	int ascent,descent,lineGap;
+	stbtt_GetFontVMetrics(&font, &ascent, &descent, &lineGap);
+	
+	int yOffset = ascent - descent + lineGap;
+	
+	float pixelScale = stbtt_ScaleForPixelHeight(&font, scale);
+
+	int currX = 0;
+	int currY = 0;
+	int maxRowY = 0;
+	for(unsigned char c = 32; c < 128; c++){
+		int cW,cH;
+		unsigned char* cBmp = stbtt_GetCodepointBitmap(&font, 0, pixelScale, c, &cW, &cH, 0,0);
+		
+		if (currX + cW >= fontBakeWidth){
+			currX = 0;
+			currY += (maxRowY+1);
+			maxRowY = 0;
+		}
+		
+		GlyphBlit(fontBakeBuffer, fontBakeWidth, fontBakeHeight, currX, currY, cBmp, cW, cH);
+		
+		int advanceWidth=0, leftSideBearing=0;
+		stbtt_GetCodepointHMetrics(&font, c, &advanceWidth, &leftSideBearing);
+		
+		int x0,y0,x1,y1;
+		stbtt_GetCodepointBitmapBox(&font, c, pixelScale, pixelScale, &x0,&y0,&x1,&y1);
+		
+		codepoints[codepointCount].codepoint = c;
+		codepoints[codepointCount].x = currX;
+		codepoints[codepointCount].y = currY;
+		codepoints[codepointCount].w = cW;
+		codepoints[codepointCount].h = cH;
+		
+		codepoints[codepointCount].xOffset = x0;
+		codepoints[codepointCount].yOffset = y0;
+		codepoints[codepointCount].xAdvance = pixelScale * advanceWidth;
+		codepointCount++;
+
+		currX += (cW+1);
+		maxRowY = BNS_MAX(maxRowY, cH);
+		
+		free(cBmp);
+	}
+	
+	char chunkId[] = "BNBF";
+	fwrite(chunkId, 1, 4, assetFileHandle);
+	fwrite(&id, 1, 4, assetFileHandle);
+	
+	fwrite(&fontBakeWidth, 1, sizeof(int), assetFileHandle);
+	fwrite(&fontBakeHeight, 1, sizeof(int), assetFileHandle);
+	fwrite(fontBakeBuffer, 1, fontBakeWidth*fontBakeHeight, assetFileHandle);
+	
+	WriteCodePoints(codepoints, codepointCount, assetFileHandle);
+	
+	free(fontBakeBuffer);
+	free(fontFileBuffer);
+	
 	int chunkIdFlipped = ~*(int*)chunkId;
 	fwrite(&chunkIdFlipped, 1, 4, assetFileHandle);
 }
