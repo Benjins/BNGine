@@ -15,5 +15,4 @@ build/
 
 *~
 
-#asset packs are a bit big, and we recreate them on startup of the game anyway
-assets.bna
+*.bna

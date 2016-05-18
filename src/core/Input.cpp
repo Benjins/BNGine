@@ -58,15 +58,15 @@ void Input::MouseButtonReleased(MouseButton button) {
 }
 
 bool Input::MouseButtonIsDown(MouseButton button) {
-	return standardKeys[(int)button] == HOLD || standardKeys[(int)button] == PRESS;
+	return mouseButtons[(int)button] == HOLD || mouseButtons[(int)button] == PRESS;
 }
 
 bool Input::MouseButtonIsPressed(MouseButton button) {
-	return standardKeys[(int)button] == PRESS;
+	return mouseButtons[(int)button] == PRESS;
 }
 
 bool Input::MouseButtonIsReleased(MouseButton button) {
-	return standardKeys[(int)button] == RELEASE;
+	return mouseButtons[(int)button] == RELEASE;
 }
 
 void Input::KeyPressed(int code) {

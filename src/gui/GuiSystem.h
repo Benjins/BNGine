@@ -32,12 +32,18 @@ enum GuiAlignment{
 	GA_HorizMask = 12
 };
 
+struct GuiTextInputState {
+	int count;
+	int activeIndex;
+	int cursorPos;
+};
+
 struct GuiSystem{
 	int guiImgMatId;
+	int guiColMatId;
 	int guiTextMatId;
 	
-	int selectedTextInput;
-	int textInputCount;
+	GuiTextInputState textInputState;
 	
 	Vector<Mat4x4> matrixStack;
 protected:
@@ -48,8 +54,9 @@ public:
 	void SetAlignment(GuiAlignment alignment);
 	
 	GuiSystem(){
-		selectedTextInput = -1;
-		textInputCount = 0;
+		textInputState.activeIndex = -1;
+		textInputState.count = 0;
+		textInputState.cursorPos = 0;
 	}
 	
 	void Init();
@@ -67,6 +74,8 @@ public:
 	
 	bool SimpleButton(float x, float y, float w, float h);
 	bool TextButton(float x, float y, float w, float h);
+
+	void EndFrame();
 };
 
 

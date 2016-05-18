@@ -42,3 +42,15 @@ void BitmapFont::BakeAsciiToVertexData(const char* text, float xStart, float ySt
 		cursor++;
 	}
 }
+
+float BitmapFont::GetCursorPos(const char* text, int cursorPos) {
+	float x = 0;
+	for (int i = 0; i < cursorPos; i++) {
+		ASSERT(text[i] != '\0');
+
+		CodepointInfo* info = GetInfoForCodepoint(text[i]);
+		x += info->xAdvance;
+	}
+
+	return x;
+}

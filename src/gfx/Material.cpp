@@ -2,6 +2,8 @@
 #include "../core/Scene.h"
 #include "GLExtInit.h"
 
+#include "../../ext/3dbasics/Vector4.h"
+
 void Material::UpdateUniforms() {
 	while (uniformValues.GetLength() > 0) {
 		GLint uniformLoc = uniformValues.Read<GLint>();
@@ -19,6 +21,11 @@ void Material::UpdateUniforms() {
 		case UT_MATRIX4: {
 			Mat4x4 val = uniformValues.Read<Mat4x4>();
 			glUniformMatrix4fv(uniformLoc, 1, GL_TRUE, (float*)val.m);
+		} break;
+
+		case UT_VEC4: {
+			Vector4 val = uniformValues.Read<Vector4>();
+			glUniform4fv(uniformLoc, 1, &val.x);
 		} break;
 
 		default:
@@ -46,12 +53,20 @@ void Material::SetIntUniform(const char* name, int val) {
 	uniformValues.Write<int>(val);
 }
 
-void Material::SeMatrix4Uniform(const char* name, Mat4x4 val) {
+void Material::SeMatrix4Uniform(const char* name, const Mat4x4& val) {
 	GLint loc = GetUniformLocation(name);
 
 	uniformValues.Write<GLint>(loc);
 	uniformValues.Write<UniformType>(UT_MATRIX4);
 	uniformValues.Write<Mat4x4>(val);
+}
+
+void Material::SetVector4Uniform(const char* name, const Vector4& val) {
+	GLint loc = GetUniformLocation(name);
+
+	uniformValues.Write<GLint>(loc);
+	uniformValues.Write<UniformType>(UT_VEC4);
+	uniformValues.Write<Vector4>(val);
 }
 
 GLint Material::GetUniformLocation(const char* name) {

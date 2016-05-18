@@ -18,7 +18,15 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 
 	RegisterClass(&windowCls);
 
-	HWND window = CreateWindow(windowCls.lpszClassName, "BNgine Runtime", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 50, 50, 1280, 720, 0, 0, instance, 0);
+	RECT winRect = {0};
+	winRect.right = 1280;
+	winRect.bottom = 720;
+	AdjustWindowRect(&winRect, WS_OVERLAPPEDWINDOW | WS_VISIBLE, false);
+
+	float winWidth = winRect.right - winRect.left;
+	float winHeight = winRect.bottom - winRect.top;
+
+	HWND window = CreateWindow(windowCls.lpszClassName, "BNgine Runtime", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 50, 50, winWidth, winHeight, 0, 0, instance, 0);
 
 	HDC hdc = GetDC(window);
 
@@ -45,7 +53,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 
 	Scene scn;
 
-	glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glEnable(GL_DEPTH_TEST);
 	glViewport(0, 0, 1280, 720);
 	glLoadIdentity();
@@ -76,6 +84,9 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 
 		SwapBuffers(hdc);
 		ReleaseDC(window, hdc);
+
+		scn.gui.EndFrame();
+		scn.input.EndFrame();
 
 		Sleep(16);
 	}
@@ -115,6 +126,11 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		bool  isDown = (lParam & (1 << 31)) == 0;
 
 		if (code < 256) {
+
+			if (code >= 0x25 && code <= 0x28) {
+				code += 0x60;
+			}
+
 			if (wasDown && !isDown) {
 				GlobalScene->input.KeyReleased(code);
 			}

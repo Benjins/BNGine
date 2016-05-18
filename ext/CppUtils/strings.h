@@ -138,6 +138,10 @@ struct String{
 	
 	SubString GetSubString(int index, int length);
 	
+	String Insert(const char* str, int index) const;
+	String Insert(char c, int index) const;
+	String Remove(int index) const;
+
 	void Retain();
 	
 	void Release();

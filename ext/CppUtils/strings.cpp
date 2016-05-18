@@ -281,6 +281,43 @@ bool String::operator!=(const char* other) const{
 	return !StrEqualN(string, other, length);
 }
 
+String String::Insert(const char* str, int index) const {
+	int len = GetLength();
+	ASSERT(index >= 0 && index <= len);
+	int strLen = StrLen(str);
+
+	String ret;
+	ret.SetSize(len + strLen);
+
+	MemCpy(ret.string, string, index);
+	MemCpy(ret.string + index, str, strLen);
+	MemCpy(ret.string + index + strLen, string + index, len - index);
+
+	ret.string[len + strLen] = '\0';
+
+	return ret;
+}
+
+String String::Insert(char c, int index) const {
+	char fakeStr[2] = { c, '\0' };
+	return Insert(fakeStr, index);
+}
+
+String String::Remove(int index) const {
+	String ret;
+
+	int len = GetLength();
+	ASSERT(index >= 0 && index < len);
+
+	ret.SetSize(len - 1);
+
+	MemCpy(ret.string, string, index);
+	MemCpy(ret.string + index, string + index + 1, len - index - 1);
+	ret.string[len - 1] = '\0';
+
+	return ret;
+}
+
 String ReadStringFromFile(const char* fileName) {
 	String str;
 
@@ -667,6 +704,77 @@ int main(int argc, char** argv){
 		ASSERT(StrEqualN(substr.start, "EF", 2));
 	}
 	
+	{
+		String str1 = "ABCDEF";
+		String str2 = str1.Insert("@@@", 0);
+
+		ASSERT(str2 == "@@@ABCDEF");
+		ASSERT(str2.GetLength() == 9);
+	}
+
+	{
+		String str1 = "ABCDEF";
+		String str2 = str1.Insert("@@@", 1);
+
+		ASSERT(str2 == "A@@@BCDEF");
+		ASSERT(str2.GetLength() == 9);
+	}
+
+	{
+		String str1 = "ABCDEF";
+		String str2 = str1.Insert('@', 2);
+
+		ASSERT(str2 == "AB@CDEF");
+		ASSERT(str2.GetLength() == 7);
+	}
+
+	{
+		String str1 = "ABCDEF";
+		String str2 = str1.Insert('@', 6);
+
+		ASSERT(str2 == "ABCDEF@");
+		ASSERT(str2.GetLength() == 7);
+	}
+
+	{
+		for (int i = 0; i < 7; i++) {
+			String str1 = "ABCDEF";
+			String str2 = str1.Insert("", i);
+
+			ASSERT(str2 == "ABCDEF");
+			ASSERT(str2.GetLength() == 6);
+		}
+	}
+
+	{
+		String str1 = "";
+		String str2 = str1.Insert("GHT", 0);
+
+		ASSERT(str2 == "GHT");
+		ASSERT(str2.GetLength() == 3);
+	}
+
+	{
+		String str1 = "ABCDEFGHIJ";
+		String str2 = str1.Remove(0);
+
+		ASSERT(str2 == "BCDEFGHIJ");
+	}
+
+	{
+		String str1 = "ABCDEFGHIJ";
+		String str2 = str1.Remove(1);
+
+		ASSERT(str2 == "ACDEFGHIJ");
+	}
+
+	{
+		String str1 = "ABCDEFGHIJ";
+		String str2 = str1.Remove(9);
+
+		ASSERT(str2 == "ABCDEFGHI");
+	}
+
 	return 0;
 }
 

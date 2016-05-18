@@ -16,14 +16,16 @@ struct CodepointInfo{
 	float xAdvance;
 };
 
-struct BitmapFont : IDBase{
+struct BitmapFont : IDBase {
 	int textureId;
-	
+
 	Vector<CodepointInfo> codepointListing;
-	
+
 	CodepointInfo* GetInfoForCodepoint(int codepoint);
-	
+
 	void BakeAsciiToVertexData(const char* text, float xStart, float yStart, float* outPosData, float* outUvData);
+
+	float GetCursorPos(const char* text, int cursorPos);
 };
 
 
