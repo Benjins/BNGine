@@ -200,25 +200,49 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 
 		glEnd();
 
-		for (unsigned char c = 32; c < 127; c++) {
+		for (unsigned char c = 'A'; c <= 'Z'; c++) {
 			if (GlobalScene->input.KeyIsPressed(c)) {
+				if (!GlobalScene->input.KeyIsDown(KC_Shift)) {
+					c += 32;
+				}
+
 				String newStr = textIn.Insert(c, textInputState.cursorPos);
 				textInputState.cursorPos++;
 				return newStr;
 			}
 		}
 
-		if (GlobalScene->input.KeyIsPressed('\b') && textInputState.cursorPos > 1) {
+		static const char* shiftString = ")!@#$%^&*(";
+
+		for (unsigned char c = '0'; c <= '9'; c++) {
+			if (GlobalScene->input.KeyIsPressed(c)) {
+				if (GlobalScene->input.KeyIsDown(KC_Shift)) {
+					c = shiftString[c - '0'];
+				}
+
+				String newStr = textIn.Insert(c, textInputState.cursorPos);
+				textInputState.cursorPos++;
+				return newStr;
+			}
+		}
+
+		if (GlobalScene->input.KeyIsPressed(KC_Space)) {
+			String newStr = textIn.Insert(' ', textInputState.cursorPos);
+			textInputState.cursorPos++;
+			return newStr;
+		}
+
+		if (GlobalScene->input.KeyIsPressed(KC_BackSpace) && textInputState.cursorPos > 1) {
 			String newStr = textIn.Remove(textInputState.cursorPos - 1);
 			textInputState.cursorPos--;
 			return newStr;
 		}
 
-		if (GlobalScene->input.KeyIsPressed(0x87)) {
+		if (GlobalScene->input.KeyIsPressed(KC_RightArrow)) {
 			textInputState.cursorPos++;
 		}
-		if (GlobalScene->input.KeyIsPressed(0x85)) {
-			textInputState.cursorPos++;
+		if (GlobalScene->input.KeyIsPressed(KC_LeftArrow)) {
+			textInputState.cursorPos--;
 		}
 
 		if (GlobalScene->input.KeyIsPressed(0x18) 

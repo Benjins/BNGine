@@ -28,6 +28,38 @@ static_assert(KeyStateFromBools(true, true) == HOLD, "HOLD key state");
 static_assert(KeyStateFromBools(true, false) == RELEASE, "RELEASE key state");
 #endif
 
+enum KeyCode {
+	KC_Invalid = -1,
+	KC_Shift,
+	KC_Control,
+	KC_Alt,
+	KC_Dash,
+	KC_Equals,
+	KC_SemiColon,
+	KC_SingleQuote,
+	KC_Comma,
+	KC_Period,
+	KC_ForwardSlash,
+	KC_BackSlash,
+	KC_BackSpace,
+	KC_Enter,
+	KC_Tab,
+	KC_Escape,
+	KC_Delete,
+	KC_LeftArrow,
+	KC_RightArrow,
+	KC_UpArrow,
+	KC_DownArrow,
+	KC_Space,
+	KC_LastNonAlphaNum,
+	KC_A = 'A',
+	KC_Z = 'Z',
+	KC_Zero = '0',
+	KC_Nine = '9'
+};
+
+static_assert(KC_LastNonAlphaNum < KC_Zero, "Need to rearrange virtual keys.");
+
 struct Input {
 	KeyState standardKeys[256];
 	KeyState mouseButtons[64];

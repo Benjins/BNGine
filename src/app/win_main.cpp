@@ -8,6 +8,8 @@
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+KeyCode SystemKeyToKeyCode(int key);
+
 int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmdShow) {
 
 	WNDCLASS windowCls = {};
@@ -125,17 +127,22 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		bool wasDown = (lParam & (1 << 30)) != 0;
 		bool  isDown = (lParam & (1 << 31)) == 0;
 
-		if (code < 256) {
+#if 0
+		if (isDown && !wasDown) {
+			char buffer[256] = { 0 };
+			_snprintf(buffer, 256, "Pressed key: %d.\n", code);
+			OutputDebugStringA(buffer);
+		}
+#endif
 
-			if (code >= 0x25 && code <= 0x28) {
-				code += 0x60;
-			}
+		KeyCode keyCode = SystemKeyToKeyCode(code);
 
+		if (keyCode >= 0 && keyCode < 256) {
 			if (wasDown && !isDown) {
-				GlobalScene->input.KeyReleased(code);
+				GlobalScene->input.KeyReleased(keyCode);
 			}
 			else if (isDown && !wasDown) {
-				GlobalScene->input.KeyPressed(code);
+				GlobalScene->input.KeyPressed(keyCode);
 			}
 		}
 	}break;
@@ -164,4 +171,51 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 	}
 
 	return result;
+}
+
+struct VKDef {
+	KeyCode keyCode;
+	int virtualCode;
+};
+
+KeyCode SystemKeyToKeyCode(int key) {
+	if (key >= 'A' && key <= 'Z') {
+		return (KeyCode)(key);
+	}
+	else if (key >= '0' && key <= '9') {
+		return (KeyCode)(key);
+	}
+	else{
+		static VKDef vkDefs[] = {
+			{KC_Shift,		   VK_SHIFT},
+			{KC_Control,	   VK_CONTROL},
+			{KC_Alt,		   VK_MENU},
+			{KC_Dash,		   -1},
+			{KC_Equals,		   -1},
+			{KC_SemiColon,	   -1},
+			{KC_SingleQuote,   -1},
+			{KC_Comma,		   -1},
+			{KC_Period,		   -1},
+			{KC_ForwardSlash,  -1},
+			{KC_BackSlash,	   -1},
+			{KC_BackSpace,	   VK_BACK},
+			{KC_Enter,		   VK_RETURN},
+			{KC_Tab,		   VK_TAB},
+			{KC_Escape,		   VK_ESCAPE},
+			{KC_Delete,		   VK_DELETE },
+			{KC_UpArrow,	   VK_UP },
+			{KC_DownArrow,	   VK_DOWN },
+			{KC_LeftArrow,	   VK_LEFT },
+			{KC_RightArrow,	   VK_RIGHT},
+			{KC_Space,		   VK_SPACE}
+		};
+
+		for (int i = 0; i < BNS_ARRAY_COUNT(vkDefs); i++) {
+			if (vkDefs[i].virtualCode == key) {
+				return vkDefs[i].keyCode;
+			}
+		}
+	}
+
+	return KC_Invalid;
 }
