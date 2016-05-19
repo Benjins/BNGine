@@ -32,6 +32,8 @@ Entity* Scene::AddVisibleEntity(uint32 matId, uint32 meshId) {
 }
 
 void Scene::StartUp() {
+	glEnable(GL_SCISSOR_TEST);
+
 	PackAssetFile("assets", "assets.bna");
 
 	res.LoadAssetFile("assets.bna");

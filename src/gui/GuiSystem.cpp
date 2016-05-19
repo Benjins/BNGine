@@ -157,7 +157,21 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 
 	glEnd();
 
-	DrawTextLabel(textIn.string, fontId, scale, x, y);
+	float textOffset = 0.0f;
+
+	if (textInputState.count == textInputState.activeIndex) {
+		BitmapFont* font = GlobalScene->res.fonts.GetById(fontId);
+		float cursorX = font->GetCursorPos(textIn.string, textInputState.cursorPos);
+
+		if (cursorX > w) {
+			// Will be negative
+			textOffset = (w - cursorX);
+		}
+	}
+
+	glScissor((int)x, (int)y, (int)w, (int)scale);
+	DrawTextLabel(textIn.string, fontId, scale, x + textOffset, y);
+	glScissor(0, 0, (int)GlobalScene->cam.widthPixels, (int)GlobalScene->cam.heightPixels);
 
 	textInputState.count++;
 
@@ -189,7 +203,7 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 		float cursorOffset = font->GetCursorPos(textIn.string, textInputState.cursorPos);
 
 		static const int cursorWidth = 6;
-		float curX = x + cursorOffset;
+		float curX = x + cursorOffset + textOffset;
 
 		Vector2 cursorPos[4] = { { curX, y },{ curX + cursorWidth, y },{ curX, y + scale },{ curX + cursorWidth, y + scale } };
 
@@ -254,16 +268,6 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 			|| textInputState.cursorPos > textIn.GetLength()) {
 			textInputState.cursorPos = textIn.GetLength();
 		}
-
-		if (GlobalScene->input.KeyIsPressed(KC_Tab)) {
-			textInputState.cursorPos = 0;
-			if (GlobalScene->input.KeyIsDown(KC_Shift)) {
-				textInputState.activeIndex--;
-			}
-			else {
-				textInputState.activeIndex++;
-			}
-		}
 	}
 
 	/*
@@ -285,6 +289,22 @@ bool GuiSystem::TextButton(float x, float y, float w, float h) {
 }
 
 void GuiSystem::EndFrame() {
+	if (textInputState.activeIndex >= 0) {
+		if (GlobalScene->input.KeyIsPressed(KC_Tab)) {
+			textInputState.cursorPos = 0;
+			if (GlobalScene->input.KeyIsDown(KC_Shift)) {
+				textInputState.activeIndex--;
+				if (textInputState.activeIndex < 0) {
+					textInputState.activeIndex += textInputState.count;
+				}
+			}
+			else {
+				textInputState.activeIndex++;
+				textInputState.activeIndex = textInputState.activeIndex % textInputState.count;
+			}
+		}
+	}
+
 	textInputState.activeIndex = textInputState.activeIndex % textInputState.count;
 	textInputState.count = 0;
 }

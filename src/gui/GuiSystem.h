@@ -87,6 +87,11 @@ public:
  - Gui::CheckBox
 
 
+  - Clipping text label
+  - clipping text input
+  - matrix stack?
+
+
 */
 
 #endif
