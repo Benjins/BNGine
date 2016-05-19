@@ -245,14 +245,24 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 			textInputState.cursorPos--;
 		}
 
-		if (GlobalScene->input.KeyIsPressed(0x18) 
+		if (GlobalScene->input.KeyIsPressed(KC_UpArrow) 
 			|| textInputState.cursorPos < 0) {
 			textInputState.cursorPos = 0;
 		}
 
-		if (GlobalScene->input.KeyIsPressed(0x19) 
+		if (GlobalScene->input.KeyIsPressed(KC_DownArrow)
 			|| textInputState.cursorPos > textIn.GetLength()) {
 			textInputState.cursorPos = textIn.GetLength();
+		}
+
+		if (GlobalScene->input.KeyIsPressed(KC_Tab)) {
+			textInputState.cursorPos = 0;
+			if (GlobalScene->input.KeyIsDown(KC_Shift)) {
+				textInputState.activeIndex--;
+			}
+			else {
+				textInputState.activeIndex++;
+			}
 		}
 	}
 
@@ -275,6 +285,7 @@ bool GuiSystem::TextButton(float x, float y, float w, float h) {
 }
 
 void GuiSystem::EndFrame() {
+	textInputState.activeIndex = textInputState.activeIndex % textInputState.count;
 	textInputState.count = 0;
 }
 
