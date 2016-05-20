@@ -245,8 +245,20 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 			textInputState.cursorPos++;
 			return newStr;
 		}
+		if (GlobalScene->input.KeyIsPressed(KC_Period)) {
+			String newStr;
+			if (GlobalScene->input.KeyIsDown(KC_Shift)) {
+				newStr = textIn.Insert('>', textInputState.cursorPos);
+			}
+			else {
+				newStr = textIn.Insert('.', textInputState.cursorPos);
+			}
+			
+			textInputState.cursorPos++;
+			return newStr;
+		}
 
-		if (GlobalScene->input.KeyIsPressed(KC_BackSpace) && textInputState.cursorPos > 1) {
+		if (GlobalScene->input.KeyIsPressed(KC_BackSpace) && textInputState.cursorPos > 0) {
 			String newStr = textIn.Remove(textInputState.cursorPos - 1);
 			textInputState.cursorPos--;
 			return newStr;
