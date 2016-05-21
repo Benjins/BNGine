@@ -298,8 +298,5 @@ void ResourceManager::LoadBitmapFontFromChunk(MemStream& stream, BitmapFont* out
 }
 
 void ResourceManager::Render() {
-	glViewport((int)GlobalScene->cam.xOffset, (int)GlobalScene->cam.yOffset,
-			   (int)GlobalScene->cam.widthPixels, (int)GlobalScene->cam.heightPixels);
-
 	ExecuteDrawCalls(drawCalls.vals, drawCalls.currentCount);
 }

@@ -85,11 +85,9 @@ void Scene::LoadLevel(const char* name) {
 	LoadCustomComponentsFromLevel(level);
 }
 
-String str = "Never again!#$%!#%!#@235231";
-
-String str2 = "This isn't even my final form.";
-
 void Scene::Render() {
+	glViewport((int)cam.xOffset, (int)cam.yOffset, (int)cam.widthPixels, (int)cam.heightPixels);
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glEnable(GL_DEPTH_TEST);
@@ -104,18 +102,6 @@ void Scene::Render() {
 	gui.DrawTextLabel("Hello world", 1, 1, 300, 300);
 	gui.DrawTextLabel("This is the end.", 1, 1, 0, 0);
 	gui.DrawTextLabel("This is *not* the end.", 1, 1, 12, 12);
-
-	{
-		String newStr = gui.TextInput(str, 1, 12, 400, 120, 320);
-
-		str = newStr;
-	}
-
-	{
-		String newStr = gui.TextInput(str2, 1, 12, 400, 320, 320);
-
-		str2 = newStr;
-	}
 
 	glDisable(GL_BLEND);
 }

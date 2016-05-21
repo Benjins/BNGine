@@ -43,6 +43,9 @@ void Input::EndFrame() {
 			mouseButtons[i] = OFF;
 		}
 	}
+
+	cursorDeltaX = 0;
+	cursorDeltaY = 0;
 }
 
 void Input::MouseButtonPressed(MouseButton button) {

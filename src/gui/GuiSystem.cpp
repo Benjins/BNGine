@@ -171,7 +171,7 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 
 	glScissor((int)x, (int)y, (int)w, (int)scale);
 	DrawTextLabel(textIn.string, fontId, scale, x + textOffset, y);
-	glScissor(0, 0, (int)GlobalScene->cam.widthPixels, (int)GlobalScene->cam.heightPixels);
+	glScissor((int)GlobalScene->cam.xOffset, (int)GlobalScene->cam.yOffset, (int)GlobalScene->cam.widthPixels, (int)GlobalScene->cam.heightPixels);
 
 	textInputState.count++;
 

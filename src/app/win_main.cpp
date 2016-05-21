@@ -194,7 +194,7 @@ KeyCode SystemKeyToKeyCode(int key) {
 			{KC_Equals,		   -1},
 			{KC_SemiColon,	   -1},
 			{KC_SingleQuote,   -1},
-			{KC_Comma,		   -1},
+			{KC_Comma,		   VK_OEM_COMMA},
 			{KC_Period,		   VK_OEM_PERIOD},
 			{KC_ForwardSlash,  -1},
 			{KC_BackSlash,	   -1},

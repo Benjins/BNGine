@@ -21,7 +21,7 @@ endif
 LIBFLAGS =-lX11 -lGL
 
 ifeq ($(OS_MESA),1)
-    LIBFLAGS += -lOSMesa
+    LIBFLAGS = -lOSMesa
 endif
 
 OBJ_SUFF := .o

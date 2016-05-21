@@ -11,6 +11,15 @@ struct Editor {
 	Camera cam;
 	Transform editorCamTrans;
 
+	int leftBarWidth;
+	int rightBarWidth;
+	int topBarHeight;
+
+	float cameraCursorX;
+	float cameraCursorY;
+
+	GuiSystem gui;
+
 	void Update();
 	void Render();
 	void StartUp();

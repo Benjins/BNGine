@@ -8,6 +8,8 @@
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+Editor* GlobalEd = nullptr;
+
 int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmdShow) {
 
 	WNDCLASS windowCls = {};
@@ -18,7 +20,15 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 
 	RegisterClass(&windowCls);
 
-	HWND window = CreateWindow(windowCls.lpszClassName, "BNgine Runtime", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 50, 50, 1280, 720, 0, 0, instance, 0);
+	RECT winRect = { 0 };
+	winRect.right = 1280;
+	winRect.bottom = 720;
+	AdjustWindowRect(&winRect, WS_OVERLAPPEDWINDOW | WS_VISIBLE, false);
+
+	float winWidth = winRect.right - winRect.left;
+	float winHeight = winRect.bottom - winRect.top;
+
+	HWND window = CreateWindow(windowCls.lpszClassName, "BNgine Runtime", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 50, 50, winWidth, winHeight, 0, 0, instance, 0);
 
 	HDC hdc = GetDC(window);
 
@@ -44,11 +54,10 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 	InitGlExts();
 
 	Editor ed;
+	GlobalEd = &ed;
 
 	glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
 	glEnable(GL_DEPTH_TEST);
-	glViewport(0, 0, 1280, 720);
-	glLoadIdentity();
 
 	ReleaseDC(window, hdc);
 
@@ -77,11 +86,16 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 		SwapBuffers(hdc);
 		ReleaseDC(window, hdc);
 
+		ed.gui.EndFrame();
+		ed.scene.input.EndFrame();
+
 		Sleep(16);
 	}
 
 	return 0;
 }
+
+KeyCode SystemKeyToKeyCode(int key);
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	LRESULT result = 0;
@@ -106,6 +120,16 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		GlobalScene->input.MouseButtonReleased(MouseButton::PRIMARY);
 	}break;
 
+	case WM_RBUTTONDOWN:
+	{
+		GlobalScene->input.MouseButtonPressed(MouseButton::SECONDARY);
+	}break;
+
+	case WM_RBUTTONUP:
+	{
+		GlobalScene->input.MouseButtonReleased(MouseButton::SECONDARY);
+	}break;
+
 	case WM_SYSKEYDOWN:
 	case WM_SYSKEYUP:
 	case WM_KEYDOWN:
@@ -114,12 +138,14 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		bool wasDown = (lParam & (1 << 30)) != 0;
 		bool  isDown = (lParam & (1 << 31)) == 0;
 
-		if (code < 256) {
+		KeyCode keyCode = SystemKeyToKeyCode(code);
+
+		if (keyCode >= 0 && keyCode < 256) {
 			if (wasDown && !isDown) {
-				GlobalScene->input.KeyReleased(code);
+				GlobalScene->input.KeyReleased(keyCode);
 			}
 			else if (isDown && !wasDown) {
-				GlobalScene->input.KeyPressed(code);
+				GlobalScene->input.KeyPressed(keyCode);
 			}
 		}
 	}break;
@@ -130,9 +156,9 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 
 		//When we first create the window, we don't actually have a scene pointer
 		//because we have no GL context
-		if (GlobalScene) {
-			GlobalScene->cam.widthPixels = width;
-			GlobalScene->cam.heightPixels = height;
+		if (GlobalEd) {
+			GlobalEd->cam.widthPixels = width;
+			GlobalEd->cam.heightPixels = height;
 		}
 	} break;
 
@@ -148,4 +174,51 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 	}
 
 	return result;
+}
+
+struct VKDef {
+	KeyCode keyCode;
+	int virtualCode;
+};
+
+KeyCode SystemKeyToKeyCode(int key) {
+	if (key >= 'A' && key <= 'Z') {
+		return (KeyCode)(key);
+	}
+	else if (key >= '0' && key <= '9') {
+		return (KeyCode)(key);
+	}
+	else {
+		static VKDef vkDefs[] = {
+			{ KC_Shift,		   VK_SHIFT },
+			{ KC_Control,	   VK_CONTROL },
+			{ KC_Alt,		   VK_MENU },
+			{ KC_Dash,		   -1 },
+			{ KC_Equals,		   -1 },
+			{ KC_SemiColon,	   -1 },
+			{ KC_SingleQuote,   -1 },
+			{ KC_Comma,		   VK_OEM_COMMA },
+			{ KC_Period,		   VK_OEM_PERIOD },
+			{ KC_ForwardSlash,  -1 },
+			{ KC_BackSlash,	   -1 },
+			{ KC_BackSpace,	   VK_BACK },
+			{ KC_Enter,		   VK_RETURN },
+			{ KC_Tab,		   VK_TAB },
+			{ KC_Escape,		   VK_ESCAPE },
+			{ KC_Delete,		   VK_DELETE },
+			{ KC_UpArrow,	   VK_UP },
+			{ KC_DownArrow,	   VK_DOWN },
+			{ KC_LeftArrow,	   VK_LEFT },
+			{ KC_RightArrow,	   VK_RIGHT },
+			{ KC_Space,		   VK_SPACE }
+		};
+
+		for (int i = 0; i < BNS_ARRAY_COUNT(vkDefs); i++) {
+			if (vkDefs[i].virtualCode == key) {
+				return vkDefs[i].keyCode;
+			}
+		}
+	}
+
+	return KC_Invalid;
 }
