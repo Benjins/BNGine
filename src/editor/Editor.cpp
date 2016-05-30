@@ -133,7 +133,7 @@ void Editor::HandleGizmoClick() {
 					objectToProjection[i] = 0;
 
 					float slope = objectToProjection[(i + 1) % 3] / objectToProjection[(i + 2) % 3];
-					float sign = (objectToProjection[(i + 1) % 3] >= 0) ? 1.0f : -1.0f;
+					float sign = -1;// (objectToProjection[(i + 2) % 3] >= 0) ? 1.0f : -1.0f;
 
 					float angle = atanf(slope) * sign;
 
@@ -192,7 +192,7 @@ void Editor::HandleGizmoDrag(Entity* selected) {
 		objectToProjection[selectedAxis] = 0;
 
 		float slope = objectToProjection[(selectedAxis + 1) % 3] / objectToProjection[(selectedAxis + 2) % 3];
-		float sign = (objectToProjection[(selectedAxis + 1) % 3] >= 0) ? 1.0f : -1.0f;
+		float sign = -1;// (objectToProjection[(selectedAxis + 2) % 3] >= 0) ? 1.0f : -1.0f;
 
 		float angle = atanf(slope) * sign;
 
