@@ -99,9 +99,12 @@ void Scene::Render() {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	gui.DrawTextLabel("Hello world", 1, 1, 300, 300);
-	gui.DrawTextLabel("This is the end.", 1, 1, 0, 0);
-	gui.DrawTextLabel("This is *not* the end.", 1, 1, 12, 12);
+	// Do gui stuff.
+	// TODO: Separate function, so that editor doesn't do it?
+
+	//gui.DrawTextLabel("Hello world", 1, 1, 300, 300);
+	//gui.DrawTextLabel("This is the end.", 1, 1, 0, 0);
+	//gui.DrawTextLabel("This is *not* the end.", 1, 1, 12, 12);
 
 	glDisable(GL_BLEND);
 }

@@ -34,4 +34,5 @@
 		<Mesh src='test_2.obj'/>
 		<BoxCollider position='0,0,0' size='1,1,1'/>
 	</Entity>
+
 </Scene>

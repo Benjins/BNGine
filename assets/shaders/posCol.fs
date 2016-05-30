@@ -1,3 +1,5 @@
+#version 120
+
 varying vec2 outUv;
 
 uniform sampler2D _mainTex;

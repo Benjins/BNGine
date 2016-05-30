@@ -112,6 +112,7 @@ RaycastHit RaycastBox(Vector3 origin, Vector3 direction, BoxCollider* boxCol) {
 
 		hit.depth = (globalHitPos - origin).Magnitude();
 		hit.globalPos = globalHitPos;
+		hit.colId = boxCol->id;
 		return hit;
 	}
 	else {

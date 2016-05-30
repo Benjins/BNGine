@@ -5,6 +5,23 @@
 
 #include "../core/Scene.h"
 
+enum EditorGizmo {
+	EG_Select,
+	EG_Position,
+	EG_Rotation,
+	EG_Scale
+};
+
+union SelectionOffset {
+	Vector3 position;
+	float rotation;
+
+	SelectionOffset() {
+		position = Vector3(0, 0, 0);
+		rotation = 0;
+	}
+};
+
 struct Editor {
 	Scene scene;
 
@@ -15,14 +32,32 @@ struct Editor {
 	int rightBarWidth;
 	int topBarHeight;
 
+	int selectedEntity;
+	int selectedAxis;
+	SelectionOffset selectionOffset;
+	EditorGizmo gizmoType;
+
 	float cameraCursorX;
 	float cameraCursorY;
 
 	GuiSystem gui;
 
+	int GetSelectedEntity(int pixelX, int pixelY);
+
+	Vector3 ScreenSpaceCoordsToRay(float pixelX, float pixelY);
+
+	void HandleGizmoDrag(Entity* ent);
+	void HandleGizmoClick();
+
 	void Update();
 	void Render();
 	void StartUp();
+
+	void DrawCurrentGizmo(const Entity* ent, Material* mat);
+	void DrawSelectGizmo(const Entity* ent, Material* mat);
+	void DrawPositionGizmo(const Entity* ent, Material* mat);
+	void DrawRotationGizmo(const Entity* ent, Material* mat);
+	void DrawScaleGizmo(const Entity* ent, Material* mat);
 };
 
 #endif
