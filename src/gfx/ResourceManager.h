@@ -42,6 +42,10 @@ struct ResourceManager {
 	void LoadTransform(MemStream& stream, Transform* outTrans);
 	void LoadBitmapFontFromChunk(MemStream& stream, BitmapFont* outFont);
 
+	void SaveLevelToFile(const Level* lvl, const char* fileName);
+
+	String FindFileNameByIdAndExtension(const char* ext, uint32 id);
+
 	void Render();
 };
 

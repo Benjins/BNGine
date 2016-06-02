@@ -114,7 +114,7 @@ struct IDTracker{
 		return ptr;
 	}
 	
-	T* GetById(uint32 id){
+	T* GetById(uint32 id) {
 		for(int i = 0; i < currentCount; i++){
 			if(vals[i].id == id){
 				return &vals[i];

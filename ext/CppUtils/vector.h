@@ -60,7 +60,7 @@ struct Vector{
 		
 		count = 0;
 	}
-	
+
 	void PopBack(){
 		ASSERT(count > 0);
 		count--;
@@ -141,6 +141,11 @@ struct Vector{
 	}
 	
 	T& Get(int idx){
+		ASSERT(idx >= 0 && idx < count);
+		return data[idx];
+	}
+
+	const T& Get(int idx) const {
 		ASSERT(idx >= 0 && idx < count);
 		return data[idx];
 	}

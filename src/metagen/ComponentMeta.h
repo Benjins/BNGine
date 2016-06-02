@@ -12,14 +12,20 @@ struct MetaStruct;
 struct Level;
 
 typedef Component* (GetComponentFunc)(uint32 id);
-typedef Component* (GetComponentArrayFunc)();
 typedef Component* (AddComponentFunc)();
+typedef Component* (GetComponentArrayFunc)();
 typedef int (GetComponentCountFunc)();
 
+typedef Component* (GetComponentLevelArrayFunc)(const Level* lvl);
+typedef int (GetComponentLevelCountFunc)(const Level* lvl);
+
 extern GetComponentFunc* getComponentFuncs[CCT_Count];
-extern GetComponentArrayFunc* getComponentArrayFuncs[CCT_Count];
 extern AddComponentFunc* addComponentFuncs[CCT_Count];
+extern GetComponentArrayFunc* getComponentArrayFuncs[CCT_Count];
 extern GetComponentCountFunc* getComponentCountFuncs[CCT_Count];
+
+extern GetComponentLevelArrayFunc* getComponentLevelArrayFuncs[CCT_Count];
+extern GetComponentLevelCountFunc* getComponentLevelCountFuncs[CCT_Count];
 
 typedef Component* (AddComponentToLevelFunc)(Level* lvl);
 extern AddComponentToLevelFunc* addComponentToLevelFuncs[CCT_Count];

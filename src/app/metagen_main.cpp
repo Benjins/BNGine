@@ -271,6 +271,14 @@ int main(int arc, char** argv) {
 	}
 	fprintf(componentResetFile, "}\n");
 
+	fprintf(componentResetFile, "void Scene::SaveCustomComponentsToLevel(Level* level){\n");
+	for (int i = 0; i < getComponentPathList.count; i++) {
+		SubString compTypeName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
+		fprintf(componentResetFile, "\tLoadIDTrackerToVector<%.*s>(%s, level->%s);\n", compTypeName.length, compTypeName.start,
+			getComponentPathList.data[i].string, getComponentLevelPathList.data[i].string);
+	}
+	fprintf(componentResetFile, "}\n");
+
 	fclose(componentResetFile);
 
 	//ComponentMeta.cpp
@@ -314,6 +322,16 @@ int main(int arc, char** argv) {
 		fprintf(componentMetaFile, "\tComponent* comp = %s.CreateAndAdd();\n", getComponentPathList.data[i].string);
 		fprintf(componentMetaFile, "\tcomp->type = CCT_%.*s;\n", ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "\treturn comp;\n");
+		fprintf(componentMetaFile, "}\n\n");
+
+		fprintf(componentMetaFile, "Component* %.*s_getLevelArray(const Level* lvl){\n", ms->name.length, ms->name.start);
+		fprintf(componentMetaFile, "\tComponent* comps = lvl->%s.data;\n", getComponentLevelPathList.data[i].string);
+		fprintf(componentMetaFile, "\treturn comps;\n");
+		fprintf(componentMetaFile, "}\n\n");
+
+		fprintf(componentMetaFile, "int %.*s_getLevelCount(const Level* lvl){\n", ms->name.length, ms->name.start);
+		fprintf(componentMetaFile, "\tint count = lvl->%s.count;\n", getComponentLevelPathList.data[i].string);
+		fprintf(componentMetaFile, "\treturn count;\n");
 		fprintf(componentMetaFile, "}\n\n");
 	}
 
@@ -383,6 +401,7 @@ int main(int arc, char** argv) {
 		fprintf(componentMetaFile, "}\n\n");
 		fprintf(componentMetaFile, "void %.*s_XMLSerialize(const Component* comp, XMLElement* elem){\n", ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "\tconst %.*s* compCast = static_cast<const %.*s*>(comp);\n", ms->name.length, ms->name.start, ms->name.length, ms->name.start);
+		fprintf(componentMetaFile, "\telem->name = STATIC_TO_SUBSTRING(\"%.*s\");\n", ms->name.length, ms->name.start);
 
 		for (int j = 0; j < ms->fields.count; j++) {
 			ParseMetaField mf = ms->fields.data[j];
@@ -470,6 +489,20 @@ int main(int arc, char** argv) {
 	for (int i = 0; i < componentIndices.count; i++) {
 		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
 		fprintf(componentMetaFile, "\t%.*s_MemSerialize,\n", structName.length, structName.start);
+	}
+	fprintf(componentMetaFile, "};\n");
+
+	fprintf(componentMetaFile, "GetComponentLevelArrayFunc* getComponentLevelArrayFuncs[CCT_Count] = {\n");
+	for (int i = 0; i < componentIndices.count; i++) {
+		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
+		fprintf(componentMetaFile, "\t%.*s_getLevelArray,\n", structName.length, structName.start);
+	}
+	fprintf(componentMetaFile, "};\n");
+
+	fprintf(componentMetaFile, "GetComponentLevelCountFunc* getComponentLevelCountFuncs[CCT_Count] = {\n");
+	for (int i = 0; i < componentIndices.count; i++) {
+		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
+		fprintf(componentMetaFile, "\t%.*s_getLevelCount,\n", structName.length, structName.start);
 	}
 	fprintf(componentMetaFile, "};\n");
 

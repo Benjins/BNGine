@@ -41,6 +41,12 @@ void Scene::StartUp() {
 	gui.Init();
 	
 	LoadLevel("Level1.lvl");
+	int level1Id = -1;
+	res.assetIdMap.LookUp("Level1.lvl", &level1Id);
+	SaveLevel(res.levels.GetById(level1Id));
+	LoadLevel("Level1.lvl");
+
+	res.SaveLevelToFile(res.levels.GetById(level1Id), "Level1_edit.lvl");
 }
 
 void Scene::Update() {
@@ -83,6 +89,40 @@ void Scene::LoadLevel(const char* name) {
 	LoadVectorToIDTracker(level->transforms, transforms);
 
 	LoadCustomComponentsFromLevel(level);
+}
+
+void Scene::SaveLevel(Level* level) {
+	level->cam = cam;
+	LoadIDTrackerToVector(entities, level->entities);
+	LoadIDTrackerToVector(transforms, level->transforms);
+
+	level->matIds.EnsureCapacity(entities.currentCount);
+	level->meshIds.EnsureCapacity(entities.currentCount);
+
+	level->matIds.count = entities.currentCount;
+	level->meshIds.count = entities.currentCount;
+
+	for (int i = 0; i < entities.currentCount; i++) {
+		bool foundDC = false;
+
+		for (int j = 0; j < res.drawCalls.currentCount; j++) {
+			DrawCall dc = res.drawCalls.vals[j];
+			if (dc.entId == entities.vals[i].id) {
+				level->matIds.data[i] = dc.matId;
+				level->meshIds.data[i] = dc.meshId;
+
+				foundDC = true;
+				break;
+			}
+		}
+
+		if (!foundDC) {
+			level->matIds.data[i] = -1;
+			level->meshIds.data[i] = -1;
+		}
+	}
+
+	SaveCustomComponentsToLevel(level);
 }
 
 void Scene::Render() {

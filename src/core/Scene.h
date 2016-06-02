@@ -47,6 +47,9 @@ struct Scene {
 	void LoadLevel(const char* name);
 	void LoadCustomComponentsFromLevel(const Level* level);
 
+	void SaveLevel(Level* level);
+	void SaveCustomComponentsToLevel(Level* level);
+
 	Entity* AddVisibleEntity(uint32 matId, uint32 meshId);
 
 	//Maybe later.  How to go from transform to global transform? 

@@ -17,4 +17,11 @@ void LoadVectorToIDTracker(const Vector<T>& from, IDTracker<T>& to) {
 	}
 }
 
+template<typename T>
+void LoadIDTrackerToVector(const IDTracker<T>& from, Vector<T>& to) {
+	to.EnsureCapacity(from.currentCount);
+	MemCpy(to.data, from.vals, sizeof(T)*from.currentCount);
+	to.count = from.currentCount;
+}
+
 #endif

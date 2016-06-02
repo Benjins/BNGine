@@ -2,10 +2,14 @@
 #include "../core/Scene.h"
 #include "../assets/AssetFile.h"
 #include "../metagen/ComponentMeta.h"
+#include "../metagen/MetaStruct.h"
+#include "../util/Serialization.h"
+#include "../util/LevelLoading.h"
 
 #include "../../ext/CppUtils/filesys.h"
 #include "../../ext/CppUtils/assert.h"
 #include "../../ext/CppUtils/memstream.h"
+#include "../../ext/CppUtils/xml.h"
 
 ResourceManager::ResourceManager() 
 	: programs(20), shaders(30), materials(15), meshes(30), drawCalls(40), textures(20), levels(10){
@@ -297,6 +301,122 @@ void ResourceManager::LoadBitmapFontFromChunk(MemStream& stream, BitmapFont* out
 	stream.ReadArray<CodepointInfo>(outFont->codepointListing.data, codepointCount); 
 }
 
+void XMLSerializeTransform(XMLElement* elem, const Transform* trans) {
+	elem->name = STATIC_TO_SUBSTRING("Transform");
+	//<Transform id='3' pos='0,0,0' rotation='1,0,0,0' scale='1,1,1' parent='2'/>
+	elem->attributes.Insert("id", Itoa(trans->id));
+	elem->attributes.Insert("pos", EncodeVector3(trans->position));
+	elem->attributes.Insert("rotation", EncodeQuaternion(trans->position));
+	elem->attributes.Insert("scale", EncodeVector3(trans->position));
+	elem->attributes.Insert("parent", Itoa(trans->parent));
+}
+
+void ResourceManager::SaveLevelToFile(const Level* lvl, const char* fileName) {
+	XMLDoc doc;
+	XMLElement* rootElem = doc.AddElement();
+	rootElem->name = STATIC_TO_SUBSTRING("Scene");
+	uint32 rootId = rootElem->id;
+
+	XMLElement* cameraElem = doc.AddElement();
+	uint32 camElemId = cameraElem->id;
+	cameraElem->name = STATIC_TO_SUBSTRING("Camera");
+	cameraElem->attributes.Insert("fov", Itoa(lvl->cam.fov));
+	cameraElem->attributes.Insert("nearClip", Ftoa(lvl->cam.nearClip));
+	cameraElem->attributes.Insert("farClip", Ftoa(lvl->cam.farClip));
+
+	doc.elements.GetById(rootId)->childrenIds.PushBack(cameraElem->id);
+
+	Transform* camTrans = GlobalScene->transforms.GetById(lvl->cam.transform);
+	ASSERT(camTrans != nullptr);
+
+	XMLElement* camTransElem = doc.AddElement();
+	XMLSerializeTransform(camTransElem, camTrans);
+
+	// It may have re-allocated.  Maybe I didn't think this through...
+	doc.elements.GetById(camElemId)->childrenIds.PushBack(camTransElem->id);
+
+	for (int i = 0; i < lvl->entities.count; i++) {
+		Entity* ent = &lvl->entities.data[i];
+
+		XMLElement* entElem = doc.AddElement();
+		uint32 entElemId = entElem->id;
+
+		entElem->name = STATIC_TO_SUBSTRING("Entity");
+		entElem->attributes.Insert("id", Itoa(ent->id));
+
+		doc.elements.GetById(rootId)->childrenIds.PushBack(entElem->id);
+
+		Transform* entTrans = GlobalScene->transforms.GetById(ent->transform);
+
+		XMLElement* entTransElem = doc.AddElement();
+		XMLSerializeTransform(entTransElem, entTrans);
+
+		doc.elements.GetById(entElemId)->childrenIds.PushBack(entTransElem->id);
+
+		for (int ct = 0; ct < CCT_Count; ct++) {
+			MetaStruct* ms = componentMetaData[ct];
+
+			Component* compBase = getComponentLevelArrayFuncs[ct](lvl);
+			int compCount = getComponentLevelCountFuncs[ct](lvl);
+
+			unsigned char* compCursor = (unsigned char*)compBase;
+
+			for (int j = 0; j < compCount; j++) {
+				compCursor += ms->size;
+
+				Component* currComp = (Component*)compCursor;
+
+				if (currComp->entity == ent->id) {
+					XMLElement* compElem = doc.AddElement();
+					componentXMLSerializeFuncs[ct](currComp, compElem);
+
+					doc.elements.GetById(entElemId)->childrenIds.PushBack(compElem->id);
+				}
+			}
+		}
+
+		if (Material* mat = GlobalScene->res.materials.GetById(lvl->matIds.Get(i))) {
+			XMLElement* matElem = doc.AddElement();
+			matElem->name = STATIC_TO_SUBSTRING("Material");
+			matElem->attributes.Insert("src", FindFileNameByIdAndExtension("mat", mat->id));
+			doc.elements.GetById(entElemId)->childrenIds.PushBack(matElem->id);
+		}
+
+		if (Mesh* mesh = GlobalScene->res.meshes.GetById(lvl->meshIds.Get(i))) {
+			XMLElement* meshElem = doc.AddElement();
+			meshElem->name = STATIC_TO_SUBSTRING("Mesh");
+			meshElem->attributes.Insert("src", FindFileNameByIdAndExtension("obj", mesh->id));
+			doc.elements.GetById(entElemId)->childrenIds.PushBack(meshElem->id);
+		}
+	}
+
+	SaveXMLDocToFile(&doc, fileName);
+}
+
 void ResourceManager::Render() {
 	ExecuteDrawCalls(drawCalls.vals, drawCalls.currentCount);
+}
+
+String ResourceManager::FindFileNameByIdAndExtension(const char* ext, uint32 id) {
+	for (int i = 0; i < assetIdMap.count; i++) {
+		if (assetIdMap.values[i] == id) {
+			//Check ext.
+			const char* fileName = assetIdMap.names[i].string;
+			int fileNameLength = assetIdMap.names[i].GetLength();
+			const char* fileNameExt = fileName + (fileNameLength - 1);
+			
+			while (fileNameExt > fileName && *fileNameExt != '.'){
+				fileNameExt--;
+			}
+
+			// It's pointing to the last dot, and should point just after.
+			fileNameExt++;
+
+			if (StrEqual(fileNameExt, ext)) {
+				return assetIdMap.names[i];
+			}
+		}
+	}
+
+	return String("");
 }

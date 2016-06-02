@@ -1,4 +1,9 @@
 
+#if defined(BNS_DEBUG)
+#include <io.h>
+#include <fcntl.h>
+#endif
+
 #include <Windows.h>
 #include <Windowsx.h>
 #include <gl/GL.h>
@@ -11,6 +16,27 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 Editor* GlobalEd = nullptr;
 
 int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmdShow) {
+
+	//Set up a console window for debug.
+	// TODO: Why is this not working?
+#if defined(BNS_DEBUG) || 0
+	AllocConsole();
+
+	HANDLE handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
+	int hCrt = _open_osfhandle((long)handle_out, _O_TEXT);
+	FILE* hf_out = _fdopen(hCrt, "w");
+	setvbuf(hf_out, NULL, _IONBF, 1);
+	*stdout = *hf_out;
+
+	HANDLE handle_in = GetStdHandle(STD_INPUT_HANDLE);
+	hCrt = _open_osfhandle((long)handle_in, _O_TEXT);
+	FILE* hf_in = _fdopen(hCrt, "r");
+	setvbuf(hf_in, NULL, _IONBF, 128);
+	*stdin = *hf_in;
+
+	printf("%s", "Hahahahahhah printf\n");
+	fprintf(stdout, "%s", "Hahahahahhah printf\n");
+#endif
 
 	WNDCLASS windowCls = {};
 	windowCls.hInstance = instance;

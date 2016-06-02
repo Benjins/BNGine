@@ -112,6 +112,7 @@ void Editor::HandleGizmoClick() {
 		for (int i = 0; i < 3; i++) {
 			Vector3 normal;
 			normal[i] = 1.0f;
+			normal = selectedTrans->GetLocalToGlobalMatrix().MultiplyAsDirection(normal);
 
 			float rayNormalOverlap = BNS_ABS(DotProduct(ray, normal));
 			if (rayNormalOverlap < 0) {
@@ -181,6 +182,7 @@ void Editor::HandleGizmoDrag(Entity* selected) {
 	else if (gizmoType == EG_Rotation) {
 		Vector3 normal;
 		normal[selectedAxis] = 1.0f;
+		normal = selectedTrans->GetLocalToGlobalMatrix().MultiplyAsDirection(normal);
 
 		float rayNormalOverlap = BNS_ABS(DotProduct(ray, normal));
 

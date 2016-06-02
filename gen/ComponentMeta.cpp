@@ -24,6 +24,16 @@ Component* BoxCollider_createAndAdd(){
 	return comp;
 }
 
+Component* BoxCollider_getLevelArray(const Level* lvl){
+	Component* comps = lvl->boxCols.data;
+	return comps;
+}
+
+int BoxCollider_getLevelCount(const Level* lvl){
+	int count = lvl->boxCols.count;
+	return count;
+}
+
 Component* SphereCollider_getComponentArray(){
 	return GlobalScene->phys.sphereCols.vals;
 }
@@ -36,6 +46,16 @@ Component* SphereCollider_createAndAdd(){
 	Component* comp = GlobalScene->phys.sphereCols.CreateAndAdd();
 	comp->type = CCT_SphereCollider;
 	return comp;
+}
+
+Component* SphereCollider_getLevelArray(const Level* lvl){
+	Component* comps = lvl->sphereCols.data;
+	return comps;
+}
+
+int SphereCollider_getLevelCount(const Level* lvl){
+	int count = lvl->sphereCols.count;
+	return count;
 }
 
 MetaField BoxCollider_metaFields[] = {
@@ -77,6 +97,7 @@ void BoxCollider_XMLDeserialize(Component* comp, const XMLElement* elem){
 
 void BoxCollider_XMLSerialize(const Component* comp, XMLElement* elem){
 	const BoxCollider* compCast = static_cast<const BoxCollider*>(comp);
+	elem->name = STATIC_TO_SUBSTRING("BoxCollider");
 	elem->attributes.Insert("position", EncodeVector3(compCast->position));
 	elem->attributes.Insert("size", EncodeVector3(compCast->size));
 }
@@ -113,6 +134,7 @@ void SphereCollider_XMLDeserialize(Component* comp, const XMLElement* elem){
 
 void SphereCollider_XMLSerialize(const Component* comp, XMLElement* elem){
 	const SphereCollider* compCast = static_cast<const SphereCollider*>(comp);
+	elem->name = STATIC_TO_SUBSTRING("SphereCollider");
 	elem->attributes.Insert("position", EncodeVector3(compCast->position));
 	elem->attributes.Insert("radius", Ftoa(compCast->radius));
 }
@@ -159,6 +181,14 @@ ComponentMemDeserializeFunc* componentMemDeserializeFuncs[CCT_Count] = {
 ComponentMemSerializeFunc* componentMemSerializeFuncs[CCT_Count] = {
 	BoxCollider_MemSerialize,
 	SphereCollider_MemSerialize,
+};
+GetComponentLevelArrayFunc* getComponentLevelArrayFuncs[CCT_Count] = {
+	BoxCollider_getLevelArray,
+	SphereCollider_getLevelArray,
+};
+GetComponentLevelCountFunc* getComponentLevelCountFuncs[CCT_Count] = {
+	BoxCollider_getLevelCount,
+	SphereCollider_getLevelCount,
 };
 MetaStruct* componentMetaData[CCT_Count] = {
 	&BoxCollider_meta,

@@ -212,4 +212,6 @@ struct ConstSubString{
 	}
 };
 
+#define STATIC_TO_SUBSTRING(str) String(str).GetSubString(0, sizeof(str) - 1)
+
 #endif
