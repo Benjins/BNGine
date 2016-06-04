@@ -23,7 +23,7 @@ struct BitmapFont : IDBase {
 
 	CodepointInfo* GetInfoForCodepoint(int codepoint);
 
-	void BakeAsciiToVertexData(const char* text, float xStart, float yStart, float* outPosData, float* outUvData);
+	float BakeAsciiToVertexData(const char* text, float xStart, float yStart, float* outPosData, float* outUvData);
 
 	float GetCursorPos(const char* text, int cursorPos);
 };

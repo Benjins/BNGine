@@ -180,40 +180,40 @@ void Editor::HandleGizmoDrag(Entity* selected) {
 		}
 	}
 	else if (gizmoType == EG_Rotation) {
-		Vector3 normal;
-		normal[selectedAxis] = 1.0f;
-		normal = selectedTrans->GetLocalToGlobalMatrix().MultiplyAsDirection(normal);
+		if (selectedAxis >= 0) {
+			Vector3 normal;
+			normal[selectedAxis] = 1.0f;
+			normal = selectedTrans->GetLocalToGlobalMatrix().MultiplyAsDirection(normal);
 
-		float rayNormalOverlap = BNS_ABS(DotProduct(ray, normal));
+			float rayNormalOverlap = BNS_ABS(DotProduct(ray, normal));
 
-		float planeProjectDistance = rayNormalOverlap / cameraToObj.MagnitudeSquared();
-		Vector3 planeProjection = cameraPos + ray * planeProjectDistance;
-		float projectionDistanceFromObj = (planeProjection - objectPos).Magnitude();
+			float planeProjectDistance = rayNormalOverlap / cameraToObj.MagnitudeSquared();
+			Vector3 planeProjection = cameraPos + ray * planeProjectDistance;
+			float projectionDistanceFromObj = (planeProjection - objectPos).Magnitude();
 
-		Vector3 objectToProjection = planeProjection - objectPos;
-		objectToProjection[selectedAxis] = 0;
+			Vector3 objectToProjection = planeProjection - objectPos;
+			objectToProjection[selectedAxis] = 0;
 
-		float slope = objectToProjection[(selectedAxis + 1) % 3] / objectToProjection[(selectedAxis + 2) % 3];
-		float sign = -1;// (objectToProjection[(selectedAxis + 2) % 3] >= 0) ? 1.0f : -1.0f;
+			float slope = objectToProjection[(selectedAxis + 1) % 3] / objectToProjection[(selectedAxis + 2) % 3];
+			float sign = -1;// (objectToProjection[(selectedAxis + 2) % 3] >= 0) ? 1.0f : -1.0f;
 
-		float angle = atanf(slope) * sign;
+			float angle = atanf(slope) * sign;
 
-		if (objectToProjection[(selectedAxis + 2) % 3] == 0.0f) {
-			angle = sign * 3.141592653589f / 2;
+			if (objectToProjection[(selectedAxis + 2) % 3] == 0.0f) {
+				angle = sign * 3.141592653589f / 2;
+			}
+
+			ASSERT(angle == angle);
+
+			float angleDelta = angle - selectionOffset.rotation;
+			selectedTrans->rotation = Quaternion(normal, angleDelta) * selectedTrans->rotation;
+
+			ASSERT(selectedTrans->rotation == selectedTrans->rotation);
+
+			selectionOffset.rotation = angle;
 		}
-
-		ASSERT(angle == angle);
-
-		float angleDelta = angle - selectionOffset.rotation;
-		selectedTrans->rotation = selectedTrans->rotation * Quaternion(normal, angleDelta);
-
-		selectionOffset.rotation = angle;
 	}
 }
-
-String str = "Never again!#$%!#%!#@235231";
-
-String str2 = "This isn't even my final form.";
 
 void Editor::Render() {
 	Transform* sceneCamTrans = scene.transforms.GetById(scene.cam.transform);
@@ -246,45 +246,6 @@ void Editor::Render() {
 		Entity* ent = scene.entities.GetById(scene.res.drawCalls.vals[i].entId);
 		Transform* trans = scene.transforms.GetById(ent->transform);
 		mat->SeMatrix4Uniform("_objMatrix", trans->GetLocalToGlobalMatrix());
-		if (scene.res.drawCalls.vals[i].entId == selectedEntity) {
-			mat->SetVector4Uniform("_col", Vector4(0.9f, 0.9f, 1.0f, 1.0f));
-		}
-		else {
-			mat->SetVector4Uniform("_col", Vector4(0.2f, 0.2f, 0.4f, 1.0f));
-		}
-		mat->UpdateUniforms();
-
-		int meshId = scene.res.drawCalls.vals[i].meshId;
-		Mesh* mesh = scene.res.meshes.GetById(meshId);
-		Vector3 minPos = Vector3(FLT_MAX, FLT_MAX, FLT_MAX);
-		Vector3 maxPos = Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-		for (int j = 0; j < mesh->positions.count; j++) {
-			for (int k = 0; k < 3; k++) {
-				minPos[k] = BNS_MIN(minPos[k], mesh->positions.data[j][k]);
-				maxPos[k] = BNS_MAX(maxPos[k], mesh->positions.data[j][k]);
-			}
-		}
-
-		int scissors[4] = { 0 };
-		glGetIntegerv(GL_SCISSOR_BOX, scissors);
-
-		Vector3 vertData[] = {
-			Vector3(minPos.x, minPos.y, minPos.z),
-			Vector3(minPos.x, maxPos.y, minPos.z),
-			Vector3(minPos.x, maxPos.y, maxPos.z),
-			Vector3(minPos.x, minPos.y, maxPos.z),
-			Vector3(maxPos.x, minPos.y, maxPos.z),
-			Vector3(maxPos.x, maxPos.y, maxPos.z),
-			Vector3(maxPos.x, minPos.y, maxPos.z),
-		};
-
-		glLineWidth(5.0f);
-		glBegin(GL_LINE_LOOP);
-		for (int i = 0; i < BNS_ARRAY_COUNT(vertData); i++) {
-			glVertex3f(vertData[i].x, vertData[i].y, vertData[i].z);
-		}
-		glEnd();
 
 		if (ent->id == selectedEntity) {
 			DrawCurrentGizmo(ent, mat);
@@ -301,17 +262,59 @@ void Editor::Render() {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	{
-		str = gui.TextInput(str, 1, 40, 5, 400, 240);
-	}
-
-	{
-		str2 = gui.TextInput(str2, 1, 12, 5, 500, 240);
-	}
+	SidePanelGui();
 
 	glDisable(GL_BLEND);
 
 	*sceneCamTrans = oldSceneCamTrans;
+}
+
+void Editor::SidePanelGui() {
+	if (selectedEntity != -1) {
+		Entity* ent = scene.entities.GetById(selectedEntity);
+
+		float y = cam.heightPixels - 20;
+		float x = cam.widthPixels - rightBarWidth + 5;
+		gui.DrawTextLabel(StringStackBuffer<64>("%d", ent->id).buffer, 0, 12, x, y);
+		y -= 14;
+
+		String meshName;
+		String matName;
+		for (int i = 0; i < scene.res.drawCalls.currentCount; i++) {
+			if (scene.res.drawCalls.vals[i].entId == ent->id) {
+				uint32 meshId = scene.res.drawCalls.vals[i].meshId;
+				uint32 matId = scene.res.drawCalls.vals[i].matId;
+
+				meshName = scene.res.FindFileNameByIdAndExtension("obj", meshId);
+				matName = scene.res.FindFileNameByIdAndExtension("mat", matId);
+				break;
+			}
+		}
+
+		if (meshName.string != nullptr) {
+			gui.DrawTextLabel(StringStackBuffer<64>("Mesh: %s", meshName.string).buffer, 0, 12, x, y);
+			y -= 14;
+		}
+
+		if (matName.string != nullptr) {
+			gui.DrawTextLabel(StringStackBuffer<64>("Material: %s", matName.string).buffer, 0, 12, x, y);
+			y -= 14;
+		}
+
+		Transform* entTrans = scene.transforms.GetById(ent->transform);
+
+		{
+			float currX = x;
+			currX += gui.DrawTextLabel("X:", 0, 12, currX, y);
+			currX += gui.DrawTextLabel(StringStackBuffer<64>("%.2f", entTrans->position.x).buffer, 0, 12, currX, y);
+			currX += gui.DrawTextLabel("Y:", 0, 12, currX, y);
+			currX += gui.DrawTextLabel(StringStackBuffer<64>("%.2f", entTrans->position.y).buffer, 0, 12, currX, y);
+			currX += gui.DrawTextLabel("Z:", 0, 12, currX, y);
+			currX += gui.DrawTextLabel(StringStackBuffer<64>("%.2f", entTrans->position.z).buffer, 0, 12, currX, y);
+		}
+
+		y -= 14;
+	}
 }
 
 void Editor::StartUp() {

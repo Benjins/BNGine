@@ -24,6 +24,8 @@ struct Scene {
 	IDTracker<Transform> transforms;
 	ResourceManager res;
 
+	uint32 currentLevel;
+
 	Input input;
 
 	Player player;

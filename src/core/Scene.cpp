@@ -41,12 +41,8 @@ void Scene::StartUp() {
 	gui.Init();
 	
 	LoadLevel("Level1.lvl");
-	int level1Id = -1;
-	res.assetIdMap.LookUp("Level1.lvl", &level1Id);
-	SaveLevel(res.levels.GetById(level1Id));
-	LoadLevel("Level1.lvl");
 
-	res.SaveLevelToFile(res.levels.GetById(level1Id), "Level1_edit.lvl");
+	//res.SaveLevelToFile(res.levels.GetById(level1Id), "Level1_edit.lvl");
 }
 
 void Scene::Update() {
@@ -66,7 +62,8 @@ void Scene::LoadLevel(const char* name) {
 	bool exists = res.assetIdMap.LookUp(name, &levelId);
 	ASSERT_MSG(exists, "Could not load scene '%s'", name);
 
-	Level* level = res.levels.GetById(levelId);
+	currentLevel = levelId;
+	Level* level = res.levels.GetById(currentLevel);
 
 	Reset();
 

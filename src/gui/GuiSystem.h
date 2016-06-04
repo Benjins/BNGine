@@ -67,7 +67,8 @@ public:
 	void PopMatrix();
 	
 	void DrawImage(int textureId, float x, float y, float w, float h);
-	void DrawTextLabel(const char* text, uint32 fontId, float scale, float x, float y);
+	// Returns width of drawn text
+	float DrawTextLabel(const char* text, uint32 fontId, float scale, float x, float y);
 	void DrawTextWrap(const char* text, float scale, uint32 fontId, float x, float y, float w, float h);
 	
 	String TextInput(const String& textIn, uint32 fontId, float scale, float x, float y, float w);

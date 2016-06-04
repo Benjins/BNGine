@@ -9,6 +9,7 @@
 #include <gl/GL.h>
 
 #include "../editor/Editor.h"
+#define EXT_EXTERN extern
 #include "../gfx/GLExtInit.h"
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);

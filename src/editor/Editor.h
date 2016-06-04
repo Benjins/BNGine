@@ -53,6 +53,8 @@ struct Editor {
 	void Render();
 	void StartUp();
 
+	void SidePanelGui();
+
 	void DrawCurrentGizmo(const Entity* ent, Material* mat);
 	void DrawSelectGizmo(const Entity* ent, Material* mat);
 	void DrawPositionGizmo(const Entity* ent, Material* mat);

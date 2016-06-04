@@ -90,7 +90,7 @@ void GuiSystem::Init(){
 	}
 }
 
-void GuiSystem::DrawTextLabel(const char* text, uint32 fontId, float scale, float x, float y){
+float GuiSystem::DrawTextLabel(const char* text, uint32 fontId, float scale, float x, float y){
 	BitmapFont* font = GlobalScene->res.fonts.GetById(fontId);
 	
 	int textLen = StrLen(text);
@@ -98,7 +98,7 @@ void GuiSystem::DrawTextLabel(const char* text, uint32 fontId, float scale, floa
 	float* posBuffer = (float*)malloc(textLen*12*sizeof(float));
 	float* uvsBuffer = (float*)malloc(textLen*12*sizeof(float));
 	
-	font->BakeAsciiToVertexData(text, x, y, posBuffer, uvsBuffer);
+	float width = font->BakeAsciiToVertexData(text, x, y, posBuffer, uvsBuffer);
 
 	Texture* tex = GlobalScene->res.textures.GetById(font->textureId);
 	tex->Bind(GL_TEXTURE0);
@@ -138,6 +138,8 @@ void GuiSystem::DrawTextLabel(const char* text, uint32 fontId, float scale, floa
 
 	free(posBuffer);
 	free(uvsBuffer);
+
+	return width;
 }
 
 String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, float x, float y, float w) {
@@ -317,7 +319,9 @@ void GuiSystem::EndFrame() {
 		}
 	}
 
-	textInputState.activeIndex = textInputState.activeIndex % textInputState.count;
-	textInputState.count = 0;
+	if (textInputState.count != 0) {
+		textInputState.activeIndex = textInputState.activeIndex % textInputState.count;
+		textInputState.count = 0;
+	}
 }
 

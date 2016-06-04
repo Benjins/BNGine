@@ -12,7 +12,7 @@ CodepointInfo* BitmapFont::GetInfoForCodepoint(int codepoint){
 	return nullptr;
 }
 
-void BitmapFont::BakeAsciiToVertexData(const char* text, float xStart, float yStart, float* outPosData, float* outUvData){
+float BitmapFont::BakeAsciiToVertexData(const char* text, float xStart, float yStart, float* outPosData, float* outUvData){
 	const char* cursor = text;
 	int index = 0;
 	
@@ -41,6 +41,8 @@ void BitmapFont::BakeAsciiToVertexData(const char* text, float xStart, float ySt
 		
 		cursor++;
 	}
+
+	return x - xStart;
 }
 
 float BitmapFont::GetCursorPos(const char* text, int cursorPos) {

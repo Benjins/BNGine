@@ -1,6 +1,4 @@
-#define _GL_EXT_INIT_CPP 1
 #include "GLExtInit.h"
-#undef _GL_EXT_INIT_CPP
 
 #include "../../ext/CppUtils/assert.h"
 
