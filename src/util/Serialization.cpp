@@ -83,27 +83,17 @@ Quaternion ParseQuaternion(const char* str){
 }
 
 String EncodeQuaternion(const Quaternion& quat){
-	String str;
-	//God I hope this doesn't cause problems later on...
-	str.SetSize(64);
-	snprintf(str.string, 64, "%f,%f,%f,%f", quat.w, quat.x, quat.y, quat.z);
-
+	String str = StringStackBuffer<64>("%f,%f,%f,%f", quat.w, quat.x, quat.y, quat.z).buffer;
 	return str;
 }
 
 String Itoa(int val) {
-	String str;
-	str.SetSize(16);
-	snprintf(str.string, 64, "%d", val);
-
+	String str = StringStackBuffer<64>("%d", val).buffer;
 	return str;
 }
 
 String Ftoa(float val) {
-	String str;
-	str.SetSize(32);
-	snprintf(str.string, 64, "%f", val);
-
+	String str = StringStackBuffer<64>("%f", val).buffer;
 	return str;
 }
 

@@ -2,6 +2,8 @@
 
 #include "../gfx/GLExtInit.h"
 
+#include "../util/Serialization.h"
+
 #include "../../ext/3dbasics/Vector4.h"
 
 void Editor::Update() {
@@ -29,6 +31,13 @@ void Editor::Update() {
 			moveVec = moveVec - Y_AXIS;
 		}
 
+		if (scene.input.KeyIsReleased('R')) {
+			gizmoType = EG_Rotation;
+		}
+		if (scene.input.KeyIsReleased('P')) {
+			gizmoType = EG_Position;
+		}
+
 		editorCamTrans.position = editorCamTrans.position + moveVec / 50;
 	}
 
@@ -41,13 +50,6 @@ void Editor::Update() {
 		OutputDebugStringA(StringStackBuffer<256>("cameraCursorX: %f, cameraCursorY: %f\n", cameraCursorX, cameraCursorY).buffer);
 
 		editorCamTrans.rotation = Quaternion(Y_AXIS, cameraCursorX / 80) * Quaternion(X_AXIS, cameraCursorY / 80);
-	}
-
-	if (scene.input.KeyIsReleased('R')) {
-		gizmoType = EG_Rotation;
-	}
-	if (scene.input.KeyIsReleased('P')) {
-		gizmoType = EG_Position;
 	}
 
 	if (scene.input.MouseButtonIsReleased(MouseButton::PRIMARY)) {
@@ -275,7 +277,19 @@ void Editor::SidePanelGui() {
 
 		float y = cam.heightPixels - 20;
 		float x = cam.widthPixels - rightBarWidth + 5;
-		gui.DrawTextLabel(StringStackBuffer<64>("%d", ent->id).buffer, 0, 12, x, y);
+		gui.DrawTextLabel(StringStackBuffer<64>("Id: %d", ent->id).buffer, 0, 12, x, y);
+		y -= 14;
+
+		Transform* entTrans = scene.transforms.GetById(ent->transform);
+
+		gui.DrawTextLabel("Position: ", 0, 12, x, y);
+		y -= 14;
+		entTrans->position = Vec3Field(entTrans->position, x, y, rightBarWidth - 5);
+		y -= 14;
+
+		gui.DrawTextLabel("Scale: ", 0, 12, x, y);
+		y -= 14;
+		entTrans->scale = Vec3Field(entTrans->scale, x, y, rightBarWidth - 5);
 		y -= 14;
 
 		String meshName;
@@ -292,28 +306,44 @@ void Editor::SidePanelGui() {
 		}
 
 		if (meshName.string != nullptr) {
-			gui.DrawTextLabel(StringStackBuffer<64>("Mesh: %s", meshName.string).buffer, 0, 12, x, y);
+			float currX = x;
+			currX += gui.DrawTextLabel("Mesh: ", 0, 12, currX, y);
+			String newMeshName = gui.TextInput(meshName, 0, 12, currX, y, cam.widthPixels - currX - 5);
 			y -= 14;
+
+			if (newMeshName.string != meshName.string) {
+				int newMeshId = -1;
+				bool isValidMesh = scene.res.assetIdMap.LookUp(newMeshName, &newMeshId);
+
+				if (isValidMesh) {
+					for (int i = 0; i < scene.res.drawCalls.currentCount; i++) {
+						if (scene.res.drawCalls.vals[i].entId == ent->id) {
+							scene.res.drawCalls.vals[i].meshId = newMeshId;
+						}
+					}
+				}
+			}
 		}
 
 		if (matName.string != nullptr) {
-			gui.DrawTextLabel(StringStackBuffer<64>("Material: %s", matName.string).buffer, 0, 12, x, y);
-			y -= 14;
-		}
-
-		Transform* entTrans = scene.transforms.GetById(ent->transform);
-
-		{
 			float currX = x;
-			currX += gui.DrawTextLabel("X:", 0, 12, currX, y);
-			currX += gui.DrawTextLabel(StringStackBuffer<64>("%.2f", entTrans->position.x).buffer, 0, 12, currX, y);
-			currX += gui.DrawTextLabel("Y:", 0, 12, currX, y);
-			currX += gui.DrawTextLabel(StringStackBuffer<64>("%.2f", entTrans->position.y).buffer, 0, 12, currX, y);
-			currX += gui.DrawTextLabel("Z:", 0, 12, currX, y);
-			currX += gui.DrawTextLabel(StringStackBuffer<64>("%.2f", entTrans->position.z).buffer, 0, 12, currX, y);
-		}
+			currX += gui.DrawTextLabel("Material: ", 0, 12, currX, y);
+			String newMatName = gui.TextInput(matName, 0, 12, currX, y, cam.widthPixels - currX - 5);
+			y -= 14;
 
-		y -= 14;
+			if (newMatName.string != matName.string) {
+				int newMatId = -1;
+				bool isValidMesh = scene.res.assetIdMap.LookUp(newMatName, &newMatId);
+
+				if (isValidMesh) {
+					for (int i = 0; i < scene.res.drawCalls.currentCount; i++) {
+						if (scene.res.drawCalls.vals[i].entId == ent->id) {
+							scene.res.drawCalls.vals[i].matId = newMatId;
+						}
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -450,6 +480,69 @@ void Editor::DrawPositionGizmo(const Entity* ent, Material* mat) {
 		glVertex3f(col.x, col.y, col.z);
 		glEnd();
 	}
+}
+
+int Editor::IntField(int val, float x, float y, float w) {
+	String text = Itoa(val);
+	text = gui.TextInput(text, 0, 12, x, y, w);
+
+	return (text.string != nullptr) ? Atoi(text.string) : 0;
+}
+
+float Editor::FloatField(float val, float x, float y, float w) {
+	String text = Ftoa(val);
+	text = gui.TextInput(text, 0, 12, x, y, w);
+
+	return (text.string != nullptr) ? Atof(text.string) : 0.0f;
+}
+
+Vector2 Editor::Vec2Field(Vector2 val, float x, float y, float w) {
+	BitmapFont* fnt = scene.res.fonts.GetById(0);
+	float usedWidth = fnt->GetCursorPos("X: ", 2) + fnt->GetCursorPos("Y: ", 2);
+
+	ASSERT(usedWidth < w);
+
+	float inputWidth = (w - usedWidth) / 2;
+
+	Vector2 retVal = val;
+
+	float currX = x;
+	currX += gui.DrawTextLabel("X: ", 0, 12, currX, y);
+	retVal.x = FloatField(val.x, currX, y, inputWidth);
+	currX += inputWidth;
+
+	currX += gui.DrawTextLabel("Y: ", 0, 12, currX, y);
+	retVal.y = FloatField(val.y, currX, y, inputWidth);
+	currX += inputWidth;
+
+	return retVal;
+}
+
+Vector3 Editor::Vec3Field(Vector3 val, float x, float y, float w) {
+	BitmapFont* fnt = scene.res.fonts.GetById(0);
+	float usedWidth = fnt->GetCursorPos("X: ", 2) + fnt->GetCursorPos("Y: ", 2);
+
+	ASSERT(usedWidth < w);
+
+	float inputWidth = (w - usedWidth) / 3;
+
+	Vector3 retVal = val;
+
+	float currX = x;
+
+	const char* labels[3] = {
+		"X: ",
+		"Y: ",
+		"Z: "
+	};
+
+	for (int i = 0; i < 3; i++) {
+		currX += gui.DrawTextLabel(labels[i], 0, 12, currX, y);
+		retVal[i] = FloatField(val[i], currX, y, inputWidth);
+		currX += inputWidth;
+	}
+
+	return retVal;
 }
 
 void Editor::DrawRotationGizmo(const Entity* ent, Material* mat) {

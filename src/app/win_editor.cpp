@@ -55,7 +55,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 	float winWidth = winRect.right - winRect.left;
 	float winHeight = winRect.bottom - winRect.top;
 
-	HWND window = CreateWindow(windowCls.lpszClassName, "BNgine Runtime", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 50, 50, winWidth, winHeight, 0, 0, instance, 0);
+	HWND window = CreateWindow(windowCls.lpszClassName, "BNgine Editor", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 50, 50, winWidth, winHeight, 0, 0, instance, 0);
 
 	HDC hdc = GetDC(window);
 
@@ -238,6 +238,7 @@ KeyCode SystemKeyToKeyCode(int key) {
 			{ KC_LeftArrow,	   VK_LEFT },
 			{ KC_RightArrow,	   VK_RIGHT },
 			{ KC_Space,		   VK_SPACE }
+			// TODO: Minus/underscore
 		};
 
 		for (int i = 0; i < BNS_ARRAY_COUNT(vkDefs); i++) {

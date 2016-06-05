@@ -55,6 +55,11 @@ struct Editor {
 
 	void SidePanelGui();
 
+	int IntField(int val, float x, float y, float w);
+	float FloatField(float val, float x, float y, float w);
+	Vector2 Vec2Field(Vector2 val, float x, float y, float w);
+	Vector3 Vec3Field(Vector3 val, float x, float y, float w);
+
 	void DrawCurrentGizmo(const Entity* ent, Material* mat);
 	void DrawSelectGizmo(const Entity* ent, Material* mat);
 	void DrawPositionGizmo(const Entity* ent, Material* mat);

@@ -19,16 +19,21 @@ size_t FindChar(const char* str, char c) {
 void String::SetSize(int size){
 	Release();
 	
-	void* alloc = malloc(6 + size + 1);
-	
-	string = ((char*)alloc) + 6;
-	string[0] = '\0';
-	
-	short* ref = (short*)alloc;
-	int* length = (int*)(string - 4);
-	
-	*ref = 1;
-	*length = size;
+	if (size > 0) {
+		void* alloc = malloc(6 + size + 1);
+
+		string = ((char*)alloc) + 6;
+		string[0] = '\0';
+
+		short* ref = (short*)alloc;
+		int* length = (int*)(string - 4);
+
+		*ref = 1;
+		*length = size;
+	}
+	else {
+		string = nullptr;
+	}
 }
 
 // FML.
@@ -69,8 +74,10 @@ SubString String::GetSubString(int index, int length){
 	return substr;
 }
 
-void String::Retain(){
-	(*(short*)(string - 6))++;
+void String::Retain() {
+	if (string != nullptr) {
+		(*(short*)(string - 6))++;
+	}
 }
 
 void String::Release(){
@@ -177,6 +184,39 @@ int Atoi(const char* str){
 	}
 	
 	return val*sign;
+}
+
+float Atof(const char* str) {
+	ASSERT(str != nullptr);
+
+	float val = 0;
+	float sign = 1;
+	if (*str == '-') {
+		sign = -1;
+		str++;
+	}
+
+	while (*str >= '0' && *str <= '9') {
+		val = (val * 10) + (*str - '0');
+		str++;
+	}
+
+	if (*str != '.') {
+		return val*sign;
+	}
+	else {
+		str++;
+	}
+
+	float decVal = 0.0f;
+	float mult = 0.1f;
+	while (*str >= '0' && *str <= '9') {
+		decVal = decVal + (*str - '0') * mult;
+		mult /= 10.0f;
+		str++;
+	}
+
+	return val*sign + decVal;
 }
 
 int StrFind(const char* haystack, const char* needle) {
@@ -313,7 +353,9 @@ String String::Remove(int index) const {
 
 	MemCpy(ret.string, string, index);
 	MemCpy(ret.string + index, string + index + 1, len - index - 1);
-	ret.string[len - 1] = '\0';
+	if (len > 1) {
+		ret.string[len - 1] = '\0';
+	}
 
 	return ret;
 }
@@ -406,6 +448,15 @@ int main(int argc, char** argv){
 	ASSERT(Atoi("0123") == 123);
 	ASSERT(Atoi("0123000") == 123000);
 	
+	ASSERT(Atof("1.0") == 1.0f);
+	ASSERT(Atof("1.4") == 1.4f);
+	ASSERT(Atof("12.4") == 12.4f);
+	ASSERT(Atof("0.4") == 0.4f);
+	ASSERT(Atof(".4") == 0.4f);
+	ASSERT(Atof("43.4") == 43.4f);
+	ASSERT(Atof("43.4556") == 43.4556f);
+	ASSERT(Atof("43.0056") == 43.0056f);
+
 	char stkConst1[] = "!@#$%^";
 	char stkConst2[] = "!@#$%^";
 	

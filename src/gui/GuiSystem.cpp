@@ -94,10 +94,14 @@ float GuiSystem::DrawTextLabel(const char* text, uint32 fontId, float scale, flo
 	BitmapFont* font = GlobalScene->res.fonts.GetById(fontId);
 	
 	int textLen = StrLen(text);
-	
+
+	if (textLen == 0) {
+		return 0;
+	}
+
 	float* posBuffer = (float*)malloc(textLen*12*sizeof(float));
 	float* uvsBuffer = (float*)malloc(textLen*12*sizeof(float));
-	
+
 	float width = font->BakeAsciiToVertexData(text, x, y, posBuffer, uvsBuffer);
 
 	Texture* tex = GlobalScene->res.textures.GetById(font->textureId);
@@ -163,7 +167,7 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 
 	if (textInputState.count == textInputState.activeIndex) {
 		BitmapFont* font = GlobalScene->res.fonts.GetById(fontId);
-		float cursorX = font->GetCursorPos(textIn.string, textInputState.cursorPos);
+		float cursorX = font->GetCursorPos(textInputState.prevEntry.string, textInputState.cursorPos);
 
 		if (cursorX > w) {
 			// Will be negative
@@ -172,7 +176,12 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 	}
 
 	glScissor((int)x, (int)y, (int)w, (int)scale);
-	DrawTextLabel(textIn.string, fontId, scale, x + textOffset, y);
+	if (textInputState.count == textInputState.activeIndex) {
+		DrawTextLabel(textInputState.prevEntry.string, fontId, scale, x + textOffset, y);
+	}
+	else {
+		DrawTextLabel(textIn.string, fontId, scale, x + textOffset, y);
+	}
 	glScissor((int)GlobalScene->cam.xOffset, (int)GlobalScene->cam.yOffset, (int)GlobalScene->cam.widthPixels, (int)GlobalScene->cam.heightPixels);
 
 	textInputState.count++;
@@ -188,11 +197,16 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 			if (!cursorIn) {
 				textInputState.activeIndex = -1;
 				textInputState.cursorPos = 0;
+
+				String toRet = textInputState.prevEntry;
+				textInputState.prevEntry.SetSize(0);
+				return toRet;
 			}
 		}
 		else {
 			if (cursorIn) {
 				textInputState.activeIndex = textInputState.count - 1;
+				textInputState.prevEntry = textIn;
 			}
 		}
 	}
@@ -202,7 +216,7 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 		glUseProgram(prog->programObj);
 		mat->UpdateUniforms();
 		BitmapFont* font = GlobalScene->res.fonts.GetById(fontId);
-		float cursorOffset = font->GetCursorPos(textIn.string, textInputState.cursorPos);
+		float cursorOffset = font->GetCursorPos(textInputState.prevEntry.string, textInputState.cursorPos);
 
 		static const int cursorWidth = 6;
 		float curX = x + cursorOffset + textOffset;
@@ -222,9 +236,9 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 					c += 32;
 				}
 
-				String newStr = textIn.Insert(c, textInputState.cursorPos);
+				textInputState.prevEntry = textInputState.prevEntry.Insert(c, textInputState.cursorPos);
 				textInputState.cursorPos++;
-				return newStr;
+				return textIn;
 			}
 		}
 
@@ -236,24 +250,28 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 					c = shiftString[c - '0'];
 				}
 
-				String newStr = textIn.Insert(c, textInputState.cursorPos);
+				textInputState.prevEntry = textInputState.prevEntry.Insert(c, textInputState.cursorPos);
 				textInputState.cursorPos++;
-				return newStr;
+				return textIn;
 			}
 		}
 
 		if (GlobalScene->input.KeyIsPressed(KC_Space)) {
-			String newStr = textIn.Insert(' ', textInputState.cursorPos);
+			textInputState.prevEntry = textInputState.prevEntry.Insert(' ', textInputState.cursorPos);
 			textInputState.cursorPos++;
-			return newStr;
+			return textIn;
 		}
 		if (GlobalScene->input.KeyIsPressed(KC_Period)) {
 			String newStr;
 			if (GlobalScene->input.KeyIsDown(KC_Shift)) {
-				newStr = textIn.Insert('>', textInputState.cursorPos);
+				textInputState.prevEntry = textInputState.prevEntry.Insert('>', textInputState.cursorPos);
+				textInputState.cursorPos++;
+				return textIn;
 			}
 			else {
-				newStr = textIn.Insert('.', textInputState.cursorPos);
+				textInputState.prevEntry = textInputState.prevEntry.Insert('.', textInputState.cursorPos);
+				textInputState.cursorPos++;
+				return textIn;
 			}
 			
 			textInputState.cursorPos++;
@@ -261,9 +279,9 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 		}
 
 		if (GlobalScene->input.KeyIsPressed(KC_BackSpace) && textInputState.cursorPos > 0) {
-			String newStr = textIn.Remove(textInputState.cursorPos - 1);
+			textInputState.prevEntry = textInputState.prevEntry.Remove(textInputState.cursorPos - 1);
 			textInputState.cursorPos--;
-			return newStr;
+			return textIn;
 		}
 
 		if (GlobalScene->input.KeyIsPressed(KC_RightArrow)) {
@@ -279,8 +297,17 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 		}
 
 		if (GlobalScene->input.KeyIsPressed(KC_DownArrow)
-			|| textInputState.cursorPos > textIn.GetLength()) {
-			textInputState.cursorPos = textIn.GetLength();
+			|| textInputState.cursorPos > textInputState.prevEntry.GetLength()) {
+			textInputState.cursorPos = textInputState.prevEntry.GetLength();
+		}
+
+		if (GlobalScene->input.KeyIsPressed(KC_Enter)) {
+			textInputState.activeIndex = -1;
+			textInputState.cursorPos = 0;
+
+			String toRet = textInputState.prevEntry;
+			textInputState.prevEntry.SetSize(0);
+			return toRet;
 		}
 	}
 
@@ -320,7 +347,9 @@ void GuiSystem::EndFrame() {
 	}
 
 	if (textInputState.count != 0) {
-		textInputState.activeIndex = textInputState.activeIndex % textInputState.count;
+		if (textInputState.activeIndex > 0) {
+			textInputState.activeIndex = textInputState.activeIndex % textInputState.count;
+		}
 		textInputState.count = 0;
 	}
 }

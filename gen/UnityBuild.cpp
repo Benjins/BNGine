@@ -32,6 +32,7 @@
 #include "../src/core/Input.cpp"
 #include "../src/core/Scene.cpp"
 #include "../src/core/Transform.cpp"
+#include "../src/editor/Editor.cpp"
 #include "../src/game/Player.cpp"
 #include "../src/gfx/BitmapFont.cpp"
 #include "../src/gfx/DrawCall.cpp"

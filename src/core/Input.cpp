@@ -22,7 +22,6 @@ void Input::SetCursorPos(float x, float y) {
 	cursorDeltaY = y - cursorY;
 
 	ASSERT(cursorDeltaX == cursorDeltaX);
-	ASSERT(cursorDeltaX < 1000);
 	ASSERT(cursorDeltaY == cursorDeltaY);
 
 	cursorX = x;
