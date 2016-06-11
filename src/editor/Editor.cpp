@@ -1,8 +1,10 @@
 #include "Editor.h"
 
 #include "../gfx/GLExtInit.h"
-
 #include "../util/Serialization.h"
+
+#include "../metagen/ComponentMeta.h"
+#include "../metagen/MetaStruct.h"
 
 #include "../../ext/3dbasics/Vector4.h"
 
@@ -344,7 +346,122 @@ void Editor::SidePanelGui() {
 				}
 			}
 		}
+
+		for (int i = 0; i < CCT_Count; i++) {
+			Component* compArray = getComponentArrayFuncs[i]();
+			int compCount = getComponentCountFuncs[i]();
+
+			Component* compCursor = compArray;
+			MetaStruct* ms = componentMetaData[i];
+			for (int j = 0; j < compCount; j++) {
+
+				if (compCursor->entity == selectedEntity) {
+					bool toRemove = false;
+					y = EditComponentGui(compCursor, ms, x, y, &toRemove);
+
+					if (toRemove) {
+						removeComponentFuncs[i](compCursor->id);
+						j--;
+						compCursor = (Component*)(((char*)compCursor) - ms->size);
+					}
+				}
+
+				compCursor = (Component*)(((char*)compCursor) + ms->size);
+			}
+		}
+
+		// Just to give us some breathing room
+		y -= 10;
+
+		if (gui.TextButton("Add Component", 0, 12, x, y, (rightBarWidth - 10), 26)) {
+			pickerType = APT_ComponentType;
+		}
+
+		y -= 30;
+
+		switch (pickerType) {
+		case APT_ComponentType: {
+			const char* compNames[CCT_Count] = {};
+			for (int i = 0; i < CCT_Count; i++) {
+				compNames[i] = componentMetaData[i]->name;
+			}
+
+			int pickedIndex = gui.StringPicker(compNames, CCT_Count, 0, 12, x, y, leftBarWidth - 4, cam.heightPixels - y - 2);
+
+			if (pickedIndex > -1) {
+				//Add component.
+				Component* comp = addComponentFuncs[pickedIndex]();
+				comp->entity = selectedEntity;
+
+				pickerType = APT_None;
+			}
+		} break;
+
+		case APT_Mesh: {
+			//Vector<String> fileNames;
+			//scene.res.FindFileNamesByExtension("obj", &fileNames);
+		} break;
+
+		case APT_Material: {
+
+		} break;
+		}
 	}
+	else {
+		pickerType = APT_None;
+	}
+}
+
+float Editor::EditComponentGui(Component* comp, MetaStruct* meta, float x, float y, bool* outRemove) {
+	float currY = y;
+	gui.DrawTextLabel(meta->name, 0, 12, x, currY);
+
+	BitmapFont* font = scene.res.fonts.GetById(0);
+	float removeWidth = font->GetCursorPos("Remove", StrLen("Remove"));
+
+	if (gui.TextButton("Remove", 0, 12, cam.widthPixels - removeWidth - 6, currY + 6, removeWidth + 4, 12)) {
+		*outRemove = true;
+	}
+
+	currY -= 14;
+
+	for (int i = 0; i < meta->fieldCount; i++) {
+		const MetaField* mf = &meta->fields[i];
+
+		char* fieldPtr = ((char*)comp) + mf->offset;
+
+		if (mf->type >= MT_FundamentalEnd && mf->type < MT_FundamentalEnd) {
+			gui.DrawTextLabel(mf->name, 0, 12, x, currY);
+			currY -= 14;
+		}
+
+		float width = cam.widthPixels - x - 5;
+
+		if (mf->type == MT_Int) {
+			int* fieldVal = (int*)fieldPtr;
+			*fieldVal = IntField(*fieldVal, x, currY, width);
+		}
+		else if (mf->type == MT_Float) {
+			float* fieldVal = (float*)fieldPtr;
+			*fieldVal = FloatField(*fieldVal, x, currY, width);
+		}
+		else if (mf->type == MT_Vector2) {
+			Vector2* fieldVal = (Vector2*)fieldPtr;
+			*fieldVal = Vec2Field(*fieldVal, x, currY, width);
+		}
+		else if (mf->type == MT_Vector3) {
+			Vector3* fieldVal = (Vector3*)fieldPtr;
+			*fieldVal = Vec3Field(*fieldVal, x, currY, width);
+		}
+		else {
+			// Skip field, don't decrease y
+			currY += 14;
+		}
+
+		currY -= 14;
+	}
+
+	return currY;
 }
 
 void Editor::StartUp() {
@@ -362,6 +479,8 @@ void Editor::StartUp() {
 	selectedEntity = -1;
 	selectedAxis = -1;
 	gizmoType = EG_Position;
+
+	pickerType = APT_None;
 
 	scene.StartUp();
 	gui.Init();
@@ -520,11 +639,11 @@ Vector2 Editor::Vec2Field(Vector2 val, float x, float y, float w) {
 
 Vector3 Editor::Vec3Field(Vector3 val, float x, float y, float w) {
 	BitmapFont* fnt = scene.res.fonts.GetById(0);
-	float usedWidth = fnt->GetCursorPos("X: ", 2) + fnt->GetCursorPos("Y: ", 2);
+	float usedWidth = fnt->GetCursorPos("X: ", 3) + fnt->GetCursorPos("Y: ", 3) + fnt->GetCursorPos("Z: ", 3);
 
 	ASSERT(usedWidth < w);
 
-	float inputWidth = (w - usedWidth) / 3;
+	float inputWidth = (w - usedWidth - 5) / 3;
 
 	Vector3 retVal = val;
 

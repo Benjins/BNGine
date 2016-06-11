@@ -146,15 +146,15 @@ float GuiSystem::DrawTextLabel(const char* text, uint32 fontId, float scale, flo
 	return width;
 }
 
-String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, float x, float y, float w) {
+void GuiSystem::ColoredBox(float x, float y, float w, float h, const Vector4 col) {
 	Material* mat = GlobalScene->res.materials.GetById(guiColMatId);
 	Program* prog = GlobalScene->res.programs.GetById(mat->programId);
-	mat->SetVector4Uniform("_col", Vector4(0.4f, 0.4f, 0.4f, 0.85f));
+	mat->SetVector4Uniform("_col", col);
 
 	glUseProgram(prog->programObj);
 	mat->UpdateUniforms();
 
-	Vector2 pos[4] = { {x, y}, {x + w, y}, {x, y + scale}, {x + w, y + scale} };
+	Vector2 pos[4] = { { x, y },{ x + w, y },{ x, y - h },{ x + w, y - h } };
 
 	glBegin(GL_TRIANGLE_STRIP);
 	for (int i = 0; i < 4; i++) {
@@ -162,6 +162,10 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 	}
 
 	glEnd();
+}
+
+String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, float x, float y, float w) {
+	ColoredBox(x, y + scale, w, scale, Vector4(0.4f, 0.4f, 0.4f, 0.85f));
 
 	float textOffset = 0.0f;
 
@@ -212,23 +216,13 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 	}
 
 	if (textInputState.count == textInputState.activeIndex + 1) {
-		mat->SetVector4Uniform("_col", Vector4(0.7f, 0.7f, 0.7f, 0.7f));
-		glUseProgram(prog->programObj);
-		mat->UpdateUniforms();
+		static const int cursorWidth = 6;
+
 		BitmapFont* font = GlobalScene->res.fonts.GetById(fontId);
 		float cursorOffset = font->GetCursorPos(textInputState.prevEntry.string, textInputState.cursorPos);
-
-		static const int cursorWidth = 6;
 		float curX = x + cursorOffset + textOffset;
 
-		Vector2 cursorPos[4] = { { curX, y },{ curX + cursorWidth, y },{ curX, y + scale },{ curX + cursorWidth, y + scale } };
-
-		glBegin(GL_TRIANGLE_STRIP);
-		for (int i = 0; i < 4; i++) {
-			glVertex2f(cursorPos[i].x / GlobalScene->cam.widthPixels * 2 - 1, cursorPos[i].y / GlobalScene->cam.heightPixels * 2 - 1);
-		}
-
-		glEnd();
+		ColoredBox(curX, y, cursorWidth, scale, Vector4(0.7f, 0.7f, 0.7f, 0.7f));
 
 		for (unsigned char c = 'A'; c <= 'Z'; c++) {
 			if (GlobalScene->input.KeyIsPressed(c)) {
@@ -301,6 +295,14 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 			textInputState.cursorPos = textInputState.prevEntry.GetLength();
 		}
 
+		// @HACK: We handle tab pressing in EndFrame(), but we need to return the
+		// value in prevEntry and clear it, since we're being deselected.
+		if (GlobalScene->input.KeyIsPressed(KC_Tab)) {
+			String toRet = textInputState.prevEntry;
+			textInputState.prevEntry.SetSize(0);
+			return toRet;
+		}
+
 		if (GlobalScene->input.KeyIsPressed(KC_Enter)) {
 			textInputState.activeIndex = -1;
 			textInputState.cursorPos = 0;
@@ -321,12 +323,56 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 	return textIn;
 }
 
+void GuiSystem::SelectTextInput(int index) {
+
+}
+
+void GuiSystem::DeSelectTextInput() {
+
+}
+
 bool GuiSystem::SimpleButton(float x, float y, float w, float h) {
 	return false;
 }
 
-bool GuiSystem::TextButton(float x, float y, float w, float h) {
-	return false;
+bool GuiSystem::TextButton(const char* text, uint32 fontId, float scale, float x, float y, float w, float h) {
+	float cursorX = GlobalScene->input.cursorX;
+	float cursorY = GlobalScene->cam.heightPixels - GlobalScene->input.cursorY;
+	bool isCursorIn =  cursorX >= x && cursorX <= x + w
+					&& cursorY >= y - h/2 && cursorY <= y + h/2;
+
+	Vector4 col = Vector4(0.3f, 0.3f, 0.3f, 0.4f);
+	if (isCursorIn) {
+		if (GlobalScene->input.MouseButtonIsDown(PRIMARY)) {
+			col = Vector4(0.5f, 0.5f, 0.5f, 0.4f);
+		}
+		else {
+			col = Vector4(0.4f, 0.4f, 0.4f, 0.4f);
+		}
+	}
+
+	ColoredBox(x, y + h/2, w, h, col);
+
+	BitmapFont* font = GlobalScene->res.fonts.GetById(fontId);
+	float textWidth = font->GetCursorPos(text, StrLen(text));
+	DrawTextLabel(text, fontId, scale, x + w/2 - textWidth/2, y - scale/2);
+
+	return isCursorIn && GlobalScene->input.MouseButtonIsReleased(PRIMARY);
+}
+
+int GuiSystem::StringPicker(const char** stringArr, int count, uint32 fontId, float scale, float x, float y, float w, float h) {
+	ColoredBox(x, y, w, h, Vector4(0.7f, 0.7f, 0.7f, 0.7f));
+
+	int index = -1;
+	float currY = y;
+	for (int i = 0; i < count; i++) {
+		if (TextButton(stringArr[i], fontId, scale, x + 2, currY - scale/2, w - 4, scale + 2)) {
+			index = i;
+		}
+		currY -= (scale + 4);
+	}
+
+	return index;
 }
 
 void GuiSystem::EndFrame() {

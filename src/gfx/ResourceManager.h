@@ -45,6 +45,7 @@ struct ResourceManager {
 	void SaveLevelToFile(const Level* lvl, const char* fileName);
 
 	String FindFileNameByIdAndExtension(const char* ext, uint32 id);
+	void FindFileNamesByExtension(const char* ext, Vector<String>* outFiles);
 
 	void Render();
 };

@@ -22,6 +22,15 @@ union SelectionOffset {
 	}
 };
 
+struct MetaStruct;
+
+enum AssetPickerType {
+	APT_None,
+	APT_ComponentType,
+	APT_Mesh,
+	APT_Material
+};
+
 struct Editor {
 	Scene scene;
 
@@ -42,6 +51,8 @@ struct Editor {
 
 	GuiSystem gui;
 
+	AssetPickerType pickerType;
+
 	int GetSelectedEntity(int pixelX, int pixelY);
 
 	Vector3 ScreenSpaceCoordsToRay(float pixelX, float pixelY);
@@ -59,6 +70,8 @@ struct Editor {
 	float FloatField(float val, float x, float y, float w);
 	Vector2 Vec2Field(Vector2 val, float x, float y, float w);
 	Vector3 Vec3Field(Vector3 val, float x, float y, float w);
+
+	float EditComponentGui(Component* comp, MetaStruct* meta, float x, float y, bool* outRemove);
 
 	void DrawCurrentGizmo(const Entity* ent, Material* mat);
 	void DrawSelectGizmo(const Entity* ent, Material* mat);

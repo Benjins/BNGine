@@ -13,6 +13,7 @@ struct Level;
 
 typedef Component* (GetComponentFunc)(uint32 id);
 typedef Component* (AddComponentFunc)();
+typedef void (RemoveComponentFunc)(uint32 id);
 typedef Component* (GetComponentArrayFunc)();
 typedef int (GetComponentCountFunc)();
 
@@ -21,6 +22,7 @@ typedef int (GetComponentLevelCountFunc)(const Level* lvl);
 
 extern GetComponentFunc* getComponentFuncs[CCT_Count];
 extern AddComponentFunc* addComponentFuncs[CCT_Count];
+extern RemoveComponentFunc* removeComponentFuncs[CCT_Count];
 extern GetComponentArrayFunc* getComponentArrayFuncs[CCT_Count];
 extern GetComponentCountFunc* getComponentCountFuncs[CCT_Count];
 

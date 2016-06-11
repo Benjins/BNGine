@@ -14,6 +14,10 @@ Component* BoxCollider_getComponentArray(){
 	return GlobalScene->phys.boxCols.vals;
 }
 
+int BoxCollider_getComponentCount(){
+	return GlobalScene->phys.boxCols.currentCount;
+}
+
 Component* BoxCollider_getComponentById(uint32 id){
 	return GlobalScene->phys.boxCols.GetById(id);
 }
@@ -22,6 +26,10 @@ Component* BoxCollider_createAndAdd(){
 	Component* comp = GlobalScene->phys.boxCols.CreateAndAdd();
 	comp->type = CCT_BoxCollider;
 	return comp;
+}
+
+void BoxCollider_Remove(uint32 id){
+	GlobalScene->phys.boxCols.RemoveById(id);
 }
 
 Component* BoxCollider_getLevelArray(const Level* lvl){
@@ -38,6 +46,10 @@ Component* SphereCollider_getComponentArray(){
 	return GlobalScene->phys.sphereCols.vals;
 }
 
+int SphereCollider_getComponentCount(){
+	return GlobalScene->phys.sphereCols.currentCount;
+}
+
 Component* SphereCollider_getComponentById(uint32 id){
 	return GlobalScene->phys.sphereCols.GetById(id);
 }
@@ -46,6 +58,10 @@ Component* SphereCollider_createAndAdd(){
 	Component* comp = GlobalScene->phys.sphereCols.CreateAndAdd();
 	comp->type = CCT_SphereCollider;
 	return comp;
+}
+
+void SphereCollider_Remove(uint32 id){
+	GlobalScene->phys.sphereCols.RemoveById(id);
 }
 
 Component* SphereCollider_getLevelArray(const Level* lvl){
@@ -162,9 +178,21 @@ AddComponentToLevelFunc* addComponentToLevelFuncs[CCT_Count] = {
 	BoxCollider_addToLevel,
 	SphereCollider_addToLevel,
 };
+GetComponentArrayFunc* getComponentArrayFuncs[CCT_Count] = {
+	BoxCollider_getComponentArray,
+	SphereCollider_getComponentArray,
+};
+GetComponentCountFunc* getComponentCountFuncs[CCT_Count] = {
+	BoxCollider_getComponentCount,
+	SphereCollider_getComponentCount,
+};
 AddComponentFunc* addComponentFuncs[CCT_Count] = {
 	BoxCollider_createAndAdd,
 	SphereCollider_createAndAdd,
+};
+RemoveComponentFunc* removeComponentFuncs[CCT_Count] = {
+	BoxCollider_Remove,
+	SphereCollider_Remove,
 };
 ComponentXMLDeserializeFunc* componentXMLDeserializeFuncs[CCT_Count] = {
 	BoxCollider_XMLDeserialize,

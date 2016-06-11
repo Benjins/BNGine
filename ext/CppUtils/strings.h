@@ -9,7 +9,7 @@
 
 struct SubString;
 
-size_t FindChar(const char* str, char c);
+int FindChar(const char* str, char c);
 
 int StrLen(const char* str);
 

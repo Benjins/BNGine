@@ -188,7 +188,7 @@ Vector<SubString> LexString(String string){
 					break;
 				}
 				else if(*fileCursor == '(' || *fileCursor == ')'){
-					SubString thisTok = string.GetSubString(fileCursor - string.string, 1);
+					SubString thisTok = string.GetSubString((int)(fileCursor - string.string), 1);
 					tokens.PushBack(thisTok);
 					break;
 				}

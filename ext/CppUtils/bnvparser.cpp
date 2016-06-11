@@ -914,7 +914,7 @@ Value* BNVParser::ParseValue(){
 			else if (tokStr.start[0] >= '0' && tokStr.start[0] <= '9') {
 				int idx = FindChar(tokStr.start, '.');
 				if (idx != -1 && idx < tokStr.length) {
-					float val = atof(tokStr.start);
+					float val = Atof(tokStr.start);
 					FloatLiteral* fltLit = new FloatLiteral();
 					fltLit->value = val;
 					vals.PushBack(fltLit);

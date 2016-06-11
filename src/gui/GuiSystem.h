@@ -66,7 +66,9 @@ public:
 	void LoadIdentity();
 	void Translate(float x, float y);
 	void PopMatrix();
-	
+
+	void ColoredBox(float x, float y, float w, float h, const Vector4 col);
+
 	void DrawImage(int textureId, float x, float y, float w, float h);
 	// Returns width of drawn text
 	float DrawTextLabel(const char* text, uint32 fontId, float scale, float x, float y);
@@ -75,7 +77,12 @@ public:
 	String TextInput(const String& textIn, uint32 fontId, float scale, float x, float y, float w);
 	
 	bool SimpleButton(float x, float y, float w, float h);
-	bool TextButton(float x, float y, float w, float h);
+	bool TextButton(const char* text, uint32 fontId, float scale, float x, float y, float w, float h);
+
+	int StringPicker(const char** stringArr, int count, uint32 fontId, float scale, float x, float y, float w, float h);
+
+	void SelectTextInput(int index);
+	void DeSelectTextInput();
 
 	void EndFrame();
 };

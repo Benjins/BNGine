@@ -2,12 +2,12 @@
 
 #include <stdio.h>
 
-size_t FindChar(const char* str, char c) {
+int FindChar(const char* str, char c) {
 	const char* cursor = str;
 	while (*cursor) {
 
 		if (*cursor == c) {
-			return (cursor - str);
+			return (int)(cursor - str);
 		}
 
 		cursor++;
@@ -235,7 +235,7 @@ int StrFind(const char* haystack, const char* needle) {
 		}
 
 		if (!*nCursor) {
-			return haystack - originalHaystack;
+			return (int)(haystack - originalHaystack);
 		}
 
 		haystack++;

@@ -420,3 +420,22 @@ String ResourceManager::FindFileNameByIdAndExtension(const char* ext, uint32 id)
 
 	return String("");
 }
+
+void ResourceManager::FindFileNamesByExtension(const char* ext, Vector<String>* outFiles) {
+	for (int i = 0; i < assetIdMap.count; i++) {
+		const char* fileName = assetIdMap.names[i].string;
+		int fileNameLength = assetIdMap.names[i].GetLength();
+		const char* fileNameExt = fileName + (fileNameLength - 1);
+
+		while (fileNameExt > fileName && *fileNameExt != '.') {
+			fileNameExt--;
+		}
+
+		// It's pointing to the last dot, and should point just after.
+		fileNameExt++;
+
+		if (StrEqual(fileNameExt, ext)) {
+			outFiles->PushBack(assetIdMap.names[i]);
+		}
+	}
+}

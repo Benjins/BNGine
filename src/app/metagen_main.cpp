@@ -314,6 +314,10 @@ int main(int arc, char** argv) {
 		fprintf(componentMetaFile, "\treturn %s.vals;\n", getComponentPathList.data[i].string);
 		fprintf(componentMetaFile, "}\n\n");
 
+		fprintf(componentMetaFile, "int %.*s_getComponentCount(){\n", ms->name.length, ms->name.start);
+		fprintf(componentMetaFile, "\treturn %s.currentCount;\n", getComponentPathList.data[i].string);
+		fprintf(componentMetaFile, "}\n\n");
+
 		fprintf(componentMetaFile, "Component* %.*s_getComponentById(uint32 id){\n", ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "\treturn %s.GetById(id);\n", getComponentPathList.data[i].string);
 		fprintf(componentMetaFile, "}\n\n");
@@ -322,6 +326,10 @@ int main(int arc, char** argv) {
 		fprintf(componentMetaFile, "\tComponent* comp = %s.CreateAndAdd();\n", getComponentPathList.data[i].string);
 		fprintf(componentMetaFile, "\tcomp->type = CCT_%.*s;\n", ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "\treturn comp;\n");
+		fprintf(componentMetaFile, "}\n\n");
+
+		fprintf(componentMetaFile, "void %.*s_Remove(uint32 id){\n", ms->name.length, ms->name.start);
+		fprintf(componentMetaFile, "\t%s.RemoveById(id);\n", getComponentPathList.data[i].string);
 		fprintf(componentMetaFile, "}\n\n");
 
 		fprintf(componentMetaFile, "Component* %.*s_getLevelArray(const Level* lvl){\n", ms->name.length, ms->name.start);
@@ -457,10 +465,31 @@ int main(int arc, char** argv) {
 	}
 	fprintf(componentMetaFile, "};\n");
 
+	fprintf(componentMetaFile, "GetComponentArrayFunc* getComponentArrayFuncs[CCT_Count] = {\n");
+	for (int i = 0; i < componentIndices.count; i++) {
+		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
+		fprintf(componentMetaFile, "\t%.*s_getComponentArray,\n", structName.length, structName.start);
+	}
+	fprintf(componentMetaFile, "};\n");
+
+	fprintf(componentMetaFile, "GetComponentCountFunc* getComponentCountFuncs[CCT_Count] = {\n");
+	for (int i = 0; i < componentIndices.count; i++) {
+		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
+		fprintf(componentMetaFile, "\t%.*s_getComponentCount,\n", structName.length, structName.start);
+	}
+	fprintf(componentMetaFile, "};\n");
+
 	fprintf(componentMetaFile, "AddComponentFunc* addComponentFuncs[CCT_Count] = {\n");
 	for (int i = 0; i < componentIndices.count; i++) {
 		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
 		fprintf(componentMetaFile, "\t%.*s_createAndAdd,\n", structName.length, structName.start);
+	}
+	fprintf(componentMetaFile, "};\n");
+
+	fprintf(componentMetaFile, "RemoveComponentFunc* removeComponentFuncs[CCT_Count] = {\n");
+	for (int i = 0; i < componentIndices.count; i++) {
+		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
+		fprintf(componentMetaFile, "\t%.*s_Remove,\n", structName.length, structName.start);
 	}
 	fprintf(componentMetaFile, "};\n");
 

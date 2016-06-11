@@ -20,7 +20,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 
 	//Set up a console window for debug.
 	// TODO: Why is this not working?
-#if defined(BNS_DEBUG) || 0
+#if defined(BNS_DEBUG) && 0
 	AllocConsole();
 
 	HANDLE handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
