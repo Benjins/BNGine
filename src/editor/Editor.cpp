@@ -7,6 +7,7 @@
 #include "../metagen/MetaStruct.h"
 
 #include "../../ext/3dbasics/Vector4.h"
+#include "../../ext/CppUtils/filesys.h"
 
 void Editor::Update() {
 	//scene.Update();
@@ -63,8 +64,7 @@ void Editor::Update() {
 			OutputDebugStringA(StringStackBuffer<256>("The following entity was selected: %d\n", selectedEntity).buffer);
 		}
 	}
-
-	if (scene.input.MouseButtonIsPressed(MouseButton::PRIMARY)) {
+	else if (scene.input.MouseButtonIsPressed(MouseButton::PRIMARY)) {
 		if (scene.input.cursorX > leftBarWidth && scene.input.cursorX < cam.widthPixels - rightBarWidth
 			&& scene.input.cursorY > topBarHeight && selectedEntity != -1) {
 
@@ -74,10 +74,13 @@ void Editor::Update() {
 		}
 	}
 	else if (scene.input.MouseButtonIsDown(MouseButton::PRIMARY)) {
-		if (selectedEntity != -1) {
-			Entity* selected = scene.entities.GetById(selectedEntity);
+		if (scene.input.cursorX > leftBarWidth && scene.input.cursorX < cam.widthPixels - rightBarWidth
+			&& scene.input.cursorY > topBarHeight) {
+			if (selectedEntity != -1) {
+				Entity* selected = scene.entities.GetById(selectedEntity);
 
-			HandleGizmoDrag(selected);
+				HandleGizmoDrag(selected);
+			}
 		}
 	}
 }
@@ -181,6 +184,7 @@ void Editor::HandleGizmoDrag(Entity* selected) {
 			}
 
 			selectedTrans->position = selectedTrans->position - selectionOffset.position + projectionDiff;
+			OutputDebugStringA(StringStackBuffer<256>("selected obj pos: %.2f %.2f %.2f\n", selectedTrans->position.x, selectedTrans->position.y, selectedTrans->position.z).buffer);
 		}
 	}
 	else if (gizmoType == EG_Rotation) {
@@ -266,11 +270,53 @@ void Editor::Render() {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	TopPanelGui();
+
 	SidePanelGui();
 
 	glDisable(GL_BLEND);
 
+	sceneCamTrans = scene.transforms.GetById(scene.cam.transform);
 	*sceneCamTrans = oldSceneCamTrans;
+}
+
+void Editor::TopPanelGui() {
+	float x = leftBarWidth + 20;
+	float y = cam.heightPixels - topBarHeight / 2;
+	if (gui.TextButton("Add Entity", 0, 12, x, y, 90, 30)) {
+		int floorMesh, floorMat;
+		scene.res.assetIdMap.LookUp("floor.obj", &floorMesh);
+		scene.res.assetIdMap.LookUp("floor.mat", &floorMat);
+		scene.AddVisibleEntity(floorMat, floorMesh);
+	}
+
+	x += 100;
+
+	if (selectedEntity != -1) {
+		if (gui.TextButton("Remove Entity", 0, 12, x, y, 90, 30)) {
+			//Remove entity
+		}
+
+		x += 100;
+	}
+
+	if (gui.TextButton("Save Scene", 0, 12, x, y, 90, 30)) {
+		Level* currLevel = scene.res.levels.GetById(scene.currentLevel);
+		scene.SaveLevel(currLevel);
+		String levelFileName = scene.res.FindFileNameByIdAndExtension("lvl", currLevel->id);
+
+		File assets;
+		assets.Load("assets");
+		Vector<File*> levelFiles;
+		assets.FindFilesWithExt("lvl", &levelFiles);
+
+		for (int i = 0; i < levelFiles.count; i++) {
+			if (levelFileName == levelFiles.Get(i)->fileName) {
+				scene.res.SaveLevelToFile(currLevel, levelFiles.Get(i)->fullName);
+				break;
+			}
+		}
+	}
 }
 
 void Editor::SidePanelGui() {

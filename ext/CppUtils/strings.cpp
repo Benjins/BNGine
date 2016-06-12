@@ -216,7 +216,7 @@ float Atof(const char* str) {
 		str++;
 	}
 
-	return val*sign + decVal;
+	return sign * (val + decVal);
 }
 
 int StrFind(const char* haystack, const char* needle) {

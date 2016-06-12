@@ -222,7 +222,7 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 		float cursorOffset = font->GetCursorPos(textInputState.prevEntry.string, textInputState.cursorPos);
 		float curX = x + cursorOffset + textOffset;
 
-		ColoredBox(curX, y, cursorWidth, scale, Vector4(0.7f, 0.7f, 0.7f, 0.7f));
+		ColoredBox(curX, y + scale, cursorWidth, scale, Vector4(0.7f, 0.7f, 0.7f, 0.7f));
 
 		for (unsigned char c = 'A'; c <= 'Z'; c++) {
 			if (GlobalScene->input.KeyIsPressed(c)) {
@@ -364,9 +364,9 @@ int GuiSystem::StringPicker(const char** stringArr, int count, uint32 fontId, fl
 	ColoredBox(x, y, w, h, Vector4(0.7f, 0.7f, 0.7f, 0.7f));
 
 	int index = -1;
-	float currY = y;
+	float currY = y - scale/2 - 1;
 	for (int i = 0; i < count; i++) {
-		if (TextButton(stringArr[i], fontId, scale, x + 2, currY - scale/2, w - 4, scale + 2)) {
+		if (TextButton(stringArr[i], fontId, scale, x + 2, currY, w - 4, scale + 2)) {
 			index = i;
 		}
 		currY -= (scale + 4);

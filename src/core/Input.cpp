@@ -6,7 +6,7 @@ Input::Input() {
 	cursorDeltaX = 0;
 	cursorDeltaY = 0;
 	cursorX = 0;
-	cursorX = 0;
+	cursorY = 0;
 
 	for (int i = 0; i < 256; i++) {
 		standardKeys[i] = OFF;

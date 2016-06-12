@@ -64,6 +64,7 @@ struct Editor {
 	void Render();
 	void StartUp();
 
+	void TopPanelGui();
 	void SidePanelGui();
 
 	int IntField(int val, float x, float y, float w);

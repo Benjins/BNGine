@@ -1,32 +1,41 @@
 <Scene>
-	<Camera fov='80' nearClip='0.01' farClip='1000'>
-		<Transform id='1' pos='0,1.2,1' rotation='1,0,0,0' scale='1,1,1' parent='-1'/>
+	<Camera nearClip='0.010000' farClip='1000.000000' fov='80'>
+		<Transform pos='2.719998,-0.540000,-7.659994' id='1' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 	</Camera>
 	<Entity id='0'>
-		<Transform id='0' pos='0,0,0' rotation='1,0,0,0' scale='1,1,1' parent='-1'/>
+		<Transform pos='-2.331934,0.000000,0.000000' id='0' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<BoxCollider size='0.000000,0.000000,0.000000' position='28051178029166527705228771328.000000,0.000000,0.000000'/>
 		<Material src='standard.mat'/>
 		<Mesh src='monkey.obj'/>
 	</Entity>
 	<Entity id='1'>
-		<Transform id='2' pos='0,3,0' rotation='1,0,0,0' scale='1,1,1' parent='-1'/>
+		<Transform pos='0.000000,3.000000,0.000000' id='2' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 		<Material src='standard.mat'/>
 		<Mesh src='monkey.obj'/>
 	</Entity>
 	<Entity id='2'>
-		<Transform id='3' pos='0,0,0' rotation='1,0,0,0' scale='1,1,1' parent='2'/>
+		<Transform pos='0.000000,0.000000,0.000000' id='3' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='2'/>
 		<Material src='standard.mat'/>
 		<Mesh src='test_2.obj'/>
 	</Entity>
 	<Entity id='3'>
-		<Transform id='4' pos='0,-1,0' rotation='1,0,0,0' scale='1,1,1' parent='-1'/>
+		<Transform pos='0.000000,-1.000000,0.000000' id='4' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 		<Material src='floor.mat'/>
 		<Mesh src='floor.obj'/>
-		<BoxCollider position='0,-0.25,0' size='5,0.2,5'/>
 	</Entity>
 	<Entity id='4'>
-		<Transform id='5' pos='2,-0.4,2' rotation='1,0,0,0' scale='0.6,0.3,0.6' parent='-1'/>
+		<Transform pos='2.000000,-0.400000,2.000000' id='5' scale='0.600000,0.300000,0.600000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 		<Material src='floor.mat'/>
 		<Mesh src='test_2.obj'/>
-		<BoxCollider position='0,0,0' size='1,1,1'/>
+	</Entity>
+	<Entity id='5'>
+		<Transform pos='-10.092923,-2.127281,0.000000' id='6' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<Material src='floor.mat'/>
+		<Mesh src='floor.obj'/>
+	</Entity>
+	<Entity id='6'>
+		<Transform pos='7.953962,-2.657484,0.000000' id='7' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<Material src='floor.mat'/>
+		<Mesh src='floor.obj'/>
 	</Entity>
 </Scene>

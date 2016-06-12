@@ -306,8 +306,8 @@ void XMLSerializeTransform(XMLElement* elem, const Transform* trans) {
 	//<Transform id='3' pos='0,0,0' rotation='1,0,0,0' scale='1,1,1' parent='2'/>
 	elem->attributes.Insert("id", Itoa(trans->id));
 	elem->attributes.Insert("pos", EncodeVector3(trans->position));
-	elem->attributes.Insert("rotation", EncodeQuaternion(trans->position));
-	elem->attributes.Insert("scale", EncodeVector3(trans->position));
+	elem->attributes.Insert("rotation", EncodeQuaternion(trans->rotation));
+	elem->attributes.Insert("scale", EncodeVector3(trans->scale));
 	elem->attributes.Insert("parent", Itoa(trans->parent));
 }
 
