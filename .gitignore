@@ -10,8 +10,8 @@ build/
 
 .vs/
 
-gen/
-!gen/README.md
+gen/*.cpp
+gen/*.h
 
 *.dll
 *.lib
