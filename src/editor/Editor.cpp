@@ -476,7 +476,7 @@ float Editor::EditComponentGui(Component* comp, MetaStruct* meta, float x, float
 
 		char* fieldPtr = ((char*)comp) + mf->offset;
 
-		if (mf->type >= MT_FundamentalEnd && mf->type < MT_FundamentalEnd) {
+		if (mf->type >= MT_FundamentalBegin && mf->type < MT_FundamentalEnd) {
 			gui.DrawTextLabel(mf->name, 0, 12, x, currY);
 			currY -= 14;
 		}

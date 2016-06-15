@@ -1,10 +1,9 @@
 <Scene>
 	<Camera nearClip='0.010000' farClip='1000.000000' fov='80'>
-		<Transform pos='2.719998,-0.540000,-7.659994' id='1' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<Transform pos='-3.222547,0.198501,-2.105397' id='1' scale='1.000000,1.000000,1.000000' rotation='0.799572,0.080225,-0.592215,0.059420' parent='-1'/>
 	</Camera>
 	<Entity id='0'>
 		<Transform pos='-2.331934,0.000000,0.000000' id='0' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<BoxCollider size='0.000000,0.000000,0.000000' position='28051178029166527705228771328.000000,0.000000,0.000000'/>
 		<Material src='standard.mat'/>
 		<Mesh src='monkey.obj'/>
 	</Entity>
@@ -19,17 +18,20 @@
 		<Mesh src='test_2.obj'/>
 	</Entity>
 	<Entity id='3'>
-		<Transform pos='0.000000,-1.000000,0.000000' id='4' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<Transform pos='0.000544,-1.000000,0.000000' id='4' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 		<Material src='floor.mat'/>
 		<Mesh src='floor.obj'/>
+		<BoxCollider size='5.000000,0.100000,5.000000' position='0.000000,0.000000,0.000000'/>
 	</Entity>
 	<Entity id='4'>
 		<Transform pos='2.000000,-0.400000,2.000000' id='5' scale='0.600000,0.300000,0.600000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 		<Material src='floor.mat'/>
 		<Mesh src='test_2.obj'/>
+		<BoxCollider position='0,0,0' size='1,1,1'/>
 	</Entity>
 	<Entity id='5'>
-		<Transform pos='-10.092923,-2.127281,0.000000' id='6' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<Transform pos='-6.077389,-0.409892,0.000000' id='6' scale='1.000000,1.000000,1.000000' rotation='0.988187,0.000000,0.000000,-0.153251' parent='-1'/>
+		<BoxCollider size='5.000000,0.100000,5.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='floor.mat'/>
 		<Mesh src='floor.obj'/>
 	</Entity>

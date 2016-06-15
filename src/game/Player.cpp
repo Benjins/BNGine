@@ -34,10 +34,21 @@ void Player::Update() {
 	moveVec.y = 0;
 
 	if (currState == CS_GROUNDED) {
+		Vector3 newPos = camTrans->GetGlobalPosition() + moveVec;
+		RaycastHit newDownCast = GlobalScene->phys.Raycast(newPos, Y_AXIS * -1);
+
+		const float floorStickHeight = 0.1f;
+
+		if (newDownCast.wasHit && newDownCast.depth < playerHeight + floorStickHeight) {
+			float heightShift = playerHeight - newDownCast.depth;
+			moveVec.y = heightShift;
+		}
+
 		if (camTrans->position.y > floorHeight) {
 			currState = CS_FALLING;
 		}
-		else if (GlobalScene->input.KeyIsDown(' ')) {
+		
+		if (GlobalScene->input.KeyIsDown(KC_Space)) {
 			yVelocity = jumpVelocity;
 			currState = CS_JUMPING;
 		}
@@ -71,11 +82,12 @@ void Player::Update() {
 		Vector3 badVec = moveVec - goodVec;
 
 		Vector3 projectedVec = badVec - VectorProject(badVec, moveCast.globalNormal);
-
 		moveVec = goodVec + projectedVec;
 	}
 
 	moveVec.y = heightDiff;
+
+
 
 	camTrans->position = camTrans->position + moveVec;
 }
