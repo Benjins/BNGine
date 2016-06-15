@@ -11,7 +11,7 @@ build/
 .vs/
 
 gen/
-#!gen/README.md
+!gen/README.md
 
 *.dll
 *.lib
