@@ -18,17 +18,19 @@ void Player::Update() {
 
 	Vector3 moveVec;
 
+	const float movementSpeed = 3.0f;
+
 	if (GlobalScene->input.KeyIsDown('W')) {
-		moveVec = moveVec + camTrans->Forward() / 30.0f;
+		moveVec = moveVec + camTrans->Forward() * GlobalScene->GetDeltaTime() * movementSpeed;
 	}
 	if (GlobalScene->input.KeyIsDown('S')) {
-		moveVec = moveVec - camTrans->Forward() / 30.0f;
+		moveVec = moveVec - camTrans->Forward() * GlobalScene->GetDeltaTime() * movementSpeed;
 	}
 	if (GlobalScene->input.KeyIsDown('A')) {
-		moveVec = moveVec - camTrans->Right() / 30.0f;
+		moveVec = moveVec - camTrans->Right() * GlobalScene->GetDeltaTime() * movementSpeed;
 	}
 	if (GlobalScene->input.KeyIsDown('D')) {
-		moveVec = moveVec + camTrans->Right() / 30.0f;
+		moveVec = moveVec + camTrans->Right() * GlobalScene->GetDeltaTime() * movementSpeed;
 	}
 
 	moveVec.y = 0;
@@ -63,7 +65,8 @@ void Player::Update() {
 	}
 	else if (currState == CS_FALLING) {
 		yVelocity -= 0.05f;
-		moveVec.y = yVelocity / 50.0f;
+		const float fallingSpeed = 1.0f;
+		moveVec.y = yVelocity * GlobalScene->GetDeltaTime() * fallingSpeed;
 
 		if (camTrans->position.y + moveVec.y < floorHeight) {
 			currState = CS_GROUNDED;
@@ -86,8 +89,6 @@ void Player::Update() {
 	}
 
 	moveVec.y = heightDiff;
-
-
 
 	camTrans->position = camTrans->position + moveVec;
 }

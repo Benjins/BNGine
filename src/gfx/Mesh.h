@@ -24,7 +24,13 @@ struct Mesh : IDBase {
 	GLuint posVbo;
 	GLuint uvVbo;
 
+	Mesh();
+
 	void UploadToGfxDevice();
+
+	void Destroy();
+
+	~Mesh();
 };
 
 

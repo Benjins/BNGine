@@ -5,6 +5,7 @@
 Texture::Texture(){
 	externalColourFormat = GL_RGB;
 	internalColourFormat = GL_BGR;
+	textureObj = -1;
 }
 
 void Texture::UploadToGraphicsDevice() {
@@ -19,4 +20,22 @@ void Texture::UploadToGraphicsDevice() {
 void Texture::Bind(GLenum textureTarget) {
 	glActiveTexture(textureTarget);
 	glBindTexture(textureType, textureObj);
+}
+
+void Texture::Destroy() {
+	// TODO: Unbind the texture maybe?
+
+	if (textureObj != -1) {
+		glDeleteTextures(1, &textureObj);
+		textureObj = -1;
+	}
+
+	if (texMem != nullptr) {
+		free(texMem);
+		texMem = nullptr;
+	}
+}
+
+Texture::~Texture() {
+	Destroy();
 }

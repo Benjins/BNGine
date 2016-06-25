@@ -11,6 +11,7 @@
 #include "Transform.h"
 #include "Camera.h"
 #include "Input.h"
+#include "Timer.h"
 
 #include "../game/Player.h"
 
@@ -35,6 +36,12 @@ struct Scene {
 	GuiSystem gui;
 
 	Camera cam;
+
+	Timer frameTimer;
+
+	double GetDeltaTime() {
+		return frameTimer.GetTimeSince();
+	}
 
 	Scene();
 

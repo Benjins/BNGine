@@ -23,6 +23,10 @@ struct Texture : IDBase {
 
 	void UploadToGraphicsDevice();
 	void Bind(GLenum textureTarget);
+
+	void Destroy();
+
+	~Texture();
 };
 
 

@@ -42,11 +42,20 @@ void Scene::StartUp() {
 	
 	LoadLevel("Level1.lvl");
 
+	frameTimer.Reset();
+
 	//res.SaveLevelToFile(res.levels.GetById(level1Id), "Level1_edit.lvl");
 }
 
 void Scene::Update() {
 	player.Update();
+
+	if (GlobalScene->input.KeyIsReleased('R')) {
+		PackAssetFile("assets", "assets.bna");
+		res.LoadAssetFile("assets.bna");
+	}
+
+	frameTimer.Reset();
 }
 
 void Scene::Reset() {

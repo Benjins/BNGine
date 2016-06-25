@@ -16,8 +16,22 @@ ResourceManager::ResourceManager()
 
 }
 
+void ResourceManager::Reset() {
+	assetIdMap = StringMap<int>();
+
+	fonts.Reset();
+	levels.Reset();
+	materials.Reset();
+	meshes.Reset();
+	programs.Reset();
+	shaders.Reset();
+	textures.Reset();
+}
+
 void ResourceManager::LoadAssetFile(const char* fileName) {
 	typedef unsigned char byte;
+
+	Reset();
 
 	char fileIdx[] = "BNSA";
 
@@ -362,8 +376,6 @@ void ResourceManager::SaveLevelToFile(const Level* lvl, const char* fileName) {
 			unsigned char* compCursor = (unsigned char*)compBase;
 
 			for (int j = 0; j < compCount; j++) {
-				compCursor += ms->size;
-
 				Component* currComp = (Component*)compCursor;
 
 				if (currComp->entity == ent->id) {
@@ -372,6 +384,8 @@ void ResourceManager::SaveLevelToFile(const Level* lvl, const char* fileName) {
 
 					doc.elements.GetById(entElemId)->childrenIds.PushBack(compElem->id);
 				}
+
+				compCursor += ms->size;
 			}
 		}
 

@@ -2,6 +2,11 @@
 
 #include "GLExtInit.h"
 
+Mesh::Mesh() {
+	posVbo = -1;
+	uvVbo = -1;
+}
+
 void Mesh::UploadToGfxDevice() {
 	Vector<Vector3> positionsData;
 	positionsData.EnsureCapacity(faces.count*3);
@@ -28,4 +33,20 @@ void Mesh::UploadToGfxDevice() {
 		glBindBuffer(GL_ARRAY_BUFFER, uvVbo);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2)*uvData.count, uvData.data, GL_STATIC_DRAW);
 	}
+}
+
+void Mesh::Destroy() {
+	if (posVbo != -1) {
+		glDeleteBuffers(1, &posVbo);
+		posVbo = -1;
+	}
+
+	if (uvVbo != -1) {
+		glDeleteBuffers(1, &uvVbo);
+		uvVbo = -1;
+	}
+}
+
+Mesh::~Mesh() {
+	Destroy();
 }
