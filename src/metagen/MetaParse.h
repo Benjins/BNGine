@@ -28,16 +28,6 @@ struct ParseMetaField {
 	}
 };
 
-struct ParseMetaFieldSub : ParseMetaField {
-	int testyy[200];
-
-	Vector<float> lols;
-
-	Vector<SubString> nott;
-
-	int compOd;
-};
-
 struct ParseMetaEnumEntry {
 	SubString value;
 	Vector<ParseMetaAttribute> attrs;
@@ -49,11 +39,16 @@ struct ParseMetaEnum {
 	Vector<ParseMetaAttribute> attrs;
 };
 
+struct ParseMetaFunction {
+	SubString name;
+};
+
 struct ParseMetaStruct {
 	SubString name;
 	SubString parentName;
 	Vector<ParseMetaField> fields;
 	Vector<ParseMetaAttribute> attrs;
+	Vector<ParseMetaFunction> methods;
 };
 
 Vector<ParseMetaStruct> ParseStructDefsFromFile(const char* fileName);

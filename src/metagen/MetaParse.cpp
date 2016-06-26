@@ -58,6 +58,17 @@ Vector<ParseMetaStruct> ParseStructDefsFromFile(const char* fileName) {
 
 					parsedStructs.Get(parsedStructs.count - 1).fields.PushBack(structField);
 				}
+				else if (prevTok == ")") {
+					int j = i - 1;
+					while (tokens.data[j] != "(") {
+						j--;
+					}
+
+					SubString funcName = tokens.data[j - 1];
+					ParseMetaFunction func;
+					func.name = funcName;
+					parsedStructs.Get(parsedStructs.count - 1).methods.PushBack(func);
+				}
 			}
 		}
 		else {

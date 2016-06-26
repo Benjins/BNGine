@@ -1,6 +1,6 @@
 <Scene>
 	<Camera nearClip='0.010000' farClip='1000.000000' fov='80'>
-		<Transform pos='0.000000,0.000000,0.000000' id='1' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<Transform pos='0,0,0' id='1' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='8'/>
 	</Camera>
 	<Entity id='0'>
 		<Transform pos='-2.331934,0.000000,0.000000' id='0' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
@@ -39,5 +39,9 @@
 		<Transform pos='7.953962,-2.657484,0.000000' id='7' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 		<Material src='floor.mat'/>
 		<Mesh src='floor.obj'/>
+	</Entity>
+	<Entity id='7'>
+		<Transform pos='0.000000,0.000000,0.000000' id='8' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<PlayerComponent jumpVelocity='3.000000' playerWidth='0.200000' playerHeight='0.600000' yVelocity='0.000000'/>
 	</Entity>
 </Scene>

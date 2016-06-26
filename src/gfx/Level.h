@@ -12,6 +12,7 @@ struct Transform;
 struct Entity;
 struct BoxCollider;
 struct SphereCollider;
+struct PlayerComponent;
 
 struct Level : IDBase{
 	Camera cam;
@@ -23,6 +24,7 @@ struct Level : IDBase{
 
 	Vector<BoxCollider> boxCols;
 	Vector<SphereCollider> sphereCols;
+	Vector<PlayerComponent> playerComps;
 };
 
 #endif

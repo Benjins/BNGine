@@ -10,7 +10,7 @@
 
 Scene* GlobalScene = nullptr;
 
-Scene::Scene() : entities(100), transforms(120), res() {
+Scene::Scene() : entities(100), transforms(120), res()	 {
 	GlobalScene = this;
 }
 
@@ -48,7 +48,9 @@ void Scene::StartUp() {
 }
 
 void Scene::Update() {
-	player.Update();
+	for (int i = 0; i < gameplay.players.currentCount; i++) {
+		gameplay.players.vals[i].Update();
+	}
 
 	if (GlobalScene->input.KeyIsReleased('R')) {
 		PackAssetFile("assets", "assets.bna");

@@ -13,7 +13,7 @@
 #include "Input.h"
 #include "Timer.h"
 
-#include "../game/Player.h"
+#include "../game/GameplayComponents.h"
 
 #include "../gfx/ResourceManager.h"
 #include "../physics/PhysicsSystem.h"
@@ -29,7 +29,7 @@ struct Scene {
 
 	Input input;
 
-	Player player;
+	GameplayComponents gameplay;
 
 	PhysicsSystem phys;
 	

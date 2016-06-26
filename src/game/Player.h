@@ -11,7 +11,7 @@ enum ControlState {
 	CS_FALLING
 };
 
-struct Player{
+struct PlayerComponent : Component{
 	float yVelocity;
 
 	float playerHeight;
@@ -20,7 +20,7 @@ struct Player{
 
 	ControlState currState;
 
-	Player() {
+	PlayerComponent() {
 		playerHeight = 0.6f;
 		playerWidth = 0.2f;
 		jumpVelocity = 3.0f;

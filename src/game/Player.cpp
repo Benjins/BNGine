@@ -3,12 +3,15 @@
 
 #include "../core/Scene.h"
 
-void Player::Update() {
+void PlayerComponent::Update() {
 	float floorHeight = -2;
+
+	Entity* ent = GlobalScene->entities.GetById(entity);
+	Transform* entTrans = GlobalScene->transforms.GetById(ent->transform);
 
 	Transform* camTrans = GlobalScene->transforms.GetById(GlobalScene->cam.transform);
 
-	RaycastHit downCast = GlobalScene->phys.Raycast(camTrans->GetGlobalPosition() + Vector3(0, 0.1f - playerHeight, 0), Y_AXIS * -1);
+	RaycastHit downCast = GlobalScene->phys.Raycast(entTrans->GetGlobalPosition() + Vector3(0, 0.1f - playerHeight, 0), Y_AXIS * -1);
 
 	if (downCast.wasHit) {
 		floorHeight = downCast.globalPos.y + playerHeight;
@@ -36,7 +39,7 @@ void Player::Update() {
 	moveVec.y = 0;
 
 	if (currState == CS_GROUNDED) {
-		Vector3 newPos = camTrans->GetGlobalPosition() + moveVec;
+		Vector3 newPos = entTrans->GetGlobalPosition() + moveVec;
 		RaycastHit newDownCast = GlobalScene->phys.Raycast(newPos, Y_AXIS * -1);
 
 		const float floorStickHeight = 0.1f;
@@ -46,7 +49,7 @@ void Player::Update() {
 			moveVec.y = heightShift;
 		}
 
-		if (camTrans->position.y > floorHeight) {
+		if (entTrans->position.y > floorHeight) {
 			currState = CS_FALLING;
 		}
 		
@@ -68,18 +71,18 @@ void Player::Update() {
 		const float fallingSpeed = 1.0f;
 		moveVec.y = yVelocity * GlobalScene->GetDeltaTime() * fallingSpeed;
 
-		if (camTrans->position.y + moveVec.y < floorHeight) {
+		if (entTrans->position.y + moveVec.y < floorHeight) {
 			currState = CS_GROUNDED;
 			yVelocity = 0;
 			moveVec.y = 0;
-			camTrans->position.y = floorHeight;
+			entTrans->position.y = floorHeight;
 		}
 	}
 
 	float heightDiff = moveVec.y;
 	moveVec.y = 0;
 
-	RaycastHit moveCast = GlobalScene->phys.Raycast(camTrans->position, moveVec.Normalized());
+	RaycastHit moveCast = GlobalScene->phys.Raycast(entTrans->position, moveVec.Normalized());
 	if (moveCast.wasHit && moveCast.depth <= playerWidth + moveVec.Magnitude()) {
 		Vector3 goodVec = moveVec.Normalized() * (moveCast.depth - playerWidth - 0.001f);
 		Vector3 badVec = moveVec - goodVec;
@@ -90,5 +93,6 @@ void Player::Update() {
 
 	moveVec.y = heightDiff;
 
-	camTrans->position = camTrans->position + moveVec;
+	entTrans->position = entTrans->position + moveVec;
+	OutputDebugStringA(StringStackBuffer<256>("entTrans pos: %.2f %.2f %.2f\n", entTrans->position.x, entTrans->position.y, entTrans->position.z).buffer);
 }
