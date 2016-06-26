@@ -72,41 +72,6 @@ int main(int arc, char** argv) {
 		}
 	}
 
-	/*
-	for (int i = 0; i < allParseMetaStructs.count; i++) {
-		ParseMetaStruct parseMeta = allParseMetaStructs.data[i];
-		printf("struct %.*s", parseMeta.name.length, parseMeta.name.start);
-		if (parseMeta.parentName.start != nullptr) {
-			printf(" : %.*s", parseMeta.parentName.length, parseMeta.parentName.start);
-		}
-
-		printf("{\n");
-
-		for (int j = 0; j < parseMeta.fields.count; j++) {
-			ParseMetaField mf = parseMeta.fields.data[j];
-			printf("\t%.*s", mf.type.length, mf.type.start);
-
-			if (mf.typeParam.start != nullptr) {
-				printf("<%.*s>", mf.typeParam.length, mf.typeParam.start);
-			}
-
-			for (int k = 0; k < mf.indirectionLevel; k++) {
-				printf("*");
-			}
-
-			printf(" %.*s", mf.name.length, mf.name.start);
-
-			if (mf.arrayCount != NOT_AN_ARRAY) {
-				printf("[%d]", mf.arrayCount);
-			}
-
-			printf(";\n");
-		}
-
-		printf("};\n\n");
-	}
-	*/
-
 	StringMap<int> typeIndices;
 
 	Vector<int> componentIndices;
@@ -342,6 +307,32 @@ int main(int arc, char** argv) {
 		fprintf(componentMetaFile, "\treturn count;\n");
 		fprintf(componentMetaFile, "}\n\n");
 	}
+
+	fprintf(componentMetaFile, "\nvoid Scene::UpdateCustomComponents(){\n");
+	for(int i = 0; i < componentIndices.count; i++) {
+		int compIdx = componentIndices.data[i];
+		ParseMetaStruct* ms = &allParseMetaStructs.data[compIdx];
+
+		bool hasUpdate = false;
+		for (int j = 0; j < ms->methods.count; j++) {
+			if (ms->methods.Get(j).name == "Update") {
+				hasUpdate = true;
+				break;
+			}
+		}
+
+		if (hasUpdate) {
+			fprintf(componentMetaFile, "\tfor (int i = 0; i < %s.currentCount; i++) {\n", getComponentPathList.Get(i).string);
+			fprintf(componentMetaFile, "\t\t%s.vals[i].Update();\n", getComponentPathList.Get(i).string);
+			fprintf(componentMetaFile, "\t}\n");
+		}
+	}
+	fprintf(componentMetaFile, "\n}\n");
+
+	/*
+	for (int i = 0; i < gameplay.players.currentCount; i++) {
+		gameplay.players.vals[i].Update();
+	}*/
 
 	for (int i = 0; i < componentIndices.count; i++) {
 		int compIdx = componentIndices.data[i];

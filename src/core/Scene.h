@@ -46,7 +46,9 @@ struct Scene {
 	Scene();
 
 	void StartUp();
+
 	void Update();
+	void UpdateCustomComponents();
 
 	void Render();
 

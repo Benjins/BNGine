@@ -94,5 +94,4 @@ void PlayerComponent::Update() {
 	moveVec.y = heightDiff;
 
 	entTrans->position = entTrans->position + moveVec;
-	OutputDebugStringA(StringStackBuffer<256>("entTrans pos: %.2f %.2f %.2f\n", entTrans->position.x, entTrans->position.y, entTrans->position.z).buffer);
 }

@@ -48,9 +48,7 @@ void Scene::StartUp() {
 }
 
 void Scene::Update() {
-	for (int i = 0; i < gameplay.players.currentCount; i++) {
-		gameplay.players.vals[i].Update();
-	}
+	UpdateCustomComponents();
 
 	if (GlobalScene->input.KeyIsReleased('R')) {
 		PackAssetFile("assets", "assets.bna");
