@@ -78,6 +78,9 @@ void PlayerComponent::Update() {
 			entTrans->position.y = floorHeight;
 		}
 	}
+	else {
+		ASSERT_WARN("'%s': Yo, currState is all out of wack.", __FUNCTION__);
+	}
 
 	float heightDiff = moveVec.y;
 	moveVec.y = 0;

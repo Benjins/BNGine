@@ -443,8 +443,7 @@ int main(int arc, char** argv) {
 
 		const char* lvlPath = getComponentLevelPathList.Get(i).string;
 		fprintf(componentMetaFile, "Component* %.*s_addToLevel(Level* lvl){\n", ms->name.length, ms->name.start);
-		fprintf(componentMetaFile, "\t\nlvl->%s.EnsureCapacity(lvl->%s.count+1);\n", lvlPath, lvlPath);
-		fprintf(componentMetaFile, "\tlvl->%s.count++;\n", lvlPath);
+		fprintf(componentMetaFile, "\tlvl->%s.PushBack(%.*s());\n", lvlPath, ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "\treturn &lvl->%s.data[lvl->%s.count-1];\n", lvlPath, lvlPath);
 		fprintf(componentMetaFile, "}\n\n");
 	}
