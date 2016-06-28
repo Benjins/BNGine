@@ -11,6 +11,7 @@ SOURCES := $(filter-out src/app/win_editor.cpp,$(SOURCES))
 SOURCES := $(filter-out src/app/x11_main.cpp,$(SOURCES))
 SOURCES := $(filter-out src/app/osmesa_main.cpp,$(SOURCES))
 SOURCES := $(filter-out src/app/metagen_main.cpp,$(SOURCES))
+SOURCES := $(filter-out src/unity/UnityBuildGenerator.cpp,$(SOURCES))
 
 ifeq ($(OS_MESA),1)
     SOURCES += src/app/osmesa_main.cpp

@@ -13,6 +13,7 @@ struct Entity;
 struct BoxCollider;
 struct SphereCollider;
 struct PlayerComponent;
+struct BulletComponent;
 
 struct Level : IDBase{
 	Camera cam;
