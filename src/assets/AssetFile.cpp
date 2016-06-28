@@ -618,7 +618,8 @@ void WriteBitmapFontChunk(const char* fontFileName, int scale, int id, FILE* ass
 	int fontBakeHeight = 1024;
 	
 	unsigned char* fontBakeBuffer = (unsigned char*)malloc(fontBakeWidth*fontBakeHeight);
-	
+	memset(fontBakeBuffer, 0, fontBakeWidth*fontBakeHeight);
+
 	CodepointInfo codepoints[256] = {};
 	int codepointCount = 0;
 	
