@@ -28,7 +28,7 @@ static_assert(KeyStateFromBools(true, true) == HOLD, "HOLD key state");
 static_assert(KeyStateFromBools(true, false) == RELEASE, "RELEASE key state");
 #endif
 
-enum KeyCode {
+enum KeyStrokeCode {
 	KC_Invalid = -1,
 	KC_Shift,
 	KC_Control,

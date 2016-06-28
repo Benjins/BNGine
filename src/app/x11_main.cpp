@@ -13,7 +13,7 @@ int evtPred(Display* d, XEvent* evt, XPointer xp){
 	return 1;
 }
 
-unsigned char KeyCodeToAscii(Display* display, int keycode){
+unsigned char KeyStrokeCodeToAscii(Display* display, int keycode){
 	KeySym ksym = XkbKeycodeToKeysym( display, keycode, 0, keycode & ShiftMask ? 1 : 0);
 	
 	//There's got to be a better way.  In fact there is.  I just haven't done it yet.
@@ -99,11 +99,11 @@ int main(int argc, char** argv){
 		    	GlobalScene->input.SetCursorPos(currMouseX, currMouseY);
 		    }
 		    else if (ev.type == KeyPress){
-		    	unsigned char key = KeyCodeToAscii(dpy, ev.xkey.keycode);
+		    	unsigned char key = KeyStrokeCodeToAscii(dpy, ev.xkey.keycode);
 				GlobalScene->input.KeyPressed(key);
 		    }
 		    else if (ev.type == KeyRelease){
-		    	unsigned char key = KeyCodeToAscii(dpy, ev.xkey.keycode);
+		    	unsigned char key = KeyStrokeCodeToAscii(dpy, ev.xkey.keycode);
 				GlobalScene->input.KeyReleased(key);
 		    }
 		    else if (ev.type == ConfigureNotify) {

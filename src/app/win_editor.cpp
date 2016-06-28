@@ -122,7 +122,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 	return 0;
 }
 
-KeyCode SystemKeyToKeyCode(int key);
+KeyStrokeCode SystemKeyToKeyStrokeCode(int key);
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	LRESULT result = 0;
@@ -165,7 +165,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		bool wasDown = (lParam & (1 << 30)) != 0;
 		bool  isDown = (lParam & (1 << 31)) == 0;
 
-		KeyCode keyCode = SystemKeyToKeyCode(code);
+		KeyStrokeCode keyCode = SystemKeyToKeyStrokeCode(code);
 
 		if (keyCode >= 0 && keyCode < 256) {
 			if (wasDown && !isDown) {
@@ -204,16 +204,16 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 }
 
 struct VKDef {
-	KeyCode keyCode;
+	KeyStrokeCode keyCode;
 	int virtualCode;
 };
 
-KeyCode SystemKeyToKeyCode(int key) {
+KeyStrokeCode SystemKeyToKeyStrokeCode(int key) {
 	if (key >= 'A' && key <= 'Z') {
-		return (KeyCode)(key);
+		return (KeyStrokeCode)(key);
 	}
 	else if (key >= '0' && key <= '9') {
-		return (KeyCode)(key);
+		return (KeyStrokeCode)(key);
 	}
 	else {
 		static VKDef vkDefs[] = {
