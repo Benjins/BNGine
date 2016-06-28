@@ -45,7 +45,7 @@ void PlayerComponent::Update() {
 		ASSERT(pref != nullptr);
 
 		Vector3 bulletSpawnPosition = entTrans->GetGlobalPosition() + entTrans->Forward() * 0.21f;
-		pref->Instantiate(bulletSpawnPosition, entTrans->rotation);
+		pref->Instantiate(bulletSpawnPosition, entTrans->rotation * camTrans->rotation);
 	}
 
 	moveVec.y = 0;
