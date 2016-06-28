@@ -53,6 +53,9 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 	Vector<File*> fontFiles;
 	assetDir.FindFilesWithExt("ttf", &fontFiles);
 
+	Vector<File*> prefabFiles;
+	assetDir.FindFilesWithExt("bnp", &prefabFiles);
+
 	for (int i = 0; i < meshFiles.count; i++) {
 		assetFileIds.Insert(meshFiles.data[i]->fileName, i);
 	}
@@ -76,9 +79,13 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 	for (int i = 0; i < levelFiles.count; i++) {
 		assetFileIds.Insert(levelFiles.data[i]->fileName, i);
 	}
-	
+
 	for (int i = 0; i < fontFiles.count; i++) {
 		assetFileIds.Insert(fontFiles.data[i]->fileName, i);
+	}
+
+	for (int i = 0; i < prefabFiles.count; i++) {
+		assetFileIds.Insert(prefabFiles.data[i]->fileName, i);
 	}
 
 	WriteAssetNameIdMap(assetFileIds, assetFile);
@@ -106,9 +113,13 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 	for (int i = 0; i < levelFiles.count; i++) {
 		WriteLevelChunk(levelFiles.data[i]->fullName, assetFileIds, i, assetFile);
 	}
-	
+
 	for (int i = 0; i < fontFiles.count; i++) {
 		WriteBitmapFontChunk(fontFiles.data[i]->fullName, 16, i, assetFile);
+	}
+
+	for (int i = 0; i < prefabFiles.count; i++) {
+		WritePrefabChunk(prefabFiles.data[i]->fullName, assetFileIds, i, assetFile);
 	}
 
 	int bnsaNegated = ~*(int*)fileId;
@@ -672,3 +683,22 @@ void WriteBitmapFontChunk(const char* fontFileName, int scale, int id, FILE* ass
 	int chunkIdFlipped = ~*(int*)chunkId;
 	fwrite(&chunkIdFlipped, 1, 4, assetFileHandle);
 }
+
+void WritePrefabChunk(const char* prefabFileName, const StringMap<int>& assetIds, int id, FILE* assetFileHandle) {
+	XMLDoc prefabDoc;
+	XMLError err = ParseXMLStringFromFile(prefabFileName, &prefabDoc);
+	ASSERT_MSG(err == XMLE_NONE, "Error %d when parsing prefab file: '%s'", (int)err, prefabFileName);
+
+	XMLElement* rootElem = prefabDoc.elements.GetById(0);
+	ASSERT(rootElem != nullptr);
+	ASSERT(rootElem->name == "Prefab");
+	char chunkId[] = "BNPF";
+	fwrite(chunkId, 1, 4, assetFileHandle);
+	fwrite(&id, 1, 4, assetFileHandle);
+
+	WriteEntitySubChunk(rootElem, assetIds, assetFileHandle);
+
+	int chunkIdFlipped = ~*(int*)chunkId;
+	fwrite(&chunkIdFlipped, 1, 4, assetFileHandle);
+}
+

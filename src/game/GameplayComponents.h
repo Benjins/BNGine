@@ -4,9 +4,11 @@
 #pragma once
 
 #include "Player.h"
+#include "BulletComponent.h"
 
 struct GameplayComponents {
 	IDTracker<PlayerComponent> players;
+	IDTracker<BulletComponent> bullets;
 };
 
 #endif

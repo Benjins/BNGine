@@ -12,15 +12,15 @@ Transform::Transform() {
 }
 
 Vector3 Transform::Forward() {
-	return GetLocalToGlobalMatrix().MultiplyAsDirection(Z_AXIS);
+	return GetLocalToGlobalMatrix().MultiplyAsDirection(Z_AXIS).Normalized();
 }
 
 Vector3 Transform::Right(){
-	return GetLocalToGlobalMatrix().MultiplyAsDirection(X_AXIS);
+	return GetLocalToGlobalMatrix().MultiplyAsDirection(X_AXIS).Normalized();
 }
 
 Vector3 Transform::Up(){
-	return GetLocalToGlobalMatrix().MultiplyAsDirection(Y_AXIS);
+	return GetLocalToGlobalMatrix().MultiplyAsDirection(Y_AXIS).Normalized();
 }
 
 Mat4x4 Transform::GetLocalToGlobalMatrix() {

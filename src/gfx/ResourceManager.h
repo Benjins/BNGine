@@ -13,6 +13,7 @@
 #include "Texture.h"
 #include "Level.h"
 #include "BitmapFont.h"
+#include "Prefab.h"
 
 struct MemStream;
 struct Transform;
@@ -26,6 +27,7 @@ struct ResourceManager {
 	IDTracker<DrawCall> drawCalls;
 	IDTracker<Level> levels;
 	IDTracker<BitmapFont> fonts;
+	IDTracker<Prefab> prefabs;
 
 	StringMap<int> assetIdMap;
 
@@ -43,6 +45,7 @@ struct ResourceManager {
 	void LoadLevelFromChunk(MemStream& stream, Level* outLevel);
 	void LoadTransform(MemStream& stream, Transform* outTrans);
 	void LoadBitmapFontFromChunk(MemStream& stream, BitmapFont* outFont);
+	void LoadPrefabFromChunk(MemStream& stream, Prefab* outPrefab);
 
 	void SaveLevelToFile(const Level* lvl, const char* fileName);
 

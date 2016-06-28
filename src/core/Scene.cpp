@@ -55,6 +55,11 @@ void Scene::Update() {
 		res.LoadAssetFile("assets.bna");
 	}
 
+	for (int i = 0; i < entsToDestroy.count; i++) {
+		DestroyEntityImmediate(entsToDestroy.Get(i));
+	}
+	entsToDestroy.Clear();
+
 	frameTimer.Reset();
 }
 
@@ -129,6 +134,30 @@ void Scene::SaveLevel(Level* level) {
 	}
 
 	SaveCustomComponentsToLevel(level);
+}
+
+void Scene::DestroyEntity(uint32 entId) {
+	entsToDestroy.PushBack(entId);
+}
+
+// TODO: Parent-child destruction?
+void Scene::DestroyEntityImmediate(uint32 entId) {
+	Entity* ent = entities.GetById(entId);
+	ASSERT(ent != nullptr);
+
+	uint32 transformId = ent->transform;
+	entities.RemoveById(entId);
+	transforms.RemoveById(transformId);
+
+	for (int i = 0; i < res.drawCalls.currentCount; i++) {
+		if (res.drawCalls.vals[i].entId == entId) {
+			uint32 dcId = res.drawCalls.vals[i].id;
+			res.drawCalls.RemoveById(dcId);
+			break;
+		}
+	}
+
+	DestroyCustomComponentsByEntity(entId);
 }
 
 void Scene::Render() {

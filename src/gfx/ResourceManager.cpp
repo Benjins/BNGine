@@ -99,6 +99,10 @@ void ResourceManager::LoadAssetFile(const char* fileName) {
 			BitmapFont* font = fonts.AddWithId(assetId);
 			LoadBitmapFontFromChunk(fileBufferStream, font);
 		}
+		else if (memcmp(chunkId, "BNPF", 4) == 0) {
+			Prefab* prefab = prefabs.AddWithId(assetId);
+			LoadPrefabFromChunk(fileBufferStream, prefab);
+		}
 		else {
 			ASSERT_WARN("Unkown chunk id: '%.*s'", 4, chunkId);
 		}
@@ -313,6 +317,39 @@ void ResourceManager::LoadBitmapFontFromChunk(MemStream& stream, BitmapFont* out
 	outFont->codepointListing.EnsureCapacity(codepointCount);
 	outFont->codepointListing.count = codepointCount;
 	stream.ReadArray<CodepointInfo>(outFont->codepointListing.data, codepointCount); 
+}
+
+void ResourceManager::LoadPrefabFromChunk(MemStream& stream, Prefab* outPrefab) {
+	char enttChunkId[4];
+	stream.ReadArray<char>(enttChunkId, 4);
+	ASSERT(memcmp(enttChunkId, "ENTT", 4) == 0);
+
+	// We don't care aobut the entity id that was serialised, we have the prefab's id already
+	stream.Read<int>();
+
+	LoadTransform(stream, &outPrefab->transform);
+
+	outPrefab->meshId = stream.Read<int>();
+	outPrefab->matId = stream.Read<int>();
+
+	int customComponentCount = stream.Read<int>();
+	for (int j = 0; j < customComponentCount; j++) {
+		int id = stream.Read<int>();
+		ASSERT(id >= 0 && id < CCT_Count);
+
+		outPrefab->customComponents.Write(id);
+
+		int size = componentMetaData[id]->size;
+		Component* comp = (Component*)malloc(size);
+
+		(componentMemDeserializeFuncs[id])(comp, &stream);
+		(componentMemSerializeFuncs[id])(comp, &outPrefab->customComponents);
+
+		free(comp);
+	}
+
+	ASSERT(stream.Read<int>() == ~*(int*)enttChunkId);
+
 }
 
 void XMLSerializeTransform(XMLElement* elem, const Transform* trans) {

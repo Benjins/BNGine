@@ -244,6 +244,19 @@ int main(int arc, char** argv) {
 	}
 	fprintf(componentResetFile, "}\n");
 
+	fprintf(componentResetFile, "void Scene::DestroyCustomComponentsByEntity(uint32 entId){\n");
+	for (int i = 0; i < getComponentPathList.count; i++) {
+		SubString compTypeName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
+		fprintf(componentResetFile, "\tfor (int i = 0; i < %s.currentCount; i++){\n", getComponentPathList.data[i].string);
+		fprintf(componentResetFile, "\t\tComponent* comp = &%s.vals[i];\n", getComponentPathList.data[i].string);
+		fprintf(componentResetFile, "\t\tif (comp->entity == entId){\n");
+		fprintf(componentResetFile, "\t\t\t%s.RemoveById(comp->id);\n", getComponentPathList.data[i].string);
+		fprintf(componentResetFile, "\t\t\tbreak;\n");
+		fprintf(componentResetFile, "\t\t}\n");
+		fprintf(componentResetFile, "\t}\n");
+	}
+	fprintf(componentResetFile, "}\n");
+
 	fclose(componentResetFile);
 
 	//ComponentMeta.cpp

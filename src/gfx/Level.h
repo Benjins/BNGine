@@ -22,9 +22,11 @@ struct Level : IDBase{
 	Vector<int> meshIds;
 	Vector<int> matIds;
 
+	// TODO: Automate
 	Vector<BoxCollider> boxCols;
 	Vector<SphereCollider> sphereCols;
 	Vector<PlayerComponent> playerComps;
+	Vector<BulletComponent> bulletComps;
 };
 
 #endif

@@ -39,6 +39,8 @@ struct Scene {
 
 	Timer frameTimer;
 
+	Vector<uint32> entsToDestroy;
+
 	double GetDeltaTime() {
 		return frameTimer.GetTimeSince();
 	}
@@ -62,6 +64,10 @@ struct Scene {
 	void SaveCustomComponentsToLevel(Level* level);
 
 	Entity* AddVisibleEntity(uint32 matId, uint32 meshId);
+
+	void DestroyEntity(uint32 entId);
+	void DestroyEntityImmediate(uint32 entId);
+	void DestroyCustomComponentsByEntity(uint32 entId);
 
 	//Maybe later.  How to go from transform to global transform? 
 	//Cache global pos in transform struct?

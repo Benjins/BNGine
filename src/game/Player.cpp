@@ -17,7 +17,8 @@ void PlayerComponent::Update() {
 		floorHeight = downCast.globalPos.y + playerHeight;
 	}
 
-	camTrans->rotation = Quaternion(Y_AXIS, GlobalScene->input.cursorX / 80) * Quaternion(X_AXIS, GlobalScene->input.cursorY / 80 - 2);
+	entTrans->rotation = Quaternion(Y_AXIS, GlobalScene->input.cursorX / 80);
+	camTrans->rotation = Quaternion(X_AXIS, GlobalScene->input.cursorY / 80 - 2);
 
 	Vector3 moveVec;
 
@@ -34,6 +35,17 @@ void PlayerComponent::Update() {
 	}
 	if (GlobalScene->input.KeyIsDown('D')) {
 		moveVec = moveVec + camTrans->Right() * GlobalScene->GetDeltaTime() * movementSpeed;
+	}
+
+	if (GlobalScene->input.MouseButtonIsReleased(PRIMARY)) {
+		int prefId = -1;
+		GlobalScene->res.assetIdMap.LookUp("bullet.bnp", &prefId);
+
+		Prefab* pref = GlobalScene->res.prefabs.GetById(prefId);
+		ASSERT(pref != nullptr);
+
+		Vector3 bulletSpawnPosition = entTrans->GetGlobalPosition() + entTrans->Forward() * 0.21f;
+		pref->Instantiate(bulletSpawnPosition, entTrans->rotation);
 	}
 
 	moveVec.y = 0;
