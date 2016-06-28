@@ -9,7 +9,7 @@ void InitGlExts();
 
 //These will be declared extern in all translation units except GLExtInit.cpp
 #if !defined(EXT_EXTERN)
-#define EXT_EXTERN
+#define EXT_EXTERN extern
 #endif
 
 EXT_EXTERN PFNGLCREATESHADERPROC glCreateShader;

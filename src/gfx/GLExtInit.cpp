@@ -1,3 +1,9 @@
+#if defined(EXT_EXTERN)
+#undef EXT_EXTERN
+#endif
+
+#define EXT_EXTERN
+
 #include "GLExtInit.h"
 
 #include "../../ext/CppUtils/assert.h"

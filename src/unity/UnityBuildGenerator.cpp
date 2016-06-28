@@ -12,6 +12,9 @@ int main(int argc, char** argv) {
 	exceptions.PushBack("app");
 	exceptions.PushBack("unity");
 
+	Vector<const char*> includeFirst;
+	includeFirst.PushBack("GLExtInit.cpp");
+
 	bool isEditor = false;
 	bool isMetaGen = false;
 	for (int i = 1; i < argc; i++) {
@@ -66,8 +69,18 @@ int main(int argc, char** argv) {
 	}
 
 	FILE* genFile = fopen("gen/UnityBuild.cpp", "wb");
-
 	const char* fileToTop = "../";
+
+	for (int i = 0; i < includeFirst.count; i++) {
+		for (int j = 0; j < srcFiles.count; j++) {
+			if (!strcmp(srcFiles.Get(j)->fileName, includeFirst.Get(i))) {
+				fprintf(genFile, "#include \"%s%s\"\n", fileToTop, srcFiles.Get(j)->fullName);
+				srcFiles.Remove(j);
+				break;
+			}
+		}
+	}
+	
 	for (int i = 0; i < srcFiles.count; i++) {
 		fprintf(genFile, "#include \"%s%s\"\n", fileToTop, srcFiles.Get(i)->fullName);
 	}
