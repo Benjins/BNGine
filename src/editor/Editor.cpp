@@ -9,6 +9,8 @@
 #include "../../ext/3dbasics/Vector4.h"
 #include "../../ext/CppUtils/filesys.h"
 
+#include <float.h>
+
 void Editor::Update() {
 	//scene.Update();
 
