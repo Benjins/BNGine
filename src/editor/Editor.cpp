@@ -49,9 +49,7 @@ void Editor::Update() {
 		&& scene.input.MouseButtonIsDown(MouseButton::SECONDARY)) {
 		cameraCursorX -= scene.input.cursorDeltaX;
 		cameraCursorY -= scene.input.cursorDeltaY;
-
-		OutputDebugStringA(StringStackBuffer<256>("cameraCursorX: %f, cameraCursorY: %f\n", cameraCursorX, cameraCursorY).buffer);
-
+		
 		editorCamTrans.rotation = Quaternion(Y_AXIS, cameraCursorX / 80) * Quaternion(X_AXIS, cameraCursorY / 80);
 	}
 
@@ -61,7 +59,6 @@ void Editor::Update() {
 
 			selectedEntity = GetSelectedEntity((int)scene.input.cursorX, (int)scene.input.cursorY);
 			selectedAxis = -1;
-			OutputDebugStringA(StringStackBuffer<256>("The following entity was selected: %d\n", selectedEntity).buffer);
 		}
 	}
 	else if (scene.input.MouseButtonIsPressed(MouseButton::PRIMARY)) {
@@ -157,8 +154,7 @@ void Editor::HandleGizmoClick() {
 		}
 
 		StringStackBuffer<256> errorLog("Error: (%f, %f, %f)\n", errorVec.x, errorVec.y, errorVec.z);
-		OutputDebugStringA(errorLog.buffer);
-
+		
 		if (bestIndex >= 0) {
 			selectedAxis = bestIndex;
 		}
@@ -184,7 +180,6 @@ void Editor::HandleGizmoDrag(Entity* selected) {
 			}
 
 			selectedTrans->position = selectedTrans->position - selectionOffset.position + projectionDiff;
-			OutputDebugStringA(StringStackBuffer<256>("selected obj pos: %.2f %.2f %.2f\n", selectedTrans->position.x, selectedTrans->position.y, selectedTrans->position.z).buffer);
 		}
 	}
 	else if (gizmoType == EG_Rotation) {
