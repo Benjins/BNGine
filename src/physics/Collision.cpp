@@ -2,6 +2,8 @@
 #include "BoxCollider.h"
 #include "../core/Scene.h"
 
+#include <float.h>
+
 Collision SeparateAxisTheorem(Vector3 axis, Vector3* points1, Vector3* points2);
 
 Collision BoxBoxCollision(const BoxCollider& box1, const BoxCollider& box2) {

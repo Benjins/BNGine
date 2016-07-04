@@ -5,6 +5,8 @@
 
 #include "../../ext/CppUtils/idbase.h"
 
+#include "../../ext/3dbasics/Vector3.h"
+
 enum ColliderType {
 	CT_BOX,
 	CT_SPHERE
