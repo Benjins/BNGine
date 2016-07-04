@@ -386,11 +386,11 @@ bool SubString::operator!=(const String& other) const{
 }
 
 bool SubString::operator==(const char* other) const{
-	return StrEqualN(start, other, length);
+	return StrEqualN(start, other, length) && other[length] == '\0';
 }
 
 bool SubString::operator!=(const char* other) const{
-	return !StrEqualN(start, other, length);
+	return !StrEqualN(start, other, length) || other[length] != '\0';
 }
 
 #if defined(STRINGS_TEST_MAIN)

@@ -42,13 +42,19 @@
 		<Mesh src='floor.obj'/>
 	</Entity>
 	<Entity id='7'>
-		<Transform pos='0.000000,0.000000,0.000000' id='8' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<PlayerComponent jumpVelocity='3.000000' playerWidth='0.200000' playerHeight='0.600000' yVelocity='0.000000'/>
+		<Transform pos='0.000000,0.036339,-0.000696' id='8' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<PlayerComponent jumpVelocity='3.000000' playerWidth='0.200000' playerHeight='0.600000'/>
 	</Entity>
 	<Entity id='8'>
 		<Transform pos='0.010204,-0.117329,8.424690' id='9' scale='1.000000,1.000000,1.000000' rotation='0.992905,-0.117683,0.001881,-0.016887' parent='-1'/>
-		<BoxCollider size='5.000000,0.1000000,5.000000' position='0.000000,0.000000,0.000000'/>
+		<BoxCollider size='5.000000,0.100000,5.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='floor.mat'/>
 		<Mesh src='floor.obj'/>
+	</Entity>
+	<Entity id='9'>
+		<Transform pos='0.000000,-0.760581,0.929053' id='10' scale='0.200000,0.200000,0.200000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<EnemyComponent pauseTime='0.800000' speed='2.000000'/>
+		<Material src='bullet.mat'/>
+		<Mesh src='monkey.obj'/>
 	</Entity>
 </Scene>

@@ -236,8 +236,9 @@ KeyStrokeCode SystemKeyToKeyStrokeCode(int key) {
 			{ KC_UpArrow,	   VK_UP },
 			{ KC_DownArrow,	   VK_DOWN },
 			{ KC_LeftArrow,	   VK_LEFT },
-			{ KC_RightArrow,	   VK_RIGHT },
-			{ KC_Space,		   VK_SPACE }
+			{ KC_RightArrow,   VK_RIGHT },
+			{ KC_Space,        VK_SPACE },
+			{ KC_Minus,        VK_OEM_MINUS }
 			// TODO: Minus/underscore
 		};
 

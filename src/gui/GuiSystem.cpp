@@ -272,6 +272,23 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 			return newStr;
 		}
 
+		if (GlobalScene->input.KeyIsPressed(KC_Minus)) {
+			String newStr;
+			if (GlobalScene->input.KeyIsDown(KC_Shift)) {
+				textInputState.prevEntry = textInputState.prevEntry.Insert('_', textInputState.cursorPos);
+				textInputState.cursorPos++;
+				return textIn;
+			}
+			else {
+				textInputState.prevEntry = textInputState.prevEntry.Insert('-', textInputState.cursorPos);
+				textInputState.cursorPos++;
+				return textIn;
+			}
+
+			textInputState.cursorPos++;
+			return newStr;
+		}
+
 		if (GlobalScene->input.KeyIsPressed(KC_BackSpace) && textInputState.cursorPos > 0) {
 			textInputState.prevEntry = textInputState.prevEntry.Remove(textInputState.cursorPos - 1);
 			textInputState.cursorPos--;

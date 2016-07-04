@@ -23,6 +23,7 @@ void BulletComponent::Update() {
 		Collision col = GlobalScene->phys.collisions.Get(i);
 		if ((col.colType1 == CT_BOX && col.colId1 == colId) 
 		 || (col.colType2 == CT_BOX && col.colId2 == colId)) {
+			// TODO: Brooadcast some kind of damage message?
 			GlobalScene->DestroyEntity(entity);
 			break;
 		}

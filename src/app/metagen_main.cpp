@@ -404,7 +404,7 @@ int main(int arc, char** argv) {
 			ParseMetaField mf = ms->fields.data[j];
 			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount);
 
-			if (fieldType != MT_Unknown) {
+			if (fieldType != MT_Unknown && FindMetaAttribByName(mf.attrs, "DoNotSerialize") == nullptr) {
 				fprintf(componentMetaFile, "\tif(elem->attributes.LookUp(\"%.*s\", &temp)){\n", mf.name.length, mf.name.start);
 				fprintf(componentMetaFile, "\t\tcompCast->%.*s = %s(temp.string);\n\t}\n", mf.name.length, mf.name.start, parseFuncs[(int)fieldType]);
 			}
@@ -419,7 +419,7 @@ int main(int arc, char** argv) {
 			ParseMetaField mf = ms->fields.data[j];
 			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount);
 
-			if (fieldType != MT_Unknown) {
+			if (fieldType != MT_Unknown && FindMetaAttribByName(mf.attrs, "DoNotSerialize") == nullptr) {
 				fprintf(componentMetaFile, "\telem->attributes.Insert(\"%.*s\", %s(compCast->%.*s));\n", mf.name.length, mf.name.start, encodeFuncs[(int)fieldType], mf.name.length, mf.name.start);
 			}
 		}
@@ -432,7 +432,7 @@ int main(int arc, char** argv) {
 			ParseMetaField mf = ms->fields.data[j];
 			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount);
 
-			if (fieldType != MT_Unknown) {
+			if (fieldType != MT_Unknown && FindMetaAttribByName(mf.attrs, "DoNotSerialize") == nullptr) {
 				fprintf(componentMetaFile, "\tstream->Write<%.*s>(compCast->%.*s);\n", mf.type.length, mf.type.start, mf.name.length, mf.name.start);
 			}
 		}
@@ -447,7 +447,7 @@ int main(int arc, char** argv) {
 			ParseMetaField mf = ms->fields.data[j];
 			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount);
 
-			if (fieldType != MT_Unknown) {
+			if (fieldType != MT_Unknown && FindMetaAttribByName(mf.attrs, "DoNotSerialize") == nullptr) {
 				fprintf(componentMetaFile, "\tcompCast->%.*s = stream->Read<%.*s>();\n", mf.name.length, mf.name.start, mf.type.length, mf.type.start);
 			}
 		}

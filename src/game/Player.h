@@ -12,6 +12,7 @@ enum ControlState {
 };
 
 struct PlayerComponent : Component{
+	/*[DoNotSerialize]*/
 	float yVelocity;
 
 	float playerHeight;

@@ -51,6 +51,7 @@ enum KeyStrokeCode {
 	KC_UpArrow,
 	KC_DownArrow,
 	KC_Space,
+	KC_Minus,
 	KC_LastNonAlphaNum,
 	KC_A = 'A',
 	KC_Z = 'Z',

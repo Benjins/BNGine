@@ -55,4 +55,6 @@ Vector<ParseMetaStruct> ParseStructDefsFromFile(const char* fileName);
 
 Vector<ParseMetaEnum> ParseEnumDefsFromFile(const char* fileName);
 
+ParseMetaAttribute* FindMetaAttribByName(const Vector<ParseMetaAttribute>& attribs, const char* attribName);
+
 #endif
