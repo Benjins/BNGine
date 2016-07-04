@@ -30,7 +30,16 @@ struct PhysicsSystem {
 
 	RaycastHit Raycast(Vector3 origin, Vector3 direction);
 
-	void StepFrame();
+	static float fixedTimestep;
+
+	float timeOffset;
+
+	PhysicsSystem() {
+		timeOffset = 0;
+	}
+
+	void AdvanceTime(float time);
+	void StepFrame(float dt);
 	void EndFrame();
 };
 

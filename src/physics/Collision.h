@@ -11,13 +11,17 @@ enum ColliderType {
 };
 
 enum CollisionState {
-	CS_ENTER,
-	CS_STAY,
-	CS_EXIT
+	CS_NoCollide,
+	CS_Enter,
+	CS_Stay,
+	CS_Exit
 };
 
 struct Collision {
-	CollisionState state;
+	bool isColliding;
+
+	Vector3 normal;
+	float depth;
 
 	ColliderType colType1;
 	ColliderType colType2;
@@ -29,6 +33,6 @@ struct Collision {
 struct BoxCollider;
 struct SphereCollider;
 
-bool BoxBoxCollision(const BoxCollider& box1, const BoxCollider& box2);
+Collision BoxBoxCollision(const BoxCollider& box1, const BoxCollider& box2);
 
 #endif

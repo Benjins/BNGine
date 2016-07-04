@@ -6,6 +6,8 @@
 
 #include <cfloat>
 
+float PhysicsSystem::fixedTimestep = 0.02f;
+
 RaycastHit PhysicsSystem::Raycast(Vector3 origin, Vector3 direction) {
 	RaycastHit finalHit;
 	finalHit.wasHit = false;
@@ -21,12 +23,32 @@ RaycastHit PhysicsSystem::Raycast(Vector3 origin, Vector3 direction) {
 	return finalHit;
 }
 
-void PhysicsSystem::StepFrame() {
+void PhysicsSystem::AdvanceTime(float time) {
+	timeOffset += time;
+	while (timeOffset >= fixedTimestep) {
+		StepFrame(fixedTimestep);
+		timeOffset -= fixedTimestep;
+	}
 
+	EndFrame();
+}
+
+void PhysicsSystem::StepFrame(float dt) {
+	collisions.Clear();
+	for (int i = 0; i < boxCols.currentCount; i++) {
+		for (int j = 0; j < boxCols.currentCount; j++) {
+			if (i != j) {
+				Collision col = BoxBoxCollision(boxCols.vals[i], boxCols.vals[j]);
+				if (col.isColliding) {
+					collisions.PushBack(col);
+				}
+			}
+		}
+	}
 }
 
 void PhysicsSystem::EndFrame() {
-
+	prevCollisions.Swap(collisions);
 }
 
 

@@ -48,6 +48,8 @@ void Scene::StartUp() {
 }
 
 void Scene::Update() {
+	phys.AdvanceTime(GetDeltaTime());
+
 	UpdateCustomComponents();
 
 	if (GlobalScene->input.KeyIsReleased('R')) {
