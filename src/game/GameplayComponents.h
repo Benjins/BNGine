@@ -6,11 +6,13 @@
 #include "Player.h"
 #include "BulletComponent.h"
 #include "EnemyComponent.h"
+#include "HealthComponent.h"
 
 struct GameplayComponents {
 	IDTracker<PlayerComponent> players;
 	IDTracker<BulletComponent> bullets;
 	IDTracker<EnemyComponent> enemies;
+	IDTracker<HealthComponent> healthComps;
 };
 
 #endif

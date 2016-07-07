@@ -221,6 +221,7 @@ void Editor::HandleGizmoDrag(Entity* selected) {
 }
 
 void Editor::Render() {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	Transform* sceneCamTrans = scene.transforms.GetById(scene.cam.transform);
 
 	Transform oldSceneCamTrans = *sceneCamTrans;
@@ -263,6 +264,7 @@ void Editor::Render() {
 	scene.cam.heightPixels = cam.heightPixels;
 
 	glViewport(0, 0, cam.widthPixels, cam.heightPixels);
+	glScissor(0, 0, cam.widthPixels, cam.heightPixels);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
