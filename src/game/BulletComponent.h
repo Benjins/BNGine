@@ -17,7 +17,11 @@ struct BulletComponent : Component {
 	/*[DoNotSerialize]*/
 	int ownerId;
 
+	/*[DoNotSerialize]*/
+	bool hasDealtDamage;
+
 	BulletComponent() {
+		hasDealtDamage = false;
 		killTime = 2;
 		speed = 1;
 		currentTime = 0;

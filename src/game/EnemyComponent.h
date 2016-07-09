@@ -54,9 +54,12 @@ struct EnemyComponent : Component {
 		patrolPoints.PushBack(Vector3(-2, 0, -2));
 	}
 
-	void Update();
+	~EnemyComponent() {
+		int xc = 0;
+		BNS_UNUSED(xc);
+	}
 
-	void OnCollision(Collision col);
+	void Update();
 };
 
 #endif

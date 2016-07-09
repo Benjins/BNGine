@@ -10,7 +10,9 @@
 template<typename T>
 void LoadVectorToIDTracker(const Vector<T>& from, IDTracker<T>& to) {
 	to.SetSize(from.count);
-	MemCpy(to.vals, from.data, sizeof(T)*from.count);
+	for (int i = 0; i < from.count; i++) {
+		to.vals[i] = from.data[i];
+	}
 	to.currentCount = from.count;
 
 	if (from.count > 0) {
@@ -21,7 +23,9 @@ void LoadVectorToIDTracker(const Vector<T>& from, IDTracker<T>& to) {
 template<typename T>
 void LoadIDTrackerToVector(const IDTracker<T>& from, Vector<T>& to) {
 	to.EnsureCapacity(from.currentCount);
-	MemCpy(to.data, from.vals, sizeof(T)*from.currentCount);
+	for (int i = 0; i < from.currentCount; i++) {
+		to.data[i] = from.vals[i];
+	}
 	to.count = from.currentCount;
 }
 

@@ -3,6 +3,13 @@
 #include "../core/Scene.h"
 
 void BulletComponent::OnCollision(Collision col) {
+	uint32 otherEntity = GlobalScene->phys.boxCols.GetById(col.colId2)->entity;
+	HealthComponent* health = FIND_COMPONENT_BY_ENTITY(HealthComponent, otherEntity);
+	if (health && !hasDealtDamage) {
+		health->TakeDamage(1.0f);
+		hasDealtDamage = true;
+	}
+
 	GlobalScene->DestroyEntity(entity);
 }
 
