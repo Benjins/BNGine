@@ -17,6 +17,8 @@ enum EnemyState {
 	ES_Attack
 };
 
+struct Collision;
+
 struct EnemyComponent : Component {
 	EnemyState currentState;
 
@@ -28,6 +30,9 @@ struct EnemyComponent : Component {
 
 	/*[DoNotSerialize]*/
 	int patrolIndex;
+
+	/*[DoNotSerialize]*/
+	bool damageThisFrame;
 
 	float speed;
 	float pauseTime;
@@ -41,6 +46,7 @@ struct EnemyComponent : Component {
 		playerId = -1;
 		patrolIndex = 0;
 		speed = 2.0f;
+		damageThisFrame = false;
 
 		patrolPoints.PushBack(Vector3(2,  0,  2));
 		patrolPoints.PushBack(Vector3(2,  0, -2));
@@ -49,6 +55,8 @@ struct EnemyComponent : Component {
 	}
 
 	void Update();
+
+	void OnCollision(Collision col);
 };
 
 #endif

@@ -20,6 +20,8 @@ typedef int (GetComponentCountFunc)();
 typedef Component* (GetComponentLevelArrayFunc)(const Level* lvl);
 typedef int (GetComponentLevelCountFunc)(const Level* lvl);
 
+typedef void (ResetComponentFunc)(Component* comp);
+
 extern GetComponentFunc* getComponentFuncs[CCT_Count];
 extern AddComponentFunc* addComponentFuncs[CCT_Count];
 extern RemoveComponentFunc* removeComponentFuncs[CCT_Count];
@@ -41,6 +43,10 @@ extern ComponentXMLDeserializeFunc* componentXMLDeserializeFuncs[CCT_Count];
 extern ComponentXMLSerializeFunc* componentXMLSerializeFuncs[CCT_Count];
 extern ComponentMemDeserializeFunc* componentMemDeserializeFuncs[CCT_Count];
 extern ComponentMemSerializeFunc* componentMemSerializeFuncs[CCT_Count];
+
+extern ResetComponentFunc* componentResetFuncs[CCT_Count];
+
+extern Component* componentSerializeBuffer[CCT_Count];
 
 extern MetaStruct* componentMetaData[CCT_Count];
 

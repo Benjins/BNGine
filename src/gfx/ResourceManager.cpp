@@ -285,6 +285,7 @@ void ResourceManager::LoadLevelFromChunk(MemStream& stream, Level* outLevel) {
 			int id = stream.Read<int>();
 			ASSERT(id >= 0 && id < CCT_Count);
 			Component* toAdd = (addComponentToLevelFuncs[id])(outLevel);
+			toAdd->id = (getComponentLevelCountFuncs[id])(outLevel) - 1;
 			(componentMemDeserializeFuncs[id])(toAdd, &stream);
 			toAdd->entity = ent.id;
 		}
@@ -339,13 +340,11 @@ void ResourceManager::LoadPrefabFromChunk(MemStream& stream, Prefab* outPrefab) 
 
 		outPrefab->customComponents.Write(id);
 
-		int size = componentMetaData[id]->size;
-		Component* comp = (Component*)malloc(size);
+		Component* comp = componentSerializeBuffer[id];
 
+		(componentResetFuncs[id])(comp);
 		(componentMemDeserializeFuncs[id])(comp, &stream);
 		(componentMemSerializeFuncs[id])(comp, &outPrefab->customComponents);
-
-		free(comp);
 	}
 
 	ASSERT(stream.Read<int>() == ~*(int*)enttChunkId);

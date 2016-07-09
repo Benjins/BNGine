@@ -15,11 +15,11 @@ struct HealthComponent : Component {
 	}
 
 	void TakeDamage(float dmg) {
-		currentHealth -= maxHealth;
+		currentHealth -= dmg;
 	}
 
 	bool IsDead() {
-		return currentHealth > 0.0f;
+		return currentHealth <= 0.0f;
 	}
 };
 

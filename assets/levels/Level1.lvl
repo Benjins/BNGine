@@ -19,7 +19,6 @@
 	</Entity>
 	<Entity id='3'>
 		<Transform pos='0.000544,-1.000000,0.000000' id='4' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<HealthComponent currentHealth='5.000000' maxHealth='5.000000'/>
 		<BoxCollider size='5.000000,0.100000,5.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='floor.mat'/>
 		<Mesh src='floor.obj'/>
@@ -54,7 +53,7 @@
 	</Entity>
 	<Entity id='9'>
 		<Transform pos='0.000000,-0.760581,0.929053' id='10' scale='0.200000,0.200000,0.200000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<EnemyComponent pauseTime='0.800000' speed='2.000000'/>
+		<EnemyComponent pauseTime='3.800000' speed='2.000000'/>
 		<HealthComponent currentHealth='5.000000' maxHealth='5.000000'/>
 		<BoxCollider size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='bullet.mat'/>

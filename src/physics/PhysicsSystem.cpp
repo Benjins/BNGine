@@ -41,6 +41,17 @@ void PhysicsSystem::StepFrame(float dt) {
 				Collision col = BoxBoxCollision(boxCols.vals[i], boxCols.vals[j]);
 				if (col.isColliding) {
 					collisions.PushBack(col);
+					uint32 entity1 = boxCols.GetById(col.colId1)->entity;
+					GlobalScene->SendCollisionToCustomComponents(entity1, col);
+
+					Collision col2 = col;
+					col2.colId2 = col.colId1;
+					col2.colId1 = col.colId2;
+					col2.colType1 = col.colType2;
+					col2.colType2 = col.colType1;
+
+					uint32 entity2 = boxCols.GetById(col2.colId1)->entity;
+					GlobalScene->SendCollisionToCustomComponents(entity2, col2);
 				}
 			}
 		}

@@ -12,6 +12,7 @@ void LoadVectorToIDTracker(const Vector<T>& from, IDTracker<T>& to) {
 	to.SetSize(from.count);
 	MemCpy(to.vals, from.data, sizeof(T)*from.count);
 	to.currentCount = from.count;
+
 	if (from.count > 0) {
 		to.currentMaxId = from.data[from.count - 1].id + 1;
 	}

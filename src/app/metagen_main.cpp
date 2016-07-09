@@ -257,6 +257,33 @@ int main(int arc, char** argv) {
 	}
 	fprintf(componentResetFile, "}\n");
 
+	//void SendCollisionToCustomComponents(uint32 entity, Collision col);
+
+	fprintf(componentResetFile, "\nvoid Scene::SendCollisionToCustomComponents(uint32 entityId, Collision col){\n");
+	for (int i = 0; i < componentIndices.count; i++) {
+		int compIdx = componentIndices.data[i];
+		ParseMetaStruct* ms = &allParseMetaStructs.data[compIdx];
+
+		bool hasCollision = false;
+		for (int j = 0; j < ms->methods.count; j++) {
+			if (ms->methods.Get(j).name == "OnCollision") {
+				hasCollision = true;
+				break;
+			}
+		}
+
+		if (hasCollision) {
+			fprintf(componentResetFile, "\t{\n");
+			fprintf(componentResetFile, "\t\t%.*s* %.*s_comp = FIND_COMPONENT_BY_ENTITY(%.*s, entityId);\n",
+				ms->name.length, ms->name.start, ms->name.length, ms->name.start, ms->name.length, ms->name.start);
+			fprintf(componentResetFile, "\t\tif (%.*s_comp != nullptr){\n", ms->name.length, ms->name.start);
+			fprintf(componentResetFile, "\t\t\t%.*s_comp->OnCollision(col);\n", ms->name.length, ms->name.start);
+			fprintf(componentResetFile, "\t\t}\n");
+			fprintf(componentResetFile, "\t}\n");
+		}
+	}
+	fprintf(componentResetFile, "\n}\n");
+
 	fclose(componentResetFile);
 
 	//ComponentMeta.cpp
@@ -342,11 +369,6 @@ int main(int arc, char** argv) {
 	}
 	fprintf(componentMetaFile, "\n}\n");
 
-	/*
-	for (int i = 0; i < gameplay.players.currentCount; i++) {
-		gameplay.players.vals[i].Update();
-	}*/
-
 	for (int i = 0; i < componentIndices.count; i++) {
 		int compIdx = componentIndices.data[i];
 		ParseMetaStruct* ms = &allParseMetaStructs.data[compIdx];
@@ -427,7 +449,6 @@ int main(int arc, char** argv) {
 		fprintf(componentMetaFile, "}\n\n");
 		fprintf(componentMetaFile, "void %.*s_MemSerialize(const Component* comp, MemStream* stream){\n", ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "\tconst %.*s* compCast = static_cast<const %.*s*>(comp);\n", ms->name.length, ms->name.start, ms->name.length, ms->name.start);
-
 		for (int j = 0; j < ms->fields.count; j++) {
 			ParseMetaField mf = ms->fields.data[j];
 			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount);
@@ -436,13 +457,10 @@ int main(int arc, char** argv) {
 				fprintf(componentMetaFile, "\tstream->Write<%.*s>(compCast->%.*s);\n", mf.type.length, mf.type.start, mf.name.length, mf.name.start);
 			}
 		}
-
 		fprintf(componentMetaFile, "}\n\n");
 
 		fprintf(componentMetaFile, "void %.*s_MemDeserialize(Component* comp, MemStream* stream){\n", ms->name.length, ms->name.start);
-
 		fprintf(componentMetaFile, "\t%.*s* compCast = static_cast<%.*s*>(comp);\n", ms->name.length, ms->name.start, ms->name.length, ms->name.start);
-
 		for (int j = 0; j < ms->fields.count; j++) {
 			ParseMetaField mf = ms->fields.data[j];
 			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount);
@@ -451,7 +469,6 @@ int main(int arc, char** argv) {
 				fprintf(componentMetaFile, "\tcompCast->%.*s = stream->Read<%.*s>();\n", mf.name.length, mf.name.start, mf.type.length, mf.type.start);
 			}
 		}
-
 		fprintf(componentMetaFile, "}\n\n");
 
 		const char* lvlPath = getComponentLevelPathList.Get(i).string;
@@ -459,6 +476,14 @@ int main(int arc, char** argv) {
 		fprintf(componentMetaFile, "\tlvl->%s.PushBack(%.*s());\n", lvlPath, ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "\treturn &lvl->%s.data[lvl->%s.count-1];\n", lvlPath, lvlPath);
 		fprintf(componentMetaFile, "}\n\n");
+
+		fprintf(componentMetaFile, "void %.*s_ResetComp(Component* comp){\n", ms->name.length, ms->name.start);
+		fprintf(componentMetaFile, "\tmemset(comp, 0, sizeof(%.*s));\n", ms->name.length, ms->name.start);
+		fprintf(componentMetaFile, "\tnew (comp) %.*s();\n", ms->name.length, ms->name.start);
+		fprintf(componentMetaFile, "}\n\n");
+
+		fprintf(componentMetaFile, "%.*s %.*s_compBuffer;\n\n", ms->name.length, ms->name.start, ms->name.length, ms->name.start);
+
 	}
 
 	fprintf(componentMetaFile, "AddComponentToLevelFunc* addComponentToLevelFuncs[CCT_Count] = {\n");
@@ -472,6 +497,20 @@ int main(int arc, char** argv) {
 	for (int i = 0; i < componentIndices.count; i++) {
 		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
 		fprintf(componentMetaFile, "\t%.*s_getComponentArray,\n", structName.length, structName.start);
+	}
+	fprintf(componentMetaFile, "};\n");
+
+	fprintf(componentMetaFile, "ResetComponentFunc* componentResetFuncs[CCT_Count] = {\n");
+	for (int i = 0; i < componentIndices.count; i++) {
+		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
+		fprintf(componentMetaFile, "\t%.*s_ResetComp,\n", structName.length, structName.start);
+	}
+	fprintf(componentMetaFile, "};\n");
+
+	fprintf(componentMetaFile, "Component* componentSerializeBuffer[CCT_Count] = {\n");
+	for (int i = 0; i < componentIndices.count; i++) {
+		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
+		fprintf(componentMetaFile, "\t&%.*s_compBuffer,\n", structName.length, structName.start);
 	}
 	fprintf(componentMetaFile, "};\n");
 

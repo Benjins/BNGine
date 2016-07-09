@@ -139,7 +139,17 @@ void Scene::SaveLevel(Level* level) {
 }
 
 void Scene::DestroyEntity(uint32 entId) {
-	entsToDestroy.PushBack(entId);
+	bool alreadyQueued = false;
+	for (int i = 0; i < entsToDestroy.count; i++) {
+		if (entsToDestroy.Get(i) == entId) {
+			alreadyQueued = true;
+			break;
+		}
+	}
+
+	if (!alreadyQueued) {
+		entsToDestroy.PushBack(entId);
+	}
 }
 
 // TODO: Parent-child destruction?

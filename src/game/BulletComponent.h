@@ -5,6 +5,8 @@
 
 #include "../core/Component.h"
 
+struct Collision;
+
 struct BulletComponent : Component {
 	float killTime;
 	float speed;
@@ -23,6 +25,8 @@ struct BulletComponent : Component {
 	}
 
 	void Update();
+
+	void OnCollision(Collision col);
 };
 
 #endif
