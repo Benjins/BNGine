@@ -50,6 +50,48 @@ const char* guiColFShaderText =
 "	gl_FragColor = _col;\n"
 "}\n";
 
+void GuiDrawCall::ExecuteDraw() {
+	ASSERT(pos.GetLength() == uvs.GetLength());
+
+	GLuint posVbo;
+	glGenBuffers(1, &posVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, posVbo);
+	glBufferData(GL_ARRAY_BUFFER, pos.GetLength(), (float*)pos.readHead, GL_DYNAMIC_DRAW);
+
+	GLuint uvVbo;
+	glGenBuffers(1, &uvVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, uvVbo);
+	glBufferData(GL_ARRAY_BUFFER, uvs.GetLength(), (float*)uvs.readHead, GL_DYNAMIC_DRAW);
+
+	if (texId != -1) {
+		Texture* tex = GlobalScene->res.textures.GetById(texId);
+		tex->Bind(GL_TEXTURE0);
+	}
+
+	Material* mat = GlobalScene->res.materials.GetById(matId);
+	Program* prog = GlobalScene->res.programs.GetById(mat->programId);
+	glUseProgram(prog->programObj);
+	mat->UpdateUniforms();
+
+	GLint posAttribLoc = glGetAttribLocation(prog->programObj, "pos");
+	glEnableVertexAttribArray(posAttribLoc);
+	glBindBuffer(GL_ARRAY_BUFFER, posVbo);
+	glVertexAttribPointer(posAttribLoc, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+	GLint uvAttribLoc = glGetAttribLocation(prog->programObj, "uv");
+	glEnableVertexAttribArray(uvAttribLoc);
+	glBindBuffer(GL_ARRAY_BUFFER, uvVbo);
+	glVertexAttribPointer(uvAttribLoc, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glDrawArrays(GL_TRIANGLES, 0, pos.GetLength() / sizeof(float) / 2);
+
+	glDisableVertexAttribArray(posAttribLoc);
+	glDisableVertexAttribArray(uvAttribLoc);
+
+	glDeleteBuffers(1, &posVbo);
+	glDeleteBuffers(1, &uvVbo);
+}
+
 void GuiSystem::Init(){
 	{
 		Shader* guiTextVShader = GlobalScene->res.shaders.CreateAndAdd();
@@ -90,7 +132,7 @@ void GuiSystem::Init(){
 	}
 }
 
-float GuiSystem::DrawTextLabel(const char* text, uint32 fontId, float scale, float x, float y){
+float GuiSystem::DrawTextLabel(const char* text, uint32 fontId, float scale, float x, float y, float w /*= 10000*/, float h /*= 10000*/){
 	BitmapFont* font = GlobalScene->res.fonts.GetById(fontId);
 	
 	int textLen = StrLen(text);
@@ -102,43 +144,27 @@ float GuiSystem::DrawTextLabel(const char* text, uint32 fontId, float scale, flo
 	float* posBuffer = (float*)malloc(textLen*12*sizeof(float));
 	float* uvsBuffer = (float*)malloc(textLen*12*sizeof(float));
 
-	float width = font->BakeAsciiToVertexData(text, x, y, posBuffer, uvsBuffer);
+	int charsWritten = -1;
+	float width = font->BakeAsciiToVertexData(text, x, y, w, h, posBuffer, uvsBuffer, &charsWritten);
 
-	Texture* tex = GlobalScene->res.textures.GetById(font->textureId);
-	tex->Bind(GL_TEXTURE0);
+	int dcIndex = -1;
+	for (int i = 0; i < guiDrawCalls.count; i++) {
+		if (guiDrawCalls.Get(i).matId == guiTextMatId) {
+			dcIndex = i;
+			break;
+		}
+	}
 
-	Material* mat = GlobalScene->res.materials.GetById(guiTextMatId);
-	Program* prog = GlobalScene->res.programs.GetById(mat->programId);
-	glUseProgram(prog->programObj);
-	mat->UpdateUniforms();
+	if (dcIndex == -1) {
+		GuiDrawCall newDc;
+		newDc.matId = guiTextMatId;
+		newDc.texId = font->textureId;
+		guiDrawCalls.PushBack(newDc);
+		dcIndex = guiDrawCalls.count - 1;
+	}
 
-	GLuint posVbo;
-	glGenBuffers(1, &posVbo);
-	glBindBuffer(GL_ARRAY_BUFFER, posVbo);
-	glBufferData(GL_ARRAY_BUFFER, textLen*12*sizeof(float), posBuffer, GL_DYNAMIC_DRAW);
-	
-	GLuint uvVbo;
-	glGenBuffers(1, &uvVbo);
-	glBindBuffer(GL_ARRAY_BUFFER, uvVbo);
-	glBufferData(GL_ARRAY_BUFFER, textLen*12 * sizeof(float), uvsBuffer, GL_DYNAMIC_DRAW);
-	
-	GLint posAttribLoc = glGetAttribLocation(prog->programObj, "pos");
-	glEnableVertexAttribArray(posAttribLoc);
-	glBindBuffer(GL_ARRAY_BUFFER, posVbo);
-	glVertexAttribPointer(posAttribLoc, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-	GLint uvAttribLoc = glGetAttribLocation(prog->programObj, "uv");
-	glEnableVertexAttribArray(uvAttribLoc);
-	glBindBuffer(GL_ARRAY_BUFFER, uvVbo);
-	glVertexAttribPointer(uvAttribLoc, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-	glDrawArrays(GL_TRIANGLES, 0, textLen*6);
-
-	glDisableVertexAttribArray(posAttribLoc);
-	glDisableVertexAttribArray(uvAttribLoc);
-	
-	glDeleteBuffers(1, &posVbo);
-	glDeleteBuffers(1, &uvVbo);
+	guiDrawCalls.Get(dcIndex).pos.WriteArray(posBuffer, charsWritten * 12);
+	guiDrawCalls.Get(dcIndex).uvs.WriteArray(uvsBuffer, charsWritten * 12);
 
 	free(posBuffer);
 	free(uvsBuffer);
@@ -168,7 +194,6 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 	ColoredBox(x, y + scale, w, scale, Vector4(0.4f, 0.4f, 0.4f, 0.85f));
 
 	float textOffset = 0.0f;
-
 	if (textInputState.count == textInputState.activeIndex) {
 		BitmapFont* font = GlobalScene->res.fonts.GetById(fontId);
 		float cursorX = font->GetCursorPos(textInputState.prevEntry.string, textInputState.cursorPos);
@@ -179,14 +204,24 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 		}
 	}
 
-	glScissor((int)x, (int)y, (int)w, (int)scale);
+	const char* textToDraw = nullptr;
 	if (textInputState.count == textInputState.activeIndex) {
-		DrawTextLabel(textInputState.prevEntry.string, fontId, scale, x + textOffset, y);
+		textToDraw = textInputState.prevEntry.string;
 	}
 	else {
-		DrawTextLabel(textIn.string, fontId, scale, x + textOffset, y);
+		textToDraw = textIn.string;
 	}
-	glScissor((int)GlobalScene->cam.xOffset, (int)GlobalScene->cam.yOffset, (int)GlobalScene->cam.widthPixels, (int)GlobalScene->cam.heightPixels);
+
+	if (textInputState.count == textInputState.activeIndex) {
+		textToDraw = &textToDraw[textInputState.cursorPos];
+	}
+
+	if (textInputState.count == textInputState.activeIndex) {
+		DrawTextLabel(textToDraw, fontId, scale, x + textOffset, y, w, scale);
+	}
+	else {
+		DrawTextLabel(textToDraw, fontId, scale, x + textOffset, y, w, scale);
+	}
 
 	textInputState.count++;
 
@@ -330,14 +365,15 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 		}
 	}
 
-	/*
-	Up: 0x18
-	Down: 0x19
-	Right: 0x1A
-	Left: 0x1B
-	*/
-
 	return textIn;
+}
+
+void GuiSystem::Render() {
+	for (int i = 0; i < guiDrawCalls.count; i++) {
+		guiDrawCalls.Get(i).ExecuteDraw();
+	}
+
+	guiDrawCalls.Clear();
 }
 
 void GuiSystem::SelectTextInput(int index) {

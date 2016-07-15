@@ -194,5 +194,7 @@ void Scene::Render() {
 	//gui.DrawTextLabel("This is the end.", 1, 1, 0, 0);
 	//gui.DrawTextLabel("This is *not* the end.", 1, 1, 12, 12);
 
+	gui.Render();
+
 	glDisable(GL_BLEND);
 }

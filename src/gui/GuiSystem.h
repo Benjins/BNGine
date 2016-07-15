@@ -12,6 +12,7 @@
 
 struct GuiDrawCall{
 	uint32 matId;
+	uint32 texId;
 	
 	MemStream uvs;
 	MemStream pos;
@@ -45,6 +46,8 @@ struct GuiSystem{
 	int guiTextMatId;
 	
 	GuiTextInputState textInputState;
+
+	Vector<GuiDrawCall> guiDrawCalls;
 	
 	Vector<Mat4x4> matrixStack;
 protected:
@@ -67,12 +70,13 @@ public:
 	void Translate(float x, float y);
 	void PopMatrix();
 
+	void Render();
+
 	void ColoredBox(float x, float y, float w, float h, const Vector4 col);
 
 	void DrawImage(int textureId, float x, float y, float w, float h);
 	// Returns width of drawn text
-	float DrawTextLabel(const char* text, uint32 fontId, float scale, float x, float y);
-	void DrawTextWrap(const char* text, float scale, uint32 fontId, float x, float y, float w, float h);
+	float DrawTextLabel(const char* text, uint32 fontId, float scale, float x, float y, float w = 10000, float h = 10000);
 	
 	String TextInput(const String& textIn, uint32 fontId, float scale, float x, float y, float w);
 	

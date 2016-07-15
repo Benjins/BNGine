@@ -273,6 +273,8 @@ void Editor::Render() {
 
 	SidePanelGui();
 
+	gui.Render();
+
 	glDisable(GL_BLEND);
 
 	sceneCamTrans = scene.transforms.GetById(scene.cam.transform);
