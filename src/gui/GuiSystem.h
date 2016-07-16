@@ -37,6 +37,7 @@ struct GuiTextInputState {
 	int count;
 	int activeIndex;
 	int cursorPos;
+	int textOffset;
 	String prevEntry;
 };
 
@@ -61,6 +62,7 @@ public:
 		textInputState.activeIndex = -1;
 		textInputState.count = 0;
 		textInputState.cursorPos = 0;
+		textInputState.textOffset = 0;
 	}
 	
 	void Init();

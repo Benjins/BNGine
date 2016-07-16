@@ -194,13 +194,20 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 	ColoredBox(x, y + scale, w, scale, Vector4(0.4f, 0.4f, 0.4f, 0.85f));
 
 	float textOffset = 0.0f;
+	const char* textRenderStart = textInputState.prevEntry.string;
 	if (textInputState.count == textInputState.activeIndex) {
+		textRenderStart = &textInputState.prevEntry.string[textInputState.textOffset];
 		BitmapFont* font = GlobalScene->res.fonts.GetById(fontId);
-		float cursorX = font->GetCursorPos(textInputState.prevEntry.string, textInputState.cursorPos);
+		float cursorX = font->GetCursorPos(textRenderStart, textInputState.cursorPos - textInputState.textOffset);
 
 		if (cursorX > w) {
-			// Will be negative
-			textOffset = (w - cursorX);
+			while (cursorX > w && textInputState.textOffset < textInputState.prevEntry.GetLength() - 1) {
+				textInputState.textOffset++;
+				cursorX = font->GetCursorPos(textRenderStart, textInputState.cursorPos - textInputState.textOffset);
+			}
+		}
+		else if (textInputState.cursorPos < textInputState.textOffset) {
+			textInputState.textOffset = textInputState.cursorPos;
 		}
 	}
 
@@ -213,7 +220,7 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 	}
 
 	if (textInputState.count == textInputState.activeIndex) {
-		textToDraw = &textToDraw[textInputState.cursorPos];
+		textToDraw = &textToDraw[textInputState.textOffset];
 	}
 
 	if (textInputState.count == textInputState.activeIndex) {
@@ -254,7 +261,7 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 		static const int cursorWidth = 6;
 
 		BitmapFont* font = GlobalScene->res.fonts.GetById(fontId);
-		float cursorOffset = font->GetCursorPos(textInputState.prevEntry.string, textInputState.cursorPos);
+		float cursorOffset = font->GetCursorPos(textRenderStart, textInputState.cursorPos - textInputState.textOffset);
 		float curX = x + cursorOffset + textOffset;
 
 		ColoredBox(curX, y + scale, cursorWidth, scale, Vector4(0.7f, 0.7f, 0.7f, 0.7f));

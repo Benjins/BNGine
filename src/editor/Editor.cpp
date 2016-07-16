@@ -273,6 +273,9 @@ void Editor::Render() {
 
 	SidePanelGui();
 
+	static String fff = "The only wat out";
+	fff = gui.TextInput(fff, 0, 12, 300, 180, 120);
+
 	gui.Render();
 
 	glDisable(GL_BLEND);
