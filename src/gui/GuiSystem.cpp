@@ -181,9 +181,9 @@ float GuiSystem::DrawUnicodeLabel(U32String text, uint32 fontId, float scale, fl
 	if (textLen == 0) {
 		return 0;
 	}
-
-	float* posBuffer = (float*)malloc(textLen * 12 * sizeof(float));
-	float* uvsBuffer = (float*)malloc(textLen * 12 * sizeof(float));
+	int quadCount = font->GetQuadCountForText(text);
+	float* posBuffer = (float*)malloc(quadCount * 12 * sizeof(float));
+	float* uvsBuffer = (float*)malloc(quadCount * 12 * sizeof(float));
 
 	int charsWritten = -1;
 	float width = font->BakeU32ToVertexData(text, x, y, w, h, posBuffer, uvsBuffer, &charsWritten);
@@ -204,8 +204,8 @@ float GuiSystem::DrawUnicodeLabel(U32String text, uint32 fontId, float scale, fl
 		dcIndex = guiDrawCalls.count - 1;
 	}
 
-	guiDrawCalls.Get(dcIndex).pos.WriteArray(posBuffer, charsWritten * 12);
-	guiDrawCalls.Get(dcIndex).uvs.WriteArray(uvsBuffer, charsWritten * 12);
+	guiDrawCalls.Get(dcIndex).pos.WriteArray(posBuffer, quadCount * 12);
+	guiDrawCalls.Get(dcIndex).uvs.WriteArray(uvsBuffer, quadCount * 12);
 
 	free(posBuffer);
 	free(uvsBuffer);

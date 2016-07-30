@@ -210,7 +210,7 @@ void Scene::Render() {
 	else {
 		static int fc = 0;
 		fc++;
-		if (fc > 60) {
+		if (fc > 10) {
 			unicodeText.start[0]++;
 			fc = 0;
 		}

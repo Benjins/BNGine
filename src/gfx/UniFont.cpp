@@ -173,6 +173,32 @@ float UniFont::BakeU32ToVertexData(U32String string, float xStart, float yStart,
 	return x - xStart;
 }
 
+int UniFont::GetQuadCountForText(const U32String string) {
+	int quadCount = 0;
+	for (int i = 0; i < string.length; i++) {
+		int codePoint = string.start[i];
+		CodepointInfo* info = GetInfoForCodepoint(codePoint);
+
+		if (info != nullptr) {
+			UnicodeBlockType block = GetBlockTypeOfCodePoint(codePoint);
+			bool foundSpecialCase = false;
+			for (int j = 0; j < BNS_ARRAY_COUNT(cacheGlyphSpecialCases); j++) {
+				if (block == cacheGlyphSpecialCases[j].block) {
+					quadCount += cacheGlyphSpecialCases[j].numQuadsPerChar;
+					foundSpecialCase = true;
+					break;
+				}
+			}
+
+			if (!foundSpecialCase) {
+				quadCount++;
+			}
+		}
+	}
+
+	return quadCount;
+}
+
 float UniFont::GetCursorPos(const char* text, int cursorPos) {
 	return 0;
 }
