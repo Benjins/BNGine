@@ -313,4 +313,7 @@ struct UnicodeBlockInfo {
 
 UnicodeBlockInfo* GetUnicodeBlocks();
 
+// TODO: Binary search opt?
+UnicodeBlockType GetBlockTypeOfCodePoint(int c);
+
 #endif

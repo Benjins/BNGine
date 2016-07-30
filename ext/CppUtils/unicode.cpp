@@ -433,6 +433,17 @@ UnicodeBlockInfo _unicodeBlocks[] = {
 	{ 0x100000, 0x10FFFF, UBT_SupplementaryPrivateUseArea_B }
 };
 
+UnicodeBlockType GetBlockTypeOfCodePoint(int c) {
+	UnicodeBlockInfo* blockTable = GetUnicodeBlocks();
+	for (int i = 0; i < UBT_Count; i++) {
+		if (blockTable[i].low < c && c < blockTable[i].high) {
+			return blockTable[i].blockType;
+		}
+	}
+
+	return UBT_Count;
+}
+
 UnicodeBlockInfo* GetUnicodeBlocks() {
 	return _unicodeBlocks;
 }

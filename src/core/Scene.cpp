@@ -207,6 +207,14 @@ void Scene::Render() {
 		char* unicodeEncoded = ReadTextFile("assets/strings/chinese_test.txt", &fileLength);
 		unicodeText = DecodeUTF8(unicodeEncoded, fileLength);
 	}
+	else {
+		static int fc = 0;
+		fc++;
+		if (fc > 60) {
+			unicodeText.start[0]++;
+			fc = 0;
+		}
+	}
 	firstPass = false;
 
 	gui.DrawUnicodeLabel(unicodeText, 0, 18, 30, 30);
