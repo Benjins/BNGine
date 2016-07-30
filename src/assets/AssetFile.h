@@ -66,9 +66,12 @@ void WriteFShaderChunk(const char* shaderFileName, int id, FILE* assetFileHandle
 void WriteTextureChunk(const char* textureFileName, int id, FILE* assetFileHandle);
 void WriteMaterialChunk(const char* materialFileName, const StringMap<int>& assetIds, int id, FILE* assetFileHandle);
 void WriteLevelChunk(const char* levelFileName, const StringMap<int>& assetIds, int id, FILE* assetFileHandle);
-void WriteBitmapFontChunk(const char* fontFileName, int scale, int id, FILE* assetFileHandle);
+void WriteBitmapFontChunk(const char* fontFileName, const Vector<File*>& ttfFiles, int id, FILE* assetFileHandle);
+void WriteUniFontChunk(const char* fontFileName, const Vector<File*>& ttfFiles, int id, FILE* assetFileHandle);
 void WritePrefabChunk(const char* prefabFileName, const StringMap<int>& assetIds, int id, FILE* assetFileHandle);
 
 void WriteAssetNameIdMap(const StringMap<int>& map, FILE* assetFileHandle);
+
+void GlyphBlit(unsigned char* dst, int dstWidth, int dstHeight, int dstX, int dstY, unsigned char* src, int srcWidth, int srcHeight);
 
 #endif

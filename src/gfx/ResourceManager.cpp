@@ -20,6 +20,7 @@ void ResourceManager::Reset() {
 	assetIdMap = StringMap<int>();
 
 	fonts.Reset();
+	uniFonts.Reset();
 	levels.Reset();
 	materials.Reset();
 	meshes.Reset();
@@ -98,6 +99,10 @@ void ResourceManager::LoadAssetFile(const char* fileName) {
 		else if (memcmp(chunkId, "BNBF", 4) == 0) {
 			BitmapFont* font = fonts.AddWithId(assetId);
 			LoadBitmapFontFromChunk(fileBufferStream, font);
+		}
+		else if (memcmp(chunkId, "BNUF", 4) == 0) {
+			UniFont* font = uniFonts.AddWithId(assetId);
+			LoadUniFontFromChunk(fileBufferStream, font);
 		}
 		else if (memcmp(chunkId, "BNPF", 4) == 0) {
 			Prefab* prefab = prefabs.AddWithId(assetId);
@@ -318,6 +323,32 @@ void ResourceManager::LoadBitmapFontFromChunk(MemStream& stream, BitmapFont* out
 	outFont->codepointListing.EnsureCapacity(codepointCount);
 	outFont->codepointListing.count = codepointCount;
 	stream.ReadArray<CodepointInfo>(outFont->codepointListing.data, codepointCount); 
+}
+
+void ResourceManager::LoadUniFontFromChunk(MemStream& stream, UniFont* outFont) {
+	outFont->fontScale = stream.Read<int>();
+	int cacheSize = stream.Read<int>();
+	int fontCount = stream.Read<int>();
+
+	for (int i = 0; i < fontCount; i++) {
+		int fontBufferSize = stream.Read<int>();
+		unsigned char* buffer = (unsigned char*)malloc(fontBufferSize);
+		stream.ReadArray<unsigned char>(buffer, fontBufferSize);
+		outFont->AddFont(buffer, fontBufferSize);
+	}
+
+	Texture* tex = textures.CreateAndAdd();
+	tex->width = cacheSize;
+	tex->height = cacheSize;
+	// calloc is for chumps.
+	tex->texMem = (unsigned char*)malloc(cacheSize * cacheSize);
+	memset(tex->texMem, 0, cacheSize*cacheSize);
+
+	tex->textureType = GL_TEXTURE_2D;
+	tex->internalColourFormat = GL_RED;
+	tex->externalColourFormat = GL_RED;
+
+	outFont->textureId = tex->id;
 }
 
 void ResourceManager::LoadPrefabFromChunk(MemStream& stream, Prefab* outPrefab) {

@@ -7,6 +7,7 @@
 #include "../../ext/CppUtils/vector.h"
 #include "../../ext/CppUtils/memstream.h"
 #include "../../ext/CppUtils/strings.h"
+#include "../../ext/CppUtils/unicode.h"
 
 #include "../../ext/3dbasics/Mat4.h"
 
@@ -80,6 +81,9 @@ public:
 	// Returns width of drawn text
 	float DrawTextLabel(const char* text, uint32 fontId, float scale, float x, float y, float w = 10000, float h = 10000);
 	
+	float DrawUnicodeLabel(U32String text, uint32 fontId, float scale, float x, float y, float w = 10000, float h = 10000);
+
+
 	String TextInput(const String& textIn, uint32 fontId, float scale, float x, float y, float w);
 	
 	bool SimpleButton(float x, float y, float w, float h);

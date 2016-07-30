@@ -50,8 +50,14 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 	Vector<File*> levelFiles;
 	assetDir.FindFilesWithExt("lvl", &levelFiles);
 	
-	Vector<File*> fontFiles;
-	assetDir.FindFilesWithExt("ttf", &fontFiles);
+	Vector<File*> ttfFiles;
+	assetDir.FindFilesWithExt("ttf", &ttfFiles);
+
+	Vector<File*> bitmapFontFiles;
+	assetDir.FindFilesWithExt("fnt", &bitmapFontFiles);
+
+	Vector<File*> uniFontFiles;
+	assetDir.FindFilesWithExt("uft", &uniFontFiles);
 
 	Vector<File*> prefabFiles;
 	assetDir.FindFilesWithExt("bnp", &prefabFiles);
@@ -80,8 +86,12 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 		assetFileIds.Insert(levelFiles.data[i]->fileName, i);
 	}
 
-	for (int i = 0; i < fontFiles.count; i++) {
-		assetFileIds.Insert(fontFiles.data[i]->fileName, i);
+	for (int i = 0; i < bitmapFontFiles.count; i++) {
+		assetFileIds.Insert(bitmapFontFiles.data[i]->fileName, i);
+	}
+
+	for (int i = 0; i < uniFontFiles.count; i++) {
+		assetFileIds.Insert(uniFontFiles.data[i]->fileName, i);
 	}
 
 	for (int i = 0; i < prefabFiles.count; i++) {
@@ -114,8 +124,12 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 		WriteLevelChunk(levelFiles.data[i]->fullName, assetFileIds, i, assetFile);
 	}
 
-	for (int i = 0; i < fontFiles.count; i++) {
-		WriteBitmapFontChunk(fontFiles.data[i]->fullName, 16, i, assetFile);
+	for (int i = 0; i < bitmapFontFiles.count; i++) {
+		WriteBitmapFontChunk(bitmapFontFiles.data[i]->fullName, ttfFiles, i, assetFile);
+	}
+
+	for (int i = 0; i < uniFontFiles.count; i++) {
+		WriteUniFontChunk(uniFontFiles.data[i]->fullName, ttfFiles, i, assetFile);
 	}
 
 	for (int i = 0; i < prefabFiles.count; i++) {
@@ -607,9 +621,33 @@ void WriteCodePoints(CodepointInfo* codepointData, int codepointCount, FILE* ass
 	fwrite(codepointData, sizeof(CodepointInfo), codepointCount, assetFileHandle);
 }
 
-void WriteBitmapFontChunk(const char* fontFileName, int scale, int id, FILE* assetFileHandle){
+const char* FindFilePathByName(const Vector<File*>& files, const char* fileName) {
+	for (int i = 0; i < files.count; i++) {
+		if (StrEqual(files.Get(i)->fileName, fileName)) {
+			return files.Get(i)->fullName;
+		}
+	}
+
+	return nullptr;
+}
+
+void WriteBitmapFontChunk(const char* fontFileName, const Vector<File*>& ttfFiles, int id, FILE* assetFileHandle){
+	XMLDoc fontDoc;
+	XMLError err = ParseXMLStringFromFile(fontFileName, &fontDoc);
+	ASSERT(err == XMLE_NONE);
+
+	String ttfFileShortName, fontSize;
+	fontDoc.elements.vals[0].attributes.LookUp("size", &fontSize);
+	fontDoc.elements.vals[0].attributes.LookUp("src", &ttfFileShortName);
+
+	int scale = Atoi(fontSize.string);
+
+	const char* ttfFilePath = FindFilePathByName(ttfFiles, ttfFileShortName.string);
+
+	ASSERT(ttfFilePath != nullptr);
+
 	int fontFileLength = 0;
-	unsigned char* fontFileBuffer = ReadBinaryFile(fontFileName, &fontFileLength);
+	unsigned char* fontFileBuffer = ReadBinaryFile(ttfFilePath, &fontFileLength);
 
 	stbtt_fontinfo font;
 	stbtt_InitFont(&font, fontFileBuffer, stbtt_GetFontOffsetForIndex(fontFileBuffer,0));
@@ -698,6 +736,53 @@ void WritePrefabChunk(const char* prefabFileName, const StringMap<int>& assetIds
 	fwrite(&id, 1, 4, assetFileHandle);
 
 	WriteEntitySubChunk(rootElem, assetIds, assetFileHandle);
+
+	int chunkIdFlipped = ~*(int*)chunkId;
+	fwrite(&chunkIdFlipped, 1, 4, assetFileHandle);
+}
+
+void WriteUniFontChunk(const char* fontFileName, const Vector<File*>& ttfFiles, int id, FILE* assetFileHandle) {
+	XMLDoc fontDoc;
+	XMLError err = ParseXMLStringFromFile(fontFileName, &fontDoc);
+	ASSERT(err == XMLE_NONE);
+
+	XMLElement* root = &fontDoc.elements.vals[0];
+
+	String fontSizeStr;
+	root->attributes.LookUp("size", &fontSizeStr);
+	int fontSize = Atoi(fontSizeStr.string);
+
+	String cacheSizeStr;
+	root->attributes.LookUp("cacheSize", &cacheSizeStr);
+	int cacheSize = Atoi(cacheSizeStr.string);
+
+	int fontCount = 0;
+	while (root->GetChild("Source", fontCount)) {
+		fontCount++;
+	}
+
+	ASSERT(fontCount > 0);
+
+	char chunkId[] = "BNUF";
+	fwrite(chunkId, 1, 4, assetFileHandle);
+	fwrite(&id, 1, 4, assetFileHandle);
+	fwrite(&fontSize, 1, 4, assetFileHandle);
+	fwrite(&cacheSize, 1, 4, assetFileHandle);
+	fwrite(&fontCount, 1, 4, assetFileHandle);
+
+	for (int i = 0; i < fontCount; i++) {
+		XMLElement* elem = root->GetChild("Source", i);
+
+		String ttfFileShortName;
+		elem->attributes.LookUp("path", &ttfFileShortName);
+		const char* ttfFilePath = FindFilePathByName(ttfFiles, ttfFileShortName.string);
+
+		int fontFileLength = 0;
+		unsigned char* fontFileBuffer = ReadBinaryFile(ttfFilePath, &fontFileLength);
+
+		fwrite(&fontFileLength, 1, 4, assetFileHandle);
+		fwrite(fontFileBuffer, 1, fontFileLength, assetFileHandle);
+	}
 
 	int chunkIdFlipped = ~*(int*)chunkId;
 	fwrite(&chunkIdFlipped, 1, 4, assetFileHandle);

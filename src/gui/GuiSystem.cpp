@@ -172,6 +172,48 @@ float GuiSystem::DrawTextLabel(const char* text, uint32 fontId, float scale, flo
 	return width;
 }
 
+float GuiSystem::DrawUnicodeLabel(U32String text, uint32 fontId, float scale, float x, float y, float w /*= 10000*/, float h /*= 10000*/) {
+	UniFont* font = GlobalScene->res.uniFonts.GetById(fontId);
+	font->CacheGlyphs(text.start, text.length);
+
+	int textLen = text.length;
+
+	if (textLen == 0) {
+		return 0;
+	}
+
+	float* posBuffer = (float*)malloc(textLen * 12 * sizeof(float));
+	float* uvsBuffer = (float*)malloc(textLen * 12 * sizeof(float));
+
+	int charsWritten = -1;
+	float width = font->BakeU32ToVertexData(text, x, y, w, h, posBuffer, uvsBuffer, &charsWritten);
+
+	int dcIndex = -1;
+	for (int i = 0; i < guiDrawCalls.count; i++) {
+		if (guiDrawCalls.Get(i).matId == guiTextMatId && guiDrawCalls.Get(i).texId == font->textureId) {
+			dcIndex = i;
+			break;
+		}
+	}
+
+	if (dcIndex == -1) {
+		GuiDrawCall newDc;
+		newDc.matId = guiTextMatId;
+		newDc.texId = font->textureId;
+		guiDrawCalls.PushBack(newDc);
+		dcIndex = guiDrawCalls.count - 1;
+	}
+
+	guiDrawCalls.Get(dcIndex).pos.WriteArray(posBuffer, charsWritten * 12);
+	guiDrawCalls.Get(dcIndex).uvs.WriteArray(uvsBuffer, charsWritten * 12);
+
+	free(posBuffer);
+	free(uvsBuffer);
+
+	return width;
+}
+
+
 void GuiSystem::ColoredBox(float x, float y, float w, float h, const Vector4 col) {
 	Material* mat = GlobalScene->res.materials.GetById(guiColMatId);
 	Program* prog = GlobalScene->res.programs.GetById(mat->programId);

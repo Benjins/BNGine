@@ -6,6 +6,9 @@
 
 #include "../util/LevelLoading.h"
 
+#include "../../ext/CppUtils/filesys.h"
+#include "../../ext/CppUtils/unicode.h"
+
 //#include <windows.h>
 
 Scene* GlobalScene = nullptr;
@@ -177,6 +180,7 @@ void Scene::Render() {
 	glScissor((int)cam.xOffset, (int)cam.yOffset, (int)cam.widthPixels, (int)cam.heightPixels);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glScissor((int)cam.xOffset, (int)cam.yOffset + 100, (int)cam.widthPixels, (int)cam.heightPixels - 100);
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -193,6 +197,19 @@ void Scene::Render() {
 	//gui.DrawTextLabel("Hello world", 1, 1, 300, 300);
 	//gui.DrawTextLabel("This is the end.", 1, 1, 0, 0);
 	//gui.DrawTextLabel("This is *not* the end.", 1, 1, 12, 12);
+
+	glScissor((int)cam.xOffset, (int)cam.yOffset, (int)cam.widthPixels, (int)cam.heightPixels);
+
+	static bool firstPass = true;
+	static U32String unicodeText = {};
+	if (firstPass) {
+		int fileLength;
+		char* unicodeEncoded = ReadTextFile("assets/strings/chinese_test.txt", &fileLength);
+		unicodeText = DecodeUTF8(unicodeEncoded, fileLength);
+	}
+	firstPass = false;
+
+	gui.DrawUnicodeLabel(unicodeText, 0, 18, 30, 30);
 
 	gui.Render();
 
