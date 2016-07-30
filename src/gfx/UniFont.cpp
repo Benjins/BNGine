@@ -75,8 +75,25 @@ void UniFont::CacheGlyphDefault(int codePoint, int cellCols, int cellRows, Textu
 	}
 }
 
-void UniFont::CacheGlyphHangul(int codePoint, int cellCols, int cellRows, Texture* tex, bool* outIsDirty) {
+void DecomposeHangulToJamo(int hangul, int* jamos) {
+	// codepoint = ((initial * 588) + (medial * 28) + final) + 44032
+	int final = (hangul - 44032) % 28;
+	int medial = ((hangul - 44032) / 28) % 21;
+	int initial = (hangul - 44032) / 588;
 
+	jamos[0] = initial + 0x1100;
+	jamos[1] = medial + 0x1161;
+	jamos[2] = final + 0x11A7;
+}
+
+void UniFont::CacheGlyphHangul(int codePoint, int cellCols, int cellRows, Texture* tex, bool* outIsDirty) {
+	int codePoints[3] = {};
+	DecomposeHangulToJamo(codePoint, codePoints);
+
+	int count = codePoints[2] == 0x11A7 ? 2 : 3;
+	for (int i = 0; i < count; i++) {
+		CacheGlyphDefault(codePoints[i], cellCols, cellRows, tex, outIsDirty);
+	}
 }
 
 void UniFont::CacheGlyphs(unsigned int* _codePoints, int count) {
@@ -109,7 +126,15 @@ void UniFont::CacheGlyphs(unsigned int* _codePoints, int count) {
 }
 
 void UniFont::BakeVertexDataHangul(int c, float* x, float y, float width, float height, Texture* fontTexture, float* outPosData, float* outUvData, int* index) {
-	// TODO: stub
+	int codePoints[3] = {};
+	DecomposeHangulToJamo(c, codePoints);
+
+	int count = codePoints[2] == 0x11A7 ? 2 : 3;
+
+	// TODO: actually arrange them properly.
+	for (int i = 0; i < count; i++) {
+		BakeVertexDataDefault(codePoints[i], x, y, width, height, fontTexture, outPosData, outUvData, index);
+	}
 }
 
 void UniFont::BakeVertexDataDefault(int c, float* x, float y, float width, float height, Texture* fontTexture, float* outPosData, float* outUvData, int* index) {
@@ -177,20 +202,19 @@ int UniFont::GetQuadCountForText(const U32String string) {
 	int quadCount = 0;
 	for (int i = 0; i < string.length; i++) {
 		int codePoint = string.start[i];
-		CodepointInfo* info = GetInfoForCodepoint(codePoint);
-
-		if (info != nullptr) {
-			UnicodeBlockType block = GetBlockTypeOfCodePoint(codePoint);
-			bool foundSpecialCase = false;
-			for (int j = 0; j < BNS_ARRAY_COUNT(cacheGlyphSpecialCases); j++) {
-				if (block == cacheGlyphSpecialCases[j].block) {
-					quadCount += cacheGlyphSpecialCases[j].numQuadsPerChar;
-					foundSpecialCase = true;
-					break;
-				}
+		UnicodeBlockType block = GetBlockTypeOfCodePoint(codePoint);
+		bool foundSpecialCase = false;
+		for (int j = 0; j < BNS_ARRAY_COUNT(cacheGlyphSpecialCases); j++) {
+			if (block == cacheGlyphSpecialCases[j].block) {
+				quadCount += cacheGlyphSpecialCases[j].numQuadsPerChar;
+				foundSpecialCase = true;
+				break;
 			}
+		}
 
-			if (!foundSpecialCase) {
+		if (!foundSpecialCase) {
+			CodepointInfo* info = GetInfoForCodepoint(codePoint);
+			if (info != nullptr) {
 				quadCount++;
 			}
 		}
