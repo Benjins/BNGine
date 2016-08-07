@@ -58,6 +58,9 @@ enum AssetType {
 template<typename T>
 struct StringMap;
 
+template<typename T>
+struct Vector;
+
 void PackAssetFile(const char* assetDir, const char* packedFileName);
 
 void WriteMeshChunk(const char* meshFileName, int id, FILE* assetFileHandle);

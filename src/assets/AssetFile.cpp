@@ -10,6 +10,7 @@
 #include "../../ext/CppUtils/filesys.h"
 #include "../../ext/CppUtils/stringmap.h"
 #include "../../ext/CppUtils/memstream.h"
+#include "../../ext/CppUtils/vector.h"
 #include "../../ext/CppUtils/xml.h"
 
 #include "../../ext/CppUtils/macros.h"
