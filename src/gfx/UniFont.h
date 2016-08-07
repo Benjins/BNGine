@@ -13,6 +13,8 @@
 #endif
 #include "../../ext/stb/stb_truetype.h"
 
+struct Texture;
+
 struct UniFont : IDBase{
 	int textureId;
 

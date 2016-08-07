@@ -1,5 +1,7 @@
 #include "UniFont.h"
 
+#include "Texture.h"
+
 #include "../core/Scene.h"
 #include "../assets/AssetFile.h"
 
