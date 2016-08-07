@@ -129,11 +129,48 @@ void UniFont::BakeVertexDataHangul(int c, float* x, float y, float width, float 
 	int codePoints[3] = {};
 	DecomposeHangulToJamo(c, codePoints);
 
-	int count = codePoints[2] == 0x11A7 ? 2 : 3;
+	float scale = fontScale;
+	float startX = *x;
 
-	// TODO: actually arrange them properly.
-	for (int i = 0; i < count; i++) {
-		BakeVertexDataDefault(codePoints[i], x, y, width, height, fontTexture, outPosData, outUvData, index);
+	if (codePoints[2] == 0x11A7) {
+		for (int c = 0; c < 2; c++) {
+			CodepointInfo* info = GetInfoForCodepoint(codePoints[c]);
+
+			float w = info->w, h = info->h;
+			float xAddUv[6] = { 0, w, w, 0, 0, w };
+			float yAddUv[6] = { 0, 0, h, 0, h, h };
+
+			float xAddPos[6] = { 0, w / 2, w / 2 , 0, 0, w / 2 };
+			float yAddPos[6] = { 0, 0, h, 0, h, h };
+
+			for (int i = 0; i < 6; i++) {
+				outPosData[*index] = (*x + xAddPos[i]) / GlobalScene->cam.widthPixels * 2 - 1;
+				outPosData[*index + 1] = (y - yAddPos[i] + h) / GlobalScene->cam.heightPixels * 2 - 1;
+
+				outUvData[*index] = (info->x + xAddUv[i]) / fontTexture->width;
+				outUvData[*index + 1] = (info->y + yAddUv[i]) / fontTexture->height;
+
+				*index += 2;
+			}
+
+			*x += (info->w / 2);
+
+			if (c == 1) {
+				*x = startX + info->xAdvance;
+			}
+		}
+
+		for (int i = 0; i < 12; i++) {
+			outPosData[*index] = 0;
+			outUvData[*index] = 0;
+
+			(*index)++;
+		}
+	}
+	else {
+		for (int i = 0; i < 3; i++) {
+			BakeVertexDataDefault(codePoints[i], x, y, width, height, fontTexture, outPosData, outUvData, index);
+		}
 	}
 }
 
