@@ -61,6 +61,8 @@ struct StringMap;
 template<typename T>
 struct Vector;
 
+struct File;
+
 void PackAssetFile(const char* assetDir, const char* packedFileName);
 
 void WriteMeshChunk(const char* meshFileName, int id, FILE* assetFileHandle);
