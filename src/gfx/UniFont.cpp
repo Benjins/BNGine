@@ -5,7 +5,7 @@
 #include "../core/Scene.h"
 #include "../assets/AssetFile.h"
 
-const UniFont::FontSpecialCase UniFont::cacheGlyphSpecialCases[] = {
+const UniFont::FontSpecialCase UniFont::fontFunctionSpecialCases[] = {
 	{&UniFont::CacheGlyphHangul, &UniFont::BakeVertexDataHangul, UBT_HangulSyllables, 3}
 };
 
@@ -109,10 +109,10 @@ void UniFont::CacheGlyphs(unsigned int* _codePoints, int count) {
 		int codePoint = _codePoints[i];
 		UnicodeBlockType blockType = GetBlockTypeOfCodePoint(codePoint);
 		bool foundSpecialCase = false;
-		for (int j = 0; j < BNS_ARRAY_COUNT(cacheGlyphSpecialCases); j++) {
-			if (blockType == cacheGlyphSpecialCases[j].block) {
+		for (int j = 0; j < BNS_ARRAY_COUNT(fontFunctionSpecialCases); j++) {
+			if (blockType == fontFunctionSpecialCases[j].block) {
 				foundSpecialCase = true;
-				CacheGlyphMemberFunc specialCase = cacheGlyphSpecialCases[j].cacheGlyphMethod;
+				CacheGlyphMemberFunc specialCase = fontFunctionSpecialCases[j].cacheGlyphMethod;
 				(this->*specialCase)(codePoint, cellCols, cellRows, tex, &isDirty);
 			}
 		}
@@ -310,10 +310,10 @@ float UniFont::BakeU32ToVertexData(U32String string, float xStart, float yStart,
 		int codePoint = string.start[c];
 		UnicodeBlockType blockType = GetBlockTypeOfCodePoint(codePoint);
 		bool foundSpecialCase = false;
-		for (int j = 0; j < BNS_ARRAY_COUNT(cacheGlyphSpecialCases); j++) {
-			if (blockType == cacheGlyphSpecialCases[j].block) {
+		for (int j = 0; j < BNS_ARRAY_COUNT(fontFunctionSpecialCases); j++) {
+			if (blockType == fontFunctionSpecialCases[j].block) {
 				foundSpecialCase = true;
-				BakeVertexDataMemberFunc specialCase = cacheGlyphSpecialCases[j].bakeVertexMethod;
+				BakeVertexDataMemberFunc specialCase = fontFunctionSpecialCases[j].bakeVertexMethod;
 				(this->*specialCase)(codePoint, &x, y, width - x, height, fontTexture, outPosData, outUvData, &index);
 
 			}
@@ -337,9 +337,9 @@ int UniFont::GetQuadCountForText(const U32String string) {
 		int codePoint = string.start[i];
 		UnicodeBlockType block = GetBlockTypeOfCodePoint(codePoint);
 		bool foundSpecialCase = false;
-		for (int j = 0; j < BNS_ARRAY_COUNT(cacheGlyphSpecialCases); j++) {
-			if (block == cacheGlyphSpecialCases[j].block) {
-				quadCount += cacheGlyphSpecialCases[j].numQuadsPerChar;
+		for (int j = 0; j < BNS_ARRAY_COUNT(fontFunctionSpecialCases); j++) {
+			if (block == fontFunctionSpecialCases[j].block) {
+				quadCount += fontFunctionSpecialCases[j].numQuadsPerChar;
 				foundSpecialCase = true;
 				break;
 			}

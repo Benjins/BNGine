@@ -41,7 +41,7 @@ struct UniFont : IDBase{
 		int numQuadsPerChar;
 	};
 
-	static const FontSpecialCase cacheGlyphSpecialCases[];
+	static const FontSpecialCase fontFunctionSpecialCases[];
 
 	void AddFont(unsigned char* fontBuffer, int bufferSize);
 
