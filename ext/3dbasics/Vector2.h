@@ -41,6 +41,11 @@ struct Vector2{
 	bool operator==(const Vector2& compare) const;
 	bool operator!=(const Vector2& compare) const;
 
+	//Get the index-th element (x = 0, y = 1)
+	inline float& operator[](const int index) {
+		return ((float*)this)[index];
+	}
+
 	//The length of the vector
 	float Magnitude() const;
 

@@ -127,6 +127,53 @@ void UniFont::CacheGlyphs(unsigned int* _codePoints, int count) {
 	}
 }
 
+struct Rect {
+	Vector2 lowerLeft;
+	Vector2 upperRight;
+};
+
+Rect ScaleRectToRect(Rect src, Rect bounds) {
+	Vector2 oldScale = src.upperRight - src.lowerLeft;
+	Vector2 boundsScale = bounds.lowerLeft - bounds.upperRight;
+
+	float scaleFactor = BNS_MAX(oldScale.x / boundsScale.x, oldScale.y / boundsScale.y);
+	Vector2 newScale = oldScale / scaleFactor;
+
+	Vector2 newCentre = (bounds.lowerLeft + bounds.upperRight) / 2;
+	Rect newRect = { newCentre - newScale / 2, newCentre + newScale / 2 };
+
+	return newRect;
+}
+
+void GetJamoRects(const int* codePoints, int codepointCount, Rect charRect, Rect* rects) {
+	if (codepointCount == 2) {
+		float middleX = (charRect.lowerLeft.x + charRect.upperRight.x) / 2;
+		rects[0] = charRect;
+		rects[1] = charRect;
+
+		rects[0].upperRight.x = middleX;
+		rects[1].lowerLeft.x = middleX;
+	}
+	else if (codepointCount == 3) {
+		float middleX = (charRect.lowerLeft.x + charRect.upperRight.x) / 2;
+		float middleY = (charRect.lowerLeft.y + charRect.upperRight.y) / 2;
+		
+		for (int i = 0; i < 2; i++) {
+			rects[i] = charRect;
+			rects[i].lowerLeft.y = middleY;
+		}
+
+		rects[0].upperRight.x = middleX;
+		rects[1].lowerLeft.x = middleX;
+
+		rects[2] = charRect;
+		rects[2].upperRight.y = middleY;
+	}
+	else {
+		ASSERT_WARN("%s: Codepoint count is %d, needs to be 2 or 3.", __FUNCTION__, codepointCount);
+	}
+}
+
 void UniFont::BakeVertexDataHangul(int c, float* x, float y, float width, float height, Texture* fontTexture, float* outPosData, float* outUvData, int* index) {
 	int codePoints[3] = {};
 	DecomposeHangulToJamo(c, codePoints);
@@ -134,47 +181,94 @@ void UniFont::BakeVertexDataHangul(int c, float* x, float y, float width, float 
 	float scale = fontScale;
 	float startX = *x;
 
-	if (codePoints[2] == 0x11A7) {
-		for (int c = 0; c < 2; c++) {
-			CodepointInfo* info = GetInfoForCodepoint(codePoints[c]);
+	Rect jamoRects[3];
+	Rect charRect = { Vector2(startX, y), Vector2(startX + fontScale, y + fontScale) };
 
-			float w = info->w, h = info->h;
-			float xAddUv[6] = { 0, w, w, 0, 0, w };
-			float yAddUv[6] = { 0, 0, h, 0, h, h };
+	int codePointCount = (codePoints[2] == 0x11A7) ? 2 : 3;
 
-			float xAddPos[6] = { 0, w / 2, w / 2 , 0, 0, w / 2 };
-			float yAddPos[6] = { 0, 0, h, 0, h, h };
+	float xAdvance = 0;
+	for (int c = 0; c < codePointCount; c++) {
+		CodepointInfo* info = GetInfoForCodepoint(codePoints[c]);
+		xAdvance = info->xAdvance;
 
-			for (int i = 0; i < 6; i++) {
-				outPosData[*index] = (*x + xAddPos[i]) / GlobalScene->cam.widthPixels * 2 - 1;
-				outPosData[*index + 1] = (y - yAddPos[i] + h) / GlobalScene->cam.heightPixels * 2 - 1;
-
-				outUvData[*index] = (info->x + xAddUv[i]) / fontTexture->width;
-				outUvData[*index + 1] = (info->y + yAddUv[i]) / fontTexture->height;
-
-				*index += 2;
-			}
-
-			*x += (info->w / 2);
-
-			if (c == 1) {
-				*x = startX + info->xAdvance;
-			}
+		Vector2 scale = { 1, 1 };
+		if (codePointCount == 2) {
+			scale = Vector2(0.5f, 1);
+		}
+		else if (c == 2) {
+			scale = Vector2(1, 0.5f);
+		}
+		else {
+			scale = Vector2(0.5f, 0.5f);
 		}
 
-		for (int i = 0; i < 12; i++) {
-			outPosData[*index] = 0;
-			outUvData[*index] = 0;
+		float w = info->w, h = info->h;
+		float xAddUv[6] = { 0, w, w, 0, 0, w };
+		float yAddUv[6] = { 0, 0, h, 0, h, h };
 
-			(*index)++;
+		float posW = info->w * scale.x;
+		float posH = info->h * scale.y;
+		float xAddPos[6] = { 0, posW, posW, 0, 0, posW };
+		float yAddPos[6] = { 0, 0, posH, 0, posH, posH };
+
+		float jamoX = *x + info->xOffset;
+		float jamoY = y - info->yOffset;
+		for (int i = 0; i < 6; i++) {
+			outPosData[*index] = (jamoX + xAddPos[i]) / GlobalScene->cam.widthPixels * 2 - 1;
+			outPosData[*index + 1] = (jamoY - yAddPos[i]) / GlobalScene->cam.heightPixels * 2 - 1;
+
+			outUvData[*index] = (info->x + xAddUv[i]) / fontTexture->width;
+			outUvData[*index + 1] = (info->y + yAddUv[i]) / fontTexture->height;
+
+			*index += 2;
 		}
 	}
-	else {
-		for (int i = 0; i < 3; i++) {
-			BakeVertexDataDefault(codePoints[i], x, y, width, height, fontTexture, outPosData, outUvData, index);
-		}
-	}
+
+	*x += xAdvance;
 }
+
+
+/*
+for (int i = 0; i < 3; i++) {
+BakeVertexDataDefault(codePoints[i], x, y, width, height, fontTexture, outPosData, outUvData, index);
+}
+*/
+
+/*
+for (int c = 0; c < 2; c++) {
+CodepointInfo* info = GetInfoForCodepoint(codePoints[c]);
+
+float w = info->w, h = info->h;
+float xAddUv[6] = { 0, w, w, 0, 0, w };
+float yAddUv[6] = { 0, 0, h, 0, h, h };
+
+float xAddPos[6] = { 0, w / 2, w / 2 , 0, 0, w / 2 };
+float yAddPos[6] = { 0, 0, h, 0, h, h };
+
+for (int i = 0; i < 6; i++) {
+outPosData[*index] = (*x + xAddPos[i]) / GlobalScene->cam.widthPixels * 2 - 1;
+outPosData[*index + 1] = (y - yAddPos[i] + h) / GlobalScene->cam.heightPixels * 2 - 1;
+
+outUvData[*index] = (info->x + xAddUv[i]) / fontTexture->width;
+outUvData[*index + 1] = (info->y + yAddUv[i]) / fontTexture->height;
+
+*index += 2;
+}
+
+*x += (info->w / 2);
+
+if (c == 1) {
+*x = startX + info->xAdvance;
+}
+}
+
+for (int i = 0; i < 12; i++) {
+outPosData[*index] = 0;
+outUvData[*index] = 0;
+
+(*index)++;
+}
+*/
 
 void UniFont::BakeVertexDataDefault(int c, float* x, float y, float width, float height, Texture* fontTexture, float* outPosData, float* outUvData, int* index) {
 	CodepointInfo* info = GetInfoForCodepoint(c);
