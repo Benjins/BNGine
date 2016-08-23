@@ -34,6 +34,48 @@ Entity* Scene::AddVisibleEntity(uint32 matId, uint32 meshId) {
 	return newEnt;
 }
 
+DrawCall* Scene::GetDrawCallForEntity(uint32 entityId) {
+	for (int i = 0; i < res.drawCalls.currentCount; i++) {
+		if (entityId == res.drawCalls.vals[i].entId) {
+			return &res.drawCalls.vals[i];
+		}
+	}
+
+	return nullptr;
+}
+
+Entity* Scene::CloneEntity(Entity* srcEnt) {
+	ASSERT(srcEnt != nullptr);
+	if (srcEnt != nullptr) {
+		Transform* srcTrans = transforms.GetById(srcEnt->transform);
+		ASSERT(srcTrans != nullptr);
+		if (srcTrans != nullptr) {
+			DrawCall* dc = GetDrawCallForEntity(srcEnt->id);
+			Entity* newEnt = AddVisibleEntity(dc->matId, dc->meshId);
+			Transform* newTrans = transforms.GetById(newEnt->transform);
+			newTrans->position = srcTrans->position;
+			newTrans->rotation = srcTrans->rotation;
+			newTrans->scale = srcTrans->scale;
+
+			for (int i = 0; i < CCT_Count; i++) {
+				Component* comp = FindComponentByEntity<Component>((CustomComponentType)i, srcEnt->id);
+				if (comp != nullptr) {
+					Component* newComp = addComponentFuncs[i]();
+					newComp->entity = newEnt->id;
+
+					MemStream memStr;
+					componentMemSerializeFuncs[i](comp, &memStr);
+					componentMemDeserializeFuncs[i](newComp, &memStr);
+				}
+			}
+
+			return newEnt;
+		}
+	}
+
+	return nullptr;
+}
+
 void Scene::StartUp() {
 	glEnable(GL_SCISSOR_TEST);
 
@@ -46,8 +88,6 @@ void Scene::StartUp() {
 	LoadLevel("Level1.lvl");
 
 	frameTimer.Reset();
-
-	//res.SaveLevelToFile(res.levels.GetById(level1Id), "Level1_edit.lvl");
 }
 
 void Scene::Update() {
@@ -210,7 +250,7 @@ void Scene::Render() {
 	else {
 		static int fc = 0;
 		fc++;
-		if (fc > 60) {
+		if (fc > 1200000) {
 			unicodeText.start[0]++;
 			fc = 0;
 		}

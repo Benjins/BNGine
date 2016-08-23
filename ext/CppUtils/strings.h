@@ -97,7 +97,9 @@ struct String{
 	
 	String(const String& other){
 		string = other.string;
-		Retain();
+		if (string != nullptr) {
+			Retain();
+		}
 	}
 	
 	String(const char* start){

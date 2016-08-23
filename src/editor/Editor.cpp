@@ -14,36 +14,59 @@
 void Editor::Update() {
 	//scene.Update();
 
-	if (gui.textInputState.activeIndex == -1) {
-		Vector3 moveVec;
-		if (scene.input.KeyIsDown('W')) {
-			moveVec = moveVec + editorCamTrans.Forward();
-		}
-		if (scene.input.KeyIsDown('S')) {
-			moveVec = moveVec - editorCamTrans.Forward();
-		}
-		if (scene.input.KeyIsDown('A')) {
-			moveVec = moveVec - editorCamTrans.Right();
-		}
-		if (scene.input.KeyIsDown('D')) {
-			moveVec = moveVec + editorCamTrans.Right();
+	if (gui.textInputState.activeIndex == -1){
+		if (!scene.input.KeyIsDown(KC_Control)
+			&& !scene.input.KeyIsDown(KC_Shift)) {
+			Vector3 moveVec;
+			if (scene.input.KeyIsDown('W')) {
+				moveVec = moveVec + editorCamTrans.Forward();
+			}
+			if (scene.input.KeyIsDown('S')) {
+				moveVec = moveVec - editorCamTrans.Forward();
+			}
+			if (scene.input.KeyIsDown('A')) {
+				moveVec = moveVec - editorCamTrans.Right();
+			}
+			if (scene.input.KeyIsDown('D')) {
+				moveVec = moveVec + editorCamTrans.Right();
+			}
+
+			if (scene.input.KeyIsDown('Q')) {
+				moveVec = moveVec + Y_AXIS;
+			}
+			if (scene.input.KeyIsDown('Z')) {
+				moveVec = moveVec - Y_AXIS;
+			}
+
+			editorCamTrans.position = editorCamTrans.position + moveVec / 10;
 		}
 
-		if (scene.input.KeyIsDown('Q')) {
-			moveVec = moveVec + Y_AXIS;
+		if (scene.input.KeyIsDown(KC_Control)) {
+			if (scene.input.KeyIsReleased('R')) {
+				gizmoType = EG_Rotation;
+			}
+			else if (scene.input.KeyIsReleased('P')) {
+				gizmoType = EG_Position;
+			}
+			else if (scene.input.KeyIsReleased('S')) {
+				SaveScene();
+			}
+			else if (scene.input.KeyIsReleased('C')) {
+				if (selectedEntity != -1) {
+					copyPasteData.type = CPT_Entity;
+					copyPasteData.entityId = selectedEntity;
+				}
+			}
+			else if (scene.input.KeyIsReleased('V')) {
+				if (copyPasteData.type == CPT_Entity && copyPasteData.entityId != -1) {
+					Entity* srcEnt = scene.entities.GetById(copyPasteData.entityId);
+					if (srcEnt != nullptr) {
+						Entity* newEnt = scene.CloneEntity(srcEnt);
+						selectedEntity = newEnt->id;
+					}
+				}
+			}
 		}
-		if (scene.input.KeyIsDown('Z')) {
-			moveVec = moveVec - Y_AXIS;
-		}
-
-		if (scene.input.KeyIsReleased('R')) {
-			gizmoType = EG_Rotation;
-		}
-		if (scene.input.KeyIsReleased('P')) {
-			gizmoType = EG_Position;
-		}
-
-		editorCamTrans.position = editorCamTrans.position + moveVec / 50;
 	}
 
 	if (scene.input.cursorX > leftBarWidth && scene.input.cursorX < cam.widthPixels - rightBarWidth 
@@ -266,6 +289,9 @@ void Editor::Render() {
 	glViewport(0, 0, cam.widthPixels, cam.heightPixels);
 	glScissor(0, 0, cam.widthPixels, cam.heightPixels);
 
+	sceneCamTrans = scene.transforms.GetById(scene.cam.transform);
+	*sceneCamTrans = oldSceneCamTrans;
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -279,9 +305,6 @@ void Editor::Render() {
 	gui.Render();
 
 	glDisable(GL_BLEND);
-
-	sceneCamTrans = scene.transforms.GetById(scene.cam.transform);
-	*sceneCamTrans = oldSceneCamTrans;
 }
 
 void Editor::TopPanelGui() {
@@ -305,20 +328,24 @@ void Editor::TopPanelGui() {
 	}
 
 	if (gui.TextButton("Save Scene", 0, 12, x, y, 90, 30)) {
-		Level* currLevel = scene.res.levels.GetById(scene.currentLevel);
-		scene.SaveLevel(currLevel);
-		String levelFileName = scene.res.FindFileNameByIdAndExtension("lvl", currLevel->id);
+		SaveScene();
+	}
+}
 
-		File assets;
-		assets.Load("assets");
-		Vector<File*> levelFiles;
-		assets.FindFilesWithExt("lvl", &levelFiles);
+void Editor::SaveScene() {
+	Level* currLevel = scene.res.levels.GetById(scene.currentLevel);
+	scene.SaveLevel(currLevel);
+	String levelFileName = scene.res.FindFileNameByIdAndExtension("lvl", currLevel->id);
 
-		for (int i = 0; i < levelFiles.count; i++) {
-			if (levelFileName == levelFiles.Get(i)->fileName) {
-				scene.res.SaveLevelToFile(currLevel, levelFiles.Get(i)->fullName);
-				break;
-			}
+	File assets;
+	assets.Load("assets");
+	Vector<File*> levelFiles;
+	assets.FindFilesWithExt("lvl", &levelFiles);
+
+	for (int i = 0; i < levelFiles.count; i++) {
+		if (levelFileName == levelFiles.Get(i)->fileName) {
+			scene.res.SaveLevelToFile(currLevel, levelFiles.Get(i)->fullName);
+			break;
 		}
 	}
 }
@@ -531,6 +558,9 @@ void Editor::StartUp() {
 	gizmoType = EG_Position;
 
 	pickerType = APT_None;
+
+	copyPasteData.type = CPT_Entity;
+	copyPasteData.entityId = -1;
 
 	scene.StartUp();
 	gui.Init();

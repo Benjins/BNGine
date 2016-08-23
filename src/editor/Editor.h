@@ -31,6 +31,18 @@ enum AssetPickerType {
 	APT_Material
 };
 
+enum CopyPasteType {
+	CPT_Entity,
+	CPT_Count
+};
+
+struct CopyPasteData {
+	CopyPasteType type;
+	union {
+		int entityId;
+	};
+};
+
 struct Editor {
 	Scene scene;
 
@@ -53,6 +65,8 @@ struct Editor {
 
 	AssetPickerType pickerType;
 
+	CopyPasteData copyPasteData;
+
 	int GetSelectedEntity(int pixelX, int pixelY);
 
 	Vector3 ScreenSpaceCoordsToRay(float pixelX, float pixelY);
@@ -73,6 +87,8 @@ struct Editor {
 	Vector3 Vec3Field(Vector3 val, float x, float y, float w);
 
 	float EditComponentGui(Component* comp, MetaStruct* meta, float x, float y, bool* outRemove);
+
+	void SaveScene();
 
 	void DrawCurrentGizmo(const Entity* ent, Material* mat);
 	void DrawSelectGizmo(const Entity* ent, Material* mat);

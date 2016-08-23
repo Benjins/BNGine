@@ -23,6 +23,8 @@
 
 #include "../gui/GuiSystem.h"
 
+struct DrawCall;
+
 struct Scene {
 	IDTracker<Entity> entities;
 	IDTracker<Transform> transforms;
@@ -67,6 +69,8 @@ struct Scene {
 	void SaveCustomComponentsToLevel(Level* level);
 
 	Entity* AddVisibleEntity(uint32 matId, uint32 meshId);
+	DrawCall* GetDrawCallForEntity(uint32 entityId);
+	Entity* CloneEntity(Entity* ent);
 
 	void DestroyEntity(uint32 entId);
 	void DestroyEntityImmediate(uint32 entId);
