@@ -83,6 +83,7 @@ struct Editor {
 
 	int IntField(int val, float x, float y, float w);
 	float FloatField(float val, float x, float y, float w);
+	bool BoolField(bool val, float x, float y, float w);
 	Vector2 Vec2Field(Vector2 val, float x, float y, float w);
 	Vector3 Vec3Field(Vector3 val, float x, float y, float w);
 

@@ -7,12 +7,14 @@
 #include "BulletComponent.h"
 #include "EnemyComponent.h"
 #include "HealthComponent.h"
+#include "WaterVolumeComponent.h"
 
 struct GameplayComponents {
 	IDTracker<PlayerComponent> players;
 	IDTracker<BulletComponent> bullets;
 	IDTracker<EnemyComponent> enemies;
 	IDTracker<HealthComponent> healthComps;
+	IDTracker<WaterVolumeComponent> waterComps;
 };
 
 #endif

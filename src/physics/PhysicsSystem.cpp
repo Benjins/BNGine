@@ -13,10 +13,12 @@ RaycastHit PhysicsSystem::Raycast(Vector3 origin, Vector3 direction) {
 	finalHit.wasHit = false;
 	finalHit.depth = FLT_MAX;
 	for (int i = 0; i < boxCols.currentCount; i++) {
-		RaycastHit boxHit = RaycastBox(origin, direction, &boxCols.vals[i]);
+		if (!boxCols.vals[i].isTrigger) {
+			RaycastHit boxHit = RaycastBox(origin, direction, &boxCols.vals[i]);
 
-		if (boxHit.wasHit && boxHit.depth < finalHit.depth) {
-			finalHit = boxHit;
+			if (boxHit.wasHit && boxHit.depth < finalHit.depth) {
+				finalHit = boxHit;
+			}
 		}
 	}
 

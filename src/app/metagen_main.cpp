@@ -15,6 +15,9 @@ MetaType ParseType(const SubString& name, int indirectionLevel, int arrayCount) 
 			else if (name == "float") {
 				return MT_Float;
 			}
+			else if (name == "bool") {
+				return MT_Bool;
+			}
 			else if (name == "String") {
 				return MT_StringRef;
 			}
@@ -85,10 +88,11 @@ int main(int arc, char** argv) {
 		}
 	}
 
-	static const char* parseFuncs[] =
+	static const char* parseFuncs[MT_FundamentalCount] =
 	{
 		"Atoi",
 		"atof",
+		"ParseBool",
 		"",
 		"",
 		"",
@@ -98,10 +102,11 @@ int main(int arc, char** argv) {
 		"ParseQuaternion"
 	};
 
-	static const char* encodeFuncs[] =
+	static const char* encodeFuncs[MT_FundamentalCount] =
 	{
 		"Itoa",
 		"Ftoa",
+		"EncodeBool",
 		"",
 		"",
 		"",
@@ -199,19 +204,6 @@ int main(int arc, char** argv) {
 		}
 	}
 
-	/*
-	for (int j = 0; j < levelStruct->fields.count; j++) {
-		//getComponentLevelPathList
-		int levelFieldIndex = -1;
-		if (levelStruct->fields.data[j].type == "Vector"
-			&& typeIndices.LookUp(levelStruct->fields.data[j].typeParam, &levelFieldIndex)) {
-			ParseMetaStruct* fms = &allParseMetaStructs.data[levelFieldIndex];
-
-			StringStackBuffer<256> getCompLevelPath("%.*s", fms->name.length, fms->name.start);
-			getComponentLevelPathList.PushBack(getCompLevelPath.buffer);
-		}
-	}
-	*/
 	ASSERT(getComponentPathList.count == componentIndices.count);
 	ASSERT(getComponentLevelPathList.count == componentIndices.count);
 

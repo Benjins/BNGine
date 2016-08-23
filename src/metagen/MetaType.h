@@ -8,6 +8,7 @@ enum MetaType {
 	MT_FundamentalBegin = 0,
 	MT_Int = MT_FundamentalBegin,
 	MT_Float,
+	MT_Bool,
 	MT_String,
 	MT_StringRef,
 	MT_SubStringRef,
@@ -15,7 +16,8 @@ enum MetaType {
 	MT_Vector3,
 	MT_Vector4,
 	MT_Quaternion,
-	MT_FundamentalEnd
+	MT_FundamentalEnd,
+	MT_FundamentalCount = MT_FundamentalEnd
 };
 
 #endif

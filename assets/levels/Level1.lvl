@@ -19,25 +19,25 @@
 	</Entity>
 	<Entity id='3'>
 		<Transform pos='0.000544,-1.000000,0.000000' id='4' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<BoxCollider size='5.000000,0.100000,5.000000' position='0.000000,0.000000,0.000000'/>
+		<BoxCollider isTrigger='F' size='5.000000,0.100000,5.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='floor.mat'/>
 		<Mesh src='floor.obj'/>
 	</Entity>
 	<Entity id='4'>
 		<Transform pos='2.000000,-0.400000,2.000000' id='5' scale='0.600000,0.300000,0.600000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<BoxCollider size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
+		<BoxCollider isTrigger='F' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='floor.mat'/>
 		<Mesh src='test_2.obj'/>
 	</Entity>
 	<Entity id='5'>
 		<Transform pos='-6.077389,-0.409892,0.000000' id='6' scale='1.000000,1.000000,1.000000' rotation='0.988187,0.000000,0.000000,-0.153251' parent='-1'/>
-		<BoxCollider size='5.000000,0.100000,5.000000' position='0.000000,0.000000,0.000000'/>
+		<BoxCollider isTrigger='F' size='5.000000,0.100000,5.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='floor.mat'/>
 		<Mesh src='floor.obj'/>
 	</Entity>
 	<Entity id='6'>
 		<Transform pos='7.953962,-2.637922,0.000000' id='7' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<BoxCollider size='5.000000,0.100000,5.000000' position='0.000000,0.000000,0.000000'/>
+		<BoxCollider isTrigger='F' size='5.000000,0.100000,5.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='floor.mat'/>
 		<Mesh src='floor.obj'/>
 	</Entity>
@@ -47,7 +47,7 @@
 	</Entity>
 	<Entity id='8'>
 		<Transform pos='0.010204,-0.117329,8.424690' id='9' scale='1.000000,1.000000,1.000000' rotation='0.992905,-0.117683,0.001881,-0.016887' parent='-1'/>
-		<BoxCollider size='5.000000,0.100000,5.000000' position='0.000000,0.000000,0.000000'/>
+		<BoxCollider isTrigger='F' size='5.000000,0.100000,5.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='floor.mat'/>
 		<Mesh src='floor.obj'/>
 	</Entity>
@@ -55,38 +55,45 @@
 		<Transform pos='0.000000,-0.760581,0.929053' id='10' scale='0.200000,0.200000,0.200000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 		<EnemyComponent pauseTime='3.800000' speed='2.000000'/>
 		<HealthComponent currentHealth='5.000000' maxHealth='5.000000'/>
-		<BoxCollider size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
+		<BoxCollider isTrigger='F' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='bullet.mat'/>
 		<Mesh src='monkey.obj'/>
 	</Entity>
 	<Entity id='10'>
 		<Transform pos='19.000000,-5.651700,0.000000' id='11' scale='0.100000,3.000000,6.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<BoxCollider size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
+		<BoxCollider isTrigger='F' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='floor.mat'/>
 		<Mesh src='test_2.obj'/>
 	</Entity>
 	<Entity id='11'>
 		<Transform pos='13.000000,-5.651700,0.000000' id='12' scale='0.100000,3.000000,6.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<BoxCollider size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
+		<BoxCollider isTrigger='F' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='floor.mat'/>
 		<Mesh src='test_2.obj'/>
 	</Entity>
 	<Entity id='12'>
-		<Transform pos='16.000000,-5.651700,-0.018910' id='13' scale='3.000000,0.100000,6.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<BoxCollider size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
+		<Transform pos='16.000000,-8.000000,-0.018910' id='13' scale='3.000000,0.100000,6.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<BoxCollider isTrigger='F' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='floor.mat'/>
 		<Mesh src='test_2.obj'/>
 	</Entity>
 	<Entity id='13'>
 		<Transform pos='16.000000,-5.651700,6.000000' id='14' scale='3.000000,3.000000,0.100000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<BoxCollider size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
+		<BoxCollider isTrigger='F' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='floor.mat'/>
 		<Mesh src='test_2.obj'/>
 	</Entity>
 	<Entity id='14'>
 		<Transform pos='16.000000,-5.651700,-6.000000' id='15' scale='3.000000,3.000000,0.100000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<BoxCollider size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
+		<BoxCollider isTrigger='F' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='floor.mat'/>
 		<Mesh src='test_2.obj'/>
+	</Entity>
+	<Entity id='15'>
+		<Transform pos='16.006924,-3.185068,-0.302186' id='16' scale='0.550000,1.000000,1.100000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<WaterVolumeComponent/>
+		<BoxCollider isTrigger='T' size='5.000000,4.000000,5.000000' position='0.000000,-4.000000,0.000000'/>
+		<Material src='water.mat'/>
+		<Mesh src='floor.obj'/>
 	</Entity>
 </Scene>

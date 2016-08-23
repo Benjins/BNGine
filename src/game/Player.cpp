@@ -50,6 +50,9 @@ void PlayerComponent::Update() {
 
 	moveVec.y = 0;
 
+	static const float gravity = 0.08f;
+	static const float waterMoveVerticalSpeed = 1.5f;
+
 	if (currState == CS_GROUNDED) {
 		Vector3 newPos = entTrans->GetGlobalPosition() + moveVec;
 		RaycastHit newDownCast = GlobalScene->phys.Raycast(newPos, Y_AXIS * -1);
@@ -71,7 +74,7 @@ void PlayerComponent::Update() {
 		}
 	}
 	else if (currState == CS_JUMPING) {
-		yVelocity -= 0.05f;
+		yVelocity -= gravity;
 		moveVec.y = yVelocity / 50.0f;
 
 		if (yVelocity < 0) {
@@ -79,15 +82,75 @@ void PlayerComponent::Update() {
 		}
 	}
 	else if (currState == CS_FALLING) {
-		yVelocity -= 0.05f;
-		const float fallingSpeed = 1.0f;
-		moveVec.y = yVelocity * GlobalScene->GetDeltaTime() * fallingSpeed;
+		yVelocity -= gravity;
+		moveVec.y = yVelocity * GlobalScene->GetDeltaTime();
 
 		if (entTrans->position.y + moveVec.y < floorHeight) {
 			currState = CS_GROUNDED;
 			yVelocity = 0;
 			moveVec.y = 0;
 			entTrans->position.y = floorHeight;
+		}
+
+		bool inWater = false;
+		for (int i = 0; i < GlobalScene->gameplay.waterComps.currentCount; i++) {
+			if (GlobalScene->gameplay.waterComps.vals[i].IsInside(entTrans->position + moveVec)) {
+				inWater = true;
+				break;
+			}
+		}
+
+		if (inWater) {
+			currState = CS_FALLINGWATER;
+		}
+	}
+	else if (currState == CS_FALLINGWATER) {
+		yVelocity += gravity / 10;
+
+		if (GlobalScene->input.KeyIsDown('Q')) {
+			yVelocity += waterMoveVerticalSpeed * GlobalScene->GetDeltaTime();
+		}
+		if (GlobalScene->input.KeyIsDown('Z')) {
+			yVelocity -= waterMoveVerticalSpeed * GlobalScene->GetDeltaTime();
+		}
+
+		moveVec.y = yVelocity * GlobalScene->GetDeltaTime();
+
+		if (entTrans->position.y + moveVec.y < floorHeight) {
+			yVelocity = 0;
+			moveVec.y = 0;
+			entTrans->position.y = floorHeight;
+		}
+
+		if (yVelocity >= 0) {
+			currState = CS_RISINGWATER;
+		}
+	}
+	else if (currState == CS_RISINGWATER) {
+		yVelocity += gravity / 10;
+
+		if (GlobalScene->input.KeyIsDown('Q')) {
+			yVelocity += waterMoveVerticalSpeed * GlobalScene->GetDeltaTime();
+		}
+		if (GlobalScene->input.KeyIsDown('Z')) {
+			yVelocity -= waterMoveVerticalSpeed * GlobalScene->GetDeltaTime();
+		}
+
+		static float maxVelocity = 0.4f;
+		yVelocity = BNS_MIN(yVelocity, maxVelocity);
+
+		moveVec.y = yVelocity * GlobalScene->GetDeltaTime();
+
+		bool inWater = false;
+		for (int i = 0; i < GlobalScene->gameplay.waterComps.currentCount; i++) {
+			if (GlobalScene->gameplay.waterComps.vals[i].IsInside(entTrans->position + moveVec)) {
+				inWater = true;
+				break;
+			}
+		}
+
+		if (!inWater) {
+			currState = CS_FALLING;
 		}
 	}
 	else {

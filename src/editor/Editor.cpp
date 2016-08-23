@@ -522,6 +522,10 @@ float Editor::EditComponentGui(Component* comp, MetaStruct* meta, float x, float
 			float* fieldVal = (float*)fieldPtr;
 			*fieldVal = FloatField(*fieldVal, x, currY, width);
 		}
+		else if (mf->type == MT_Bool) {
+			bool* fieldVal = (bool*)fieldPtr;
+			*fieldVal = BoolField(*fieldVal, x, currY, width);
+		}
 		else if (mf->type == MT_Vector2) {
 			Vector2* fieldVal = (Vector2*)fieldPtr;
 			*fieldVal = Vec2Field(*fieldVal, x, currY, width);
@@ -679,6 +683,13 @@ void Editor::DrawPositionGizmo(const Entity* ent, Material* mat) {
 		glVertex3f(col.x, col.y, col.z);
 		glEnd();
 	}
+}
+
+bool Editor::BoolField(bool val, float x, float y, float w) {
+	String text = EncodeBool(val);
+	text = gui.TextInput(text, 0, 12, x, y, w);
+
+	return (text.string != nullptr) ? ParseBool(text.string) : false;
 }
 
 int Editor::IntField(int val, float x, float y, float w) {

@@ -11,8 +11,15 @@
 
 struct BoxCollider : Component {
 	ColliderFlags flags;
+	bool isTrigger;
 	Vector3 position;
 	Vector3 size;
+
+	BoxCollider() {
+		isTrigger = false;
+	}
 };
+
+bool WithinVolume(Vector3 pos, Vector3 min, Vector3 max);
 
 #endif

@@ -97,3 +97,11 @@ String Ftoa(float val) {
 	return str;
 }
 
+String EncodeBool(bool val) {
+	return (val ? "T" : "F");
+}
+
+bool ParseBool(String str) {
+	return (str == "T");
+}
+

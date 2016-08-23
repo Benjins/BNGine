@@ -23,6 +23,9 @@ String EncodeQuaternion(const Quaternion& quat);
 String Itoa(int val);
 String Ftoa(float val);
 
+String EncodeBool(bool val);
+bool ParseBool(String str);
+
 #pragma once
 
 
