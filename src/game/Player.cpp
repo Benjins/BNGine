@@ -52,6 +52,7 @@ void PlayerComponent::Update() {
 
 	static const float gravity = 0.08f;
 	static const float waterMoveVerticalSpeed = 1.5f;
+	static const float waterMaxHorizontalSpeed = 0.3f;
 
 	if (currState == CS_GROUNDED) {
 		Vector3 newPos = entTrans->GetGlobalPosition() + moveVec;
@@ -105,7 +106,7 @@ void PlayerComponent::Update() {
 		}
 	}
 	else if (currState == CS_FALLINGWATER) {
-		yVelocity += gravity / 10;
+		yVelocity += gravity / 4;
 
 		if (GlobalScene->input.KeyIsDown('Q')) {
 			yVelocity += waterMoveVerticalSpeed * GlobalScene->GetDeltaTime();
@@ -115,6 +116,15 @@ void PlayerComponent::Update() {
 		}
 
 		moveVec.y = yVelocity * GlobalScene->GetDeltaTime();
+
+		Vector2 lateralMotion = Vector2(moveVec.x, moveVec.z);
+		float lateralMag = lateralMotion.Magnitude();
+		if (lateralMag > waterMaxHorizontalSpeed) {
+			lateralMotion = lateralMotion / (lateralMag / waterMaxHorizontalSpeed);
+			lateralMotion = lateralMotion * lateralMag;
+			moveVec.x = lateralMotion.x;
+			moveVec.x = lateralMotion.y;
+		}
 
 		if (entTrans->position.y + moveVec.y < floorHeight) {
 			yVelocity = 0;
@@ -139,7 +149,20 @@ void PlayerComponent::Update() {
 		static float maxVelocity = 0.4f;
 		yVelocity = BNS_MIN(yVelocity, maxVelocity);
 
+		if (yVelocity < 0) {
+			currState = CS_FALLINGWATER;
+		}
+
 		moveVec.y = yVelocity * GlobalScene->GetDeltaTime();
+
+		Vector2 lateralMotion = Vector2(moveVec.x, moveVec.z);
+		float lateralMag = lateralMotion.Magnitude();
+		if (lateralMag > waterMaxHorizontalSpeed) {
+			lateralMotion = lateralMotion / (lateralMag / waterMaxHorizontalSpeed);
+			lateralMotion = lateralMotion * lateralMag;
+			moveVec.x = lateralMotion.x;
+			moveVec.z = lateralMotion.y;
+		}
 
 		bool inWater = false;
 		for (int i = 0; i < GlobalScene->gameplay.waterComps.currentCount; i++) {
@@ -156,6 +179,11 @@ void PlayerComponent::Update() {
 	else {
 		ASSERT_WARN("'%s': Yo, currState is all out of wack.", __FUNCTION__);
 	}
+
+	const char* isZDown = GlobalScene->input.KeyIsDown('Z') ? "T" : "F";
+	StringStackBuffer<256> debugInfo("zPressed: %s currState: %d, yVel: %2.2f\n", 
+		isZDown, currState, yVelocity);
+	OutputDebugStringA(debugInfo.buffer);
 
 	float heightDiff = moveVec.y;
 	moveVec.y = 0;
