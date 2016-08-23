@@ -1,5 +1,7 @@
 #include "WaterVolumeComponent.h"
 
+#include "../physics/BoxCollider.h"
+
 #include "../core/Scene.h"
 
 void WaterVolumeComponent::Update() {
