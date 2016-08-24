@@ -53,6 +53,48 @@ MetaType ParseType(const SubString& name, int indirectionLevel, int arrayCount) 
 	return MT_Unknown;
 }
 
+void DefineCustomComponentFunction(
+	FILE* componentMetaFile, 
+	const Vector<int>* componentIndices, 
+	const Vector<ParseMetaStruct>* allParseMetaStructs,
+	const Vector<String>* getComponentPathList,
+	const char* functionName,
+	const char* methodName,
+	bool singleEntity = false)
+{
+	fprintf(componentMetaFile, "\nvoid %s(%s){\n", functionName, (singleEntity ? "uint32 entId" : ""));
+	for (int i = 0; i < componentIndices->count; i++) {
+		int compIdx = componentIndices->data[i];
+		ParseMetaStruct* ms = &allParseMetaStructs->data[compIdx];
+
+		bool hasUpdate = false;
+		for (int j = 0; j < ms->methods.count; j++) {
+			if (ms->methods.Get(j).name == methodName) {
+				hasUpdate = true;
+				break;
+			}
+		}
+
+		if (hasUpdate) {
+			fprintf(componentMetaFile, "\tfor (int i = 0; i < %s.currentCount; i++) {\n", 
+				getComponentPathList->Get(i).string);
+			if (singleEntity) {
+				fprintf(componentMetaFile, "\t\tif (%s.vals[i].entity == entId){\n",
+					getComponentPathList->Get(i).string);
+				fprintf(componentMetaFile, "\t\t\t%s.vals[i].%s();\n",
+					getComponentPathList->Get(i).string, methodName);
+				fprintf(componentMetaFile, "\t\t}\n");
+			}
+			else {
+				fprintf(componentMetaFile, "\t\t%s.vals[i].%s();\n", 
+					getComponentPathList->Get(i).string, methodName);
+			}
+			fprintf(componentMetaFile, "\t}\n");
+		}
+	}
+	fprintf(componentMetaFile, "\n}\n");
+}
+
 int main(int arc, char** argv) {
 	File srcFiles;
 	srcFiles.Load("src");
@@ -340,26 +382,12 @@ int main(int arc, char** argv) {
 		fprintf(componentMetaFile, "}\n\n");
 	}
 
-	fprintf(componentMetaFile, "\nvoid Scene::UpdateCustomComponents(){\n");
-	for(int i = 0; i < componentIndices.count; i++) {
-		int compIdx = componentIndices.data[i];
-		ParseMetaStruct* ms = &allParseMetaStructs.data[compIdx];
-
-		bool hasUpdate = false;
-		for (int j = 0; j < ms->methods.count; j++) {
-			if (ms->methods.Get(j).name == "Update") {
-				hasUpdate = true;
-				break;
-			}
-		}
-
-		if (hasUpdate) {
-			fprintf(componentMetaFile, "\tfor (int i = 0; i < %s.currentCount; i++) {\n", getComponentPathList.Get(i).string);
-			fprintf(componentMetaFile, "\t\t%s.vals[i].Update();\n", getComponentPathList.Get(i).string);
-			fprintf(componentMetaFile, "\t}\n");
-		}
-	}
-	fprintf(componentMetaFile, "\n}\n");
+	DefineCustomComponentFunction(componentMetaFile, &componentIndices, &allParseMetaStructs,
+		&getComponentPathList, "Scene::UpdateCustomComponents", "Update");
+	DefineCustomComponentFunction(componentMetaFile, &componentIndices, &allParseMetaStructs,
+		&getComponentPathList, "Scene::CustomComponentEditorGui", "EditorGui");
+	DefineCustomComponentFunction(componentMetaFile, &componentIndices, &allParseMetaStructs,
+		&getComponentPathList, "Scene::CustomComponentEditorGuiForEntity", "EditorGui", true);
 
 	for (int i = 0; i < componentIndices.count; i++) {
 		int compIdx = componentIndices.data[i];

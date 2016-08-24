@@ -21,9 +21,9 @@ struct Transform : Component{
 	Vector3 Right();
 	Vector3 Up();
 
-	Mat4x4 GetLocalToGlobalMatrix();
-	Mat4x4 GetGlobaltoLocalMatrix();
-	Vector3 GetGlobalPosition();
+	Mat4x4 GetLocalToGlobalMatrix() const;
+	Mat4x4 GetGlobaltoLocalMatrix() const;
+	Vector3 GetGlobalPosition() const;
 };
 
 #endif

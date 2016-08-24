@@ -232,6 +232,10 @@ void ResourceManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat)
 			float val = stream.Read<float>();
 			outMat->SetFloatUniform(uniformName, val);
 		}
+		else if (uniformType == UT_VEC4) {
+			Vector4 val = stream.Read<Vector4>();
+			outMat->SetVector4Uniform(uniformName, val);
+		}
 	}
 }
 

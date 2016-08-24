@@ -93,13 +93,7 @@ void PlayerComponent::Update() {
 			entTrans->position.y = floorHeight;
 		}
 
-		bool inWater = false;
-		for (int i = 0; i < GlobalScene->gameplay.waterComps.currentCount; i++) {
-			if (GlobalScene->gameplay.waterComps.vals[i].IsInside(entTrans->position + moveVec)) {
-				inWater = true;
-				break;
-			}
-		}
+		bool inWater = CheckWater(entTrans->position + moveVec);
 
 		if (inWater) {
 			currState = CS_FALLINGWATER;
@@ -164,13 +158,7 @@ void PlayerComponent::Update() {
 			moveVec.z = lateralMotion.y;
 		}
 
-		bool inWater = false;
-		for (int i = 0; i < GlobalScene->gameplay.waterComps.currentCount; i++) {
-			if (GlobalScene->gameplay.waterComps.vals[i].IsInside(entTrans->position + moveVec)) {
-				inWater = true;
-				break;
-			}
-		}
+		bool inWater = CheckWater(entTrans->position + moveVec);
 
 		if (!inWater) {
 			currState = CS_FALLING;
@@ -179,11 +167,6 @@ void PlayerComponent::Update() {
 	else {
 		ASSERT_WARN("'%s': Yo, currState is all out of wack.", __FUNCTION__);
 	}
-
-	const char* isZDown = GlobalScene->input.KeyIsDown('Z') ? "T" : "F";
-	StringStackBuffer<256> debugInfo("zPressed: %s currState: %d, yVel: %2.2f\n", 
-		isZDown, currState, yVelocity);
-	OutputDebugStringA(debugInfo.buffer);
 
 	float heightDiff = moveVec.y;
 	moveVec.y = 0;
@@ -200,4 +183,24 @@ void PlayerComponent::Update() {
 	moveVec.y = heightDiff;
 
 	entTrans->position = entTrans->position + moveVec;
+}
+
+bool PlayerComponent::CheckWater(Vector3 pos) {
+	for (int i = 0; i < GlobalScene->gameplay.waterComps.currentCount; i++) {
+		if (GlobalScene->gameplay.waterComps.vals[i].IsInside(pos)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool PlayerComponent::CheckLadder(Vector3 pos) {
+	for (int i = 0; i < GlobalScene->gameplay.waterComps.currentCount; i++) {
+		if (GlobalScene->gameplay.waterComps.vals[i].IsInside(pos)) {
+			return true;
+		}
+	}
+
+	return false;
 }

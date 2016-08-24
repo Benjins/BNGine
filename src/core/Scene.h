@@ -56,6 +56,8 @@ struct Scene {
 
 	void Update();
 	void UpdateCustomComponents();
+	void CustomComponentEditorGui();
+	void CustomComponentEditorGuiForEntity(uint32 entId);
 
 	void Render();
 

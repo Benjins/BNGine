@@ -32,6 +32,9 @@ struct PlayerComponent : Component{
 		currState = CS_GROUNDED;
 	}
 
+	bool CheckWater(Vector3 pos);
+	bool CheckLadder(Vector3 pos);
+
 	void Update();
 };
 

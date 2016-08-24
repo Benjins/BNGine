@@ -18,8 +18,12 @@ struct BoxCollider : Component {
 	BoxCollider() {
 		isTrigger = false;
 	}
+
+	void EditorGui();
 };
 
 bool WithinVolume(Vector3 pos, Vector3 min, Vector3 max);
+
+bool IsInsideBoxCollider(const BoxCollider* col, Vector3 pos);
 
 #endif

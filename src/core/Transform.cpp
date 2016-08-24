@@ -23,7 +23,7 @@ Vector3 Transform::Up(){
 	return GetLocalToGlobalMatrix().MultiplyAsDirection(Y_AXIS).Normalized();
 }
 
-Mat4x4 Transform::GetLocalToGlobalMatrix() {
+Mat4x4 Transform::GetLocalToGlobalMatrix() const {
 	Mat4x4 matrix;
 	matrix.SetColumn(0, Vector4(Rotate(X_AXIS * scale.x, rotation), 0));
 	matrix.SetColumn(1, Vector4(Rotate(Y_AXIS * scale.y, rotation), 0));
@@ -38,7 +38,7 @@ Mat4x4 Transform::GetLocalToGlobalMatrix() {
 	}
 }
 
-Mat4x4 Transform::GetGlobaltoLocalMatrix() {
+Mat4x4 Transform::GetGlobaltoLocalMatrix() const {
 	Mat4x4 linMat;
 	Mat4x4 affMat;
 
@@ -62,7 +62,7 @@ Mat4x4 Transform::GetGlobaltoLocalMatrix() {
 	}
 }
 
-Vector3 Transform::GetGlobalPosition() {
+Vector3 Transform::GetGlobalPosition() const {
 	Mat4x4 loc2glob = GetLocalToGlobalMatrix();
 	return loc2glob.MultiplyAsPosition(Vector3(0, 0, 0));
 }

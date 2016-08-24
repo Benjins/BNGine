@@ -258,27 +258,44 @@ void Editor::Render() {
 
 	scene.Render();
 
-	int colMatId = -1;
-	scene.res.assetIdMap.LookUp("color.mat", &colMatId);
-	Material* mat = scene.res.materials.GetById(colMatId);
-
 	Mat4x4 camera = scene.cam.GetCameraMatrix();
 	Mat4x4 persp = scene.cam.GetPerspectiveMatrix();
 
-	mat->SeMatrix4Uniform("_camMatrix", camera);
-	mat->SeMatrix4Uniform("_perspMatrix", persp);
+	{
+		int colMatId = -1;
+		scene.res.assetIdMap.LookUp("color.mat", &colMatId);
+		Material* mat = scene.res.materials.GetById(colMatId);
+		ASSERT(mat != nullptr);
 
-	Program* prog = scene.res.programs.GetById(mat->programId);
-	glUseProgram(prog->programObj);
+		mat->SeMatrix4Uniform("_camMatrix", camera);
+		mat->SeMatrix4Uniform("_perspMatrix", persp);
 
-	for (int i = 0; i < scene.res.drawCalls.currentCount; i++) {
-		Entity* ent = scene.entities.GetById(scene.res.drawCalls.vals[i].entId);
-		Transform* trans = scene.transforms.GetById(ent->transform);
-		mat->SeMatrix4Uniform("_objMatrix", trans->GetLocalToGlobalMatrix());
+		Program* prog = scene.res.programs.GetById(mat->programId);
+		glUseProgram(prog->programObj);
 
-		if (ent->id == selectedEntity) {
-			DrawCurrentGizmo(ent, mat);
+		for (int i = 0; i < scene.res.drawCalls.currentCount; i++) {
+			Entity* ent = scene.entities.GetById(scene.res.drawCalls.vals[i].entId);
+			Transform* trans = scene.transforms.GetById(ent->transform);
+			mat->SeMatrix4Uniform("_objMatrix", trans->GetLocalToGlobalMatrix());
+
+			if (ent->id == selectedEntity) {
+				DrawCurrentGizmo(ent, mat);
+			}
 		}
+	}
+
+	{
+		int debugColMatId = -1;
+		scene.res.assetIdMap.LookUp("debugCol.mat", &debugColMatId);
+		Material* mat = scene.res.materials.GetById(debugColMatId);
+		ASSERT(mat != nullptr);
+
+		mat->SeMatrix4Uniform("_camMatrix", camera);
+		mat->SeMatrix4Uniform("_perspMatrix", persp);
+	}
+
+	if (selectedEntity != -1) {
+		scene.CustomComponentEditorGuiForEntity(selectedEntity);
 	}
 
 	scene.cam.xOffset = 0;

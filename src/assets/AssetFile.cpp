@@ -359,6 +359,7 @@ UniformType ParseUniformType(const char* typeName) {
 		return UT_VEC4;
 	}
 	else {
+		ASSERT_WARN("Unkown uniform type name: '%s'", typeName);
 		return UT_UNKNOWN;
 	}
 }
@@ -444,6 +445,21 @@ void WriteMaterialChunk(const char* materialFileName, const StringMap<int>& asse
 				int texId;
 				assetIds.LookUp(valString.string, &texId);
 				fwrite(&texId, 1, sizeof(int), assetFileHandle);
+			} break;
+
+			case UT_VEC2: {
+				Vector2 val = ParseVector2(valString.string);
+				fwrite(&val, 1, sizeof(Vector2), assetFileHandle);
+			} break;
+
+			case UT_VEC3: {
+				Vector3 val = ParseVector3(valString.string);
+				fwrite(&val, 1, sizeof(Vector3), assetFileHandle);
+			} break;
+
+			case UT_VEC4: {
+				Vector4 val = ParseVector4(valString.string);
+				fwrite(&val, 1, sizeof(Vector4), assetFileHandle);
 			} break;
 
 			default:
