@@ -48,6 +48,8 @@ void PlayerComponent::Update() {
 		pref->Instantiate(bulletSpawnPosition, entTrans->rotation * camTrans->rotation);
 	}
 
+	// States can use this to restore vertical movement, defaults to none
+	float oldMoveVecY = moveVec.y;
 	moveVec.y = 0;
 
 	static const float gravity = 0.08f;
@@ -68,10 +70,12 @@ void PlayerComponent::Update() {
 		if (entTrans->position.y > floorHeight) {
 			currState = CS_FALLING;
 		}
-		
-		if (GlobalScene->input.KeyIsDown(KC_Space)) {
+		else if (GlobalScene->input.KeyIsDown(KC_Space)) {
 			yVelocity = jumpVelocity;
 			currState = CS_JUMPING;
+		}
+		else if (CheckLadder(entTrans->position + moveVec)) {
+			currState = CS_LADDERCLIMB;
 		}
 	}
 	else if (currState == CS_JUMPING) {
@@ -80,6 +84,9 @@ void PlayerComponent::Update() {
 
 		if (yVelocity < 0) {
 			currState = CS_FALLING;
+		}
+		else if (CheckLadder(entTrans->position + moveVec)) {
+			currState = CS_LADDERCLIMB;
 		}
 	}
 	else if (currState == CS_FALLING) {
@@ -97,6 +104,9 @@ void PlayerComponent::Update() {
 
 		if (inWater) {
 			currState = CS_FALLINGWATER;
+		}
+		else if (CheckLadder(entTrans->position + moveVec)) {
+			currState = CS_LADDERCLIMB;
 		}
 	}
 	else if (currState == CS_FALLINGWATER) {
@@ -129,6 +139,9 @@ void PlayerComponent::Update() {
 		if (yVelocity >= 0) {
 			currState = CS_RISINGWATER;
 		}
+		else if (CheckLadder(entTrans->position + moveVec)) {
+			currState = CS_LADDERCLIMB;
+		}
 	}
 	else if (currState == CS_RISINGWATER) {
 		yVelocity += gravity / 10;
@@ -160,7 +173,20 @@ void PlayerComponent::Update() {
 
 		bool inWater = CheckWater(entTrans->position + moveVec);
 
-		if (!inWater) {
+		if (CheckLadder(entTrans->position + moveVec)) {
+			currState = CS_LADDERCLIMB;
+		}
+		else if (!inWater) {
+			currState = CS_FALLING;
+		}
+	}
+	else if (currState == CS_LADDERCLIMB) {
+		moveVec.y = oldMoveVecY;
+		if (GlobalScene->input.KeyIsDown(KC_Space)) {
+			yVelocity = jumpVelocity;
+			currState = CS_JUMPING;
+		}
+		else if (!CheckLadder(entTrans->position + moveVec)) {
 			currState = CS_FALLING;
 		}
 	}
@@ -196,8 +222,8 @@ bool PlayerComponent::CheckWater(Vector3 pos) {
 }
 
 bool PlayerComponent::CheckLadder(Vector3 pos) {
-	for (int i = 0; i < GlobalScene->gameplay.waterComps.currentCount; i++) {
-		if (GlobalScene->gameplay.waterComps.vals[i].IsInside(pos)) {
+	for (int i = 0; i < GlobalScene->gameplay.ladderComps.currentCount; i++) {
+		if (GlobalScene->gameplay.ladderComps.vals[i].IsInside(pos)) {
 			return true;
 		}
 	}

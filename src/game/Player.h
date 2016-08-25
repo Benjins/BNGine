@@ -10,7 +10,8 @@ enum ControlState {
 	CS_JUMPING,
 	CS_FALLING,
 	CS_FALLINGWATER,
-	CS_RISINGWATER
+	CS_RISINGWATER,
+	CS_LADDERCLIMB
 };
 
 struct PlayerComponent : Component{

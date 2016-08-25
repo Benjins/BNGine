@@ -6,9 +6,13 @@
 
 void LadderComponent::Update() {
 	if (collider == -1) {
-		BoxCollider* col = FIND_COMPONENT_BY_ENTITY(BoxCollider, entity);
-		if (col != nullptr) {
-			collider = col->id;
+		for (int i = 0; i < GlobalScene->phys.boxCols.currentCount; i++) {
+			BoxCollider* boxCol = &GlobalScene->phys.boxCols.vals[i];
+			if (boxCol->entity == entity
+			 && boxCol->isTrigger) {
+				collider = boxCol->id;
+				break;
+			}
 		}
 	}
 }

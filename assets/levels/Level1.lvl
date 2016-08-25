@@ -98,7 +98,9 @@
 	</Entity>
 	<Entity id='16'>
 		<Transform pos='14.000000,-3.300000,5.800000' id='17' scale='2.000000,2.000000,2.000000' rotation='0.709171,-0.705037,0.000000,0.000000' parent='-1'/>
-		<BoxCollider isTrigger='T' size='0.500000,0.200000,1.000000' position='0.000000,0.000000,0.000000'/>
+		<LadderComponent/>
+		<BoxCollider isTrigger='T' size='0.400000,0.400000,1.000000' position='0.000000,0.200000,0.000000'/>
+		<BoxCollider isTrigger='F' size='0.400000,0.080000,1.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='bullet.mat'/>
 		<Mesh src='ladder.obj'/>
 	</Entity>
