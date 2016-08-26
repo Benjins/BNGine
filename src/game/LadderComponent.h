@@ -5,6 +5,8 @@
 
 #include "../core/Component.h"
 
+struct Vector3;
+
 struct LadderComponent : Component {
 	/*[DoNotSerialize]*/
 	int collider;
