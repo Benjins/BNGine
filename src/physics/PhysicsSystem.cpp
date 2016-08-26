@@ -122,7 +122,11 @@ RaycastHit RaycastBox(Vector3 origin, Vector3 direction, BoxCollider* boxCol) {
 		Vector3 localHitPos = localOrigin + (localDirection * localDepth);
 		Vector3 globalHitPos = loc2glob.MultiplyAsPosition(localHitPos);
 
+		// Get boxSpaceHitLoc into [-1, 1] range
 		Vector3 boxSpaceHitLoc = localHitPos - boxCol->position;
+		for (int i = 0; i < 3; i++) {
+			boxSpaceHitLoc[i] /= boxCol->size[i];
+		}
 
 		int maxIndicesFlags = 0;
 		float maxVal = 0;
