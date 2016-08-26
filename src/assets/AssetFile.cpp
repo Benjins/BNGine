@@ -15,9 +15,10 @@
 
 #include "../../ext/CppUtils/macros.h"
 
-#include "../../ext/3dbasics/Vector3.h"
-#include "../../ext/3dbasics/Quaternion.h"
 #include "../../ext/3dbasics/Vector2.h"
+#include "../../ext/3dbasics/Vector3.h"
+#include "../../ext/3dbasics/Vector4.h"
+#include "../../ext/3dbasics/Quaternion.h"
 
 void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 	File assetDir;
