@@ -2,6 +2,8 @@
 
 #include "../core/Scene.h"
 #include "../core/Transform.h"
+
+#include "../../ext/3dbasics/Vector4.h"
 #include "../../ext/3dbasics/Mat4.h"
 
 #include "../gfx/GLWrap.h"

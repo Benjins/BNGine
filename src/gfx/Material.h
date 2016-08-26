@@ -13,11 +13,13 @@
 
 #define MAX_TEXTURES_PER_MATERIAL 14
 
+struct Vector4;
+
 struct Material : IDBase {
 	int texIds[MAX_TEXTURES_PER_MATERIAL];
 	uint32 programId;
 	int texCount;
-	
+
 	StringMap<GLint> uniformCache;
 
 	MemStream uniformValues;

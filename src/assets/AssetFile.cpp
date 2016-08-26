@@ -228,8 +228,6 @@ void WriteMeshChunk(const char* modelFileName, int id, FILE* assetFileHandle) {
 
 	free(modelFileText);
 
-	int dataSize = 4 + 4 + positions.count * sizeof(Vector3) + 4 + uvs.count * sizeof(Vector2) + 4 + indices.count * sizeof(int);
-
 	char chunkId[] = "BNMD";
 	fwrite(chunkId, 1, 4, assetFileHandle);
 	fwrite(&id, 1, 4, assetFileHandle);
@@ -672,18 +670,16 @@ void WriteBitmapFontChunk(const char* fontFileName, const Vector<File*>& ttfFile
 
 	int fontBakeWidth = 1024;
 	int fontBakeHeight = 1024;
-	
+
 	unsigned char* fontBakeBuffer = (unsigned char*)malloc(fontBakeWidth*fontBakeHeight);
 	memset(fontBakeBuffer, 0, fontBakeWidth*fontBakeHeight);
 
 	CodepointInfo codepoints[256] = {};
 	int codepointCount = 0;
-	
+
 	int ascent,descent,lineGap;
 	stbtt_GetFontVMetrics(&font, &ascent, &descent, &lineGap);
-	
-	int yOffset = ascent - descent + lineGap;
-	
+
 	float pixelScale = stbtt_ScaleForPixelHeight(&font, scale);
 
 	int currX = 0;
@@ -692,27 +688,27 @@ void WriteBitmapFontChunk(const char* fontFileName, const Vector<File*>& ttfFile
 	for(unsigned char c = 32; c < 128; c++){
 		int cW,cH;
 		unsigned char* cBmp = stbtt_GetCodepointBitmap(&font, 0, pixelScale, c, &cW, &cH, 0,0);
-		
+
 		if (currX + cW >= fontBakeWidth){
 			currX = 0;
 			currY += (maxRowY+1);
 			maxRowY = 0;
 		}
-		
+
 		GlyphBlit(fontBakeBuffer, fontBakeWidth, fontBakeHeight, currX, currY, cBmp, cW, cH);
-		
+
 		int advanceWidth=0, leftSideBearing=0;
 		stbtt_GetCodepointHMetrics(&font, c, &advanceWidth, &leftSideBearing);
-		
+
 		int x0,y0,x1,y1;
 		stbtt_GetCodepointBitmapBox(&font, c, pixelScale, pixelScale, &x0,&y0,&x1,&y1);
-		
+
 		codepoints[codepointCount].codepoint = c;
 		codepoints[codepointCount].x = currX;
 		codepoints[codepointCount].y = currY;
 		codepoints[codepointCount].w = cW;
 		codepoints[codepointCount].h = cH;
-		
+
 		codepoints[codepointCount].xOffset = x0;
 		codepoints[codepointCount].yOffset = y0;
 		codepoints[codepointCount].xAdvance = pixelScale * advanceWidth;
@@ -720,23 +716,23 @@ void WriteBitmapFontChunk(const char* fontFileName, const Vector<File*>& ttfFile
 
 		currX += (cW+1);
 		maxRowY = BNS_MAX(maxRowY, cH);
-		
+
 		free(cBmp);
 	}
-	
+
 	char chunkId[] = "BNBF";
 	fwrite(chunkId, 1, 4, assetFileHandle);
 	fwrite(&id, 1, 4, assetFileHandle);
-	
+
 	fwrite(&fontBakeWidth, 1, sizeof(int), assetFileHandle);
 	fwrite(&fontBakeHeight, 1, sizeof(int), assetFileHandle);
 	fwrite(fontBakeBuffer, 1, fontBakeWidth*fontBakeHeight, assetFileHandle);
-	
+
 	WriteCodePoints(codepoints, codepointCount, assetFileHandle);
-	
+
 	free(fontBakeBuffer);
 	free(fontFileBuffer);
-	
+
 	int chunkIdFlipped = ~*(int*)chunkId;
 	fwrite(&chunkIdFlipped, 1, 4, assetFileHandle);
 }

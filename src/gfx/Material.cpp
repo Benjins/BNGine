@@ -9,7 +9,7 @@ void Material::UpdateUniforms() {
 		GLint uniformLoc = uniformValues.Read<GLint>();
 		UniformType type = uniformValues.Read<UniformType>();
 		switch (type) {
-		
+
 		case UT_FLOAT: {
 			glUniform1f(uniformLoc, uniformValues.Read<float>());
 		} break;

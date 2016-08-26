@@ -5,6 +5,8 @@
 
 #include "../core/Component.h"
 
+struct Vector3;
+
 enum ControlState {
 	CS_GROUNDED,
 	CS_JUMPING,

@@ -11,6 +11,8 @@
 #include "../../ext/CppUtils/memstream.h"
 #include "../../ext/CppUtils/xml.h"
 
+#include "../../ext/3dbasics/Vector4.h"
+
 ResourceManager::ResourceManager() 
 	: programs(20), shaders(30), materials(15), meshes(30), drawCalls(40), textures(20), levels(10){
 
