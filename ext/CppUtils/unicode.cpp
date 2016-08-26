@@ -8,9 +8,9 @@ U32String DecodeUTF8(const char* _start, int byteCount){
 	U32String decoded = {};
 	decoded.length = 0;
 	decoded.start = (unsigned int*)malloc(byteCount*sizeof(unsigned int));
-	
+
 	unsigned char highBits[] = {0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE};
-	
+
 	for (int i = 0; i < byteCount; ){
 		if ((start[i] & 0x80) == 0){
 			// High bit not set, just ascii
@@ -29,7 +29,7 @@ U32String DecodeUTF8(const char* _start, int byteCount){
 						}
 						codepoint = (codepoint << 6) | (start[i + 1 + k] & 0x3F);
 					}
-					
+
 					decoded.start[decoded.length] = codepoint;
 					decoded.length++;
 					i += (j + 2);
@@ -37,11 +37,11 @@ U32String DecodeUTF8(const char* _start, int byteCount){
 					break;
 				}
 			}
-			
+
 			ASSERT_MSG(foundBit, "Improper formatting on byte: 0x%X", start[i]);
 		}
 	}
-	
+
 	return decoded;
 }
 
@@ -77,7 +77,7 @@ int EncodeUTF8(const U32String inString, unsigned char* outString){
 		}
 		else {
 			bool foundLimit = false;
-			int codepoint = inString.start[i];
+			unsigned int codepoint = inString.start[i];
 			for (int j = 0; j < BNS_ARRAY_COUNT(upperLimits); j++) {
 				if (codepoint < upperLimits[j]) {
 					for (int k = j + 1; k > 0; k--) {
@@ -100,7 +100,7 @@ int EncodeUTF8(const U32String inString, unsigned char* outString){
 	return bytesWritten;
 }
 
-int U32FindChar(const U32String string, int codepoint){
+int U32FindChar(const U32String string, unsigned int codepoint){
 	for (int i = 0; i < string.length; i++) {
 		if (string.start[i] == codepoint) {
 			return i;
@@ -149,7 +149,7 @@ void ConvertToAscii(const U32String string, char* outAscii){
 }
 
 // Search is inclusive for both low and high (i.e. ascii search would be 0, 127)
-int CountCharactersInRange(const U32String string, int codepointLow, int codepointHigh){
+int CountCharactersInRange(const U32String string, unsigned int codepointLow, unsigned int codepointHigh){
 	return -1;
 }
 
@@ -433,7 +433,7 @@ UnicodeBlockInfo _unicodeBlocks[] = {
 	{ 0x100000, 0x10FFFF, UBT_SupplementaryPrivateUseArea_B }
 };
 
-UnicodeBlockType GetBlockTypeOfCodePoint(int c) {
+UnicodeBlockType GetBlockTypeOfCodePoint(unsigned int c) {
 	UnicodeBlockInfo* blockTable = GetUnicodeBlocks();
 	for (int i = 0; i < UBT_Count; i++) {
 		if (blockTable[i].low < c && c < blockTable[i].high) {

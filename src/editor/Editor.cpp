@@ -217,7 +217,6 @@ void Editor::HandleGizmoDrag(Entity* selected) {
 
 			float planeProjectDistance = rayNormalOverlap / cameraToObj.MagnitudeSquared();
 			Vector3 planeProjection = cameraPos + ray * planeProjectDistance;
-			float projectionDistanceFromObj = (planeProjection - objectPos).Magnitude();
 
 			Vector3 objectToProjection = planeProjection - objectPos;
 			objectToProjection[selectedAxis] = 0;
@@ -278,7 +277,7 @@ void Editor::Render() {
 			Transform* trans = scene.transforms.GetById(ent->transform);
 			mat->SeMatrix4Uniform("_objMatrix", trans->GetLocalToGlobalMatrix());
 
-			if (ent->id == selectedEntity) {
+			if ((int)ent->id == selectedEntity) {
 				DrawCurrentGizmo(ent, mat);
 			}
 		}
@@ -449,7 +448,7 @@ void Editor::SidePanelGui() {
 			MetaStruct* ms = componentMetaData[i];
 			for (int j = 0; j < compCount; j++) {
 
-				if (compCursor->entity == selectedEntity) {
+				if ((int)compCursor->entity == selectedEntity) {
 					bool toRemove = false;
 					y = EditComponentGui(compCursor, ms, x, y, &toRemove);
 
@@ -497,6 +496,10 @@ void Editor::SidePanelGui() {
 		} break;
 
 		case APT_Material: {
+
+		} break;
+
+		case APT_None: {
 
 		} break;
 		}

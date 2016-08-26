@@ -25,7 +25,7 @@ void Texture::Bind(GLenum textureTarget) {
 void Texture::Destroy() {
 	// TODO: Unbind the texture maybe?
 
-	if (textureObj != -1) {
+	if ((int)textureObj != -1) {
 		glDeleteTextures(1, &textureObj);
 		textureObj = -1;
 	}

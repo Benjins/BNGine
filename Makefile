@@ -47,7 +47,7 @@ GEN_OBJS := $(addsuffix $(OBJ_SUFF), $(basename $(GEN_FILES)))
 
 GEN_FILES += $(shell find gen -name '*.h')
 
-CXXFLAGS=-g -O0 -DBNS_DEBUG -std=c++11 -Wall -pedantic
+CXXFLAGS=-g -O0 -DBNS_DEBUG -std=c++11 -Wall -pedantic -Wno-invalid-offsetof
 
 ifeq ($(OS_MESA),1)
     CXXFLAGS += -DBNS_OS_MESA

@@ -36,12 +36,12 @@ void Mesh::UploadToGfxDevice() {
 }
 
 void Mesh::Destroy() {
-	if (posVbo != -1) {
+	if ((int)posVbo != -1) {
 		glDeleteBuffers(1, &posVbo);
 		posVbo = -1;
 	}
 
-	if (uvVbo != -1) {
+	if ((int)uvVbo != -1) {
 		glDeleteBuffers(1, &uvVbo);
 		uvVbo = -1;
 	}

@@ -39,8 +39,6 @@ void UniFont::CacheGlyphDefault(int codePoint, int cellCols, int cellRows, Textu
 			int ascent, descent, lineGap;
 			stbtt_GetFontVMetrics(font, &ascent, &descent, &lineGap);
 
-			int yOffset = ascent - descent + lineGap;
-
 			float pixelScale = stbtt_ScaleForPixelHeight(font, fontScale);
 
 			int cellY = cacheCursor / cellCols;
@@ -177,12 +175,6 @@ void GetJamoRects(const int* codePoints, int codepointCount, Rect charRect, Rect
 void UniFont::BakeVertexDataHangul(int c, float* x, float y, float width, float height, Texture* fontTexture, float* outPosData, float* outUvData, int* index) {
 	int codePoints[3] = {};
 	DecomposeHangulToJamo(c, codePoints);
-
-	float scale = fontScale;
-	float startX = *x;
-
-	Rect jamoRects[3];
-	Rect charRect = { Vector2(startX, y), Vector2(startX + fontScale, y + fontScale) };
 
 	int codePointCount = (codePoints[2] == 0x11A7) ? 2 : 3;
 

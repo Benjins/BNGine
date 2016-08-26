@@ -14,7 +14,7 @@
 #include "../../ext/3dbasics/Vector4.h"
 
 ResourceManager::ResourceManager() 
-	: programs(20), shaders(30), materials(15), meshes(30), drawCalls(40), textures(20), levels(10){
+	: shaders(30), programs(20), materials(15), meshes(30), textures(20), drawCalls(40), levels(10){
 
 }
 
@@ -32,8 +32,6 @@ void ResourceManager::Reset() {
 }
 
 void ResourceManager::LoadAssetFile(const char* fileName) {
-	typedef unsigned char byte;
-
 	Reset();
 
 	char fileIdx[] = "BNSA";
@@ -48,6 +46,8 @@ void ResourceManager::LoadAssetFile(const char* fileName) {
 	ASSERT(memcmp(fileHead, fileIdx, 4) == 0);
 
 	int version = fileBufferStream.Read<int>();
+	// TODO: Check this
+	BNS_UNUSED(version);
 
 	int assetNameCount = fileBufferStream.Read<int>();
 
@@ -71,8 +71,6 @@ void ResourceManager::LoadAssetFile(const char* fileName) {
 		fileBufferStream.ReadArray<char>(chunkId, 4);
 
 		int assetId = fileBufferStream.Read<int>();
-
-		void* oldReadHead = fileBufferStream.readHead;
 
 		if (memcmp(chunkId, "BNMD", 4) == 0) {
 			Mesh* mesh = meshes.AddWithId(assetId);
@@ -187,14 +185,14 @@ void ResourceManager::LoadTextureFromChunk(MemStream& stream, Texture* outTextur
 
 	outTexture->textureType = GL_TEXTURE_2D;
 	outTexture->UploadToGraphicsDevice();
-	
+
 	free(outTexture->texMem);
 	outTexture->texMem = nullptr;
 }
 
 void ResourceManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat) {
-	int vShaderId = stream.Read<int>();
-	int fShaderId = stream.Read<int>();
+	uint32 vShaderId = stream.Read<uint32>();
+	uint32 fShaderId = stream.Read<uint32>();
 
 	Program* prog = nullptr;
 	for (int i = 0; i < programs.currentCount; i++) {
@@ -217,6 +215,7 @@ void ResourceManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat)
 
 	for (int i = 0; i < uniformCount; i++) {
 		int strLength = stream.Read<int>();
+		BNS_UNUSED(strLength);
 		char* uniformName = stream.ReadStringInPlace();
 
 		UniformType uniformType = stream.Read<UniformType>();
@@ -486,12 +485,12 @@ void ResourceManager::Render() {
 
 String ResourceManager::FindFileNameByIdAndExtension(const char* ext, uint32 id) {
 	for (int i = 0; i < assetIdMap.count; i++) {
-		if (assetIdMap.values[i] == id) {
+		if (assetIdMap.values[i] == (int)id) {
 			//Check ext.
 			const char* fileName = assetIdMap.names[i].string;
 			int fileNameLength = assetIdMap.names[i].GetLength();
 			const char* fileNameExt = fileName + (fileNameLength - 1);
-			
+
 			while (fileNameExt > fileName && *fileNameExt != '.'){
 				fileNameExt--;
 			}

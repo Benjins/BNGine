@@ -6,8 +6,7 @@ void EnemyComponent::Update() {
 		playerId = GlobalScene->gameplay.players.vals[0].entity;
 	}
 
-	Transform* playerTrans = GlobalScene->transforms.GetById(GlobalScene->entities.GetById(playerId)->transform);
-	Transform* trans       = GlobalScene->transforms.GetById(GlobalScene->entities.GetById(entity)->transform);
+	Transform* trans = GlobalScene->transforms.GetById(GlobalScene->entities.GetById(entity)->transform);
 
 	HealthComponent* health = FIND_COMPONENT_BY_ENTITY(HealthComponent, entity);
 	if (health->IsDead()) {

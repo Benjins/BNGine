@@ -63,7 +63,7 @@ void GuiDrawCall::ExecuteDraw() {
 	glBindBuffer(GL_ARRAY_BUFFER, uvVbo);
 	glBufferData(GL_ARRAY_BUFFER, uvs.GetLength(), (float*)uvs.readHead, GL_DYNAMIC_DRAW);
 
-	if (texId != -1) {
+	if ((int)texId != -1) {
 		Texture* tex = GlobalScene->res.textures.GetById(texId);
 		tex->Bind(GL_TEXTURE0);
 	}
@@ -149,7 +149,7 @@ float GuiSystem::DrawTextLabel(const char* text, uint32 fontId, float scale, flo
 
 	int dcIndex = -1;
 	for (int i = 0; i < guiDrawCalls.count; i++) {
-		if (guiDrawCalls.Get(i).matId == guiTextMatId) {
+		if ((int)guiDrawCalls.Get(i).matId == guiTextMatId) {
 			dcIndex = i;
 			break;
 		}
@@ -190,7 +190,7 @@ float GuiSystem::DrawUnicodeLabel(U32String text, uint32 fontId, float scale, fl
 
 	int dcIndex = -1;
 	for (int i = 0; i < guiDrawCalls.count; i++) {
-		if (guiDrawCalls.Get(i).matId == guiTextMatId && guiDrawCalls.Get(i).texId == font->textureId) {
+		if ((int)guiDrawCalls.Get(i).matId == guiTextMatId && (int)guiDrawCalls.Get(i).texId == font->textureId) {
 			dcIndex = i;
 			break;
 		}

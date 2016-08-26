@@ -12,7 +12,7 @@ U32String DecodeUTF8(const char* start, int byteCount);
 int GetUTF8Size(const U32String string);
 int EncodeUTF8(const U32String inString, char* outString);
 
-int U32FindChar(const U32String string, int codepoint);
+int U32FindChar(const U32String string, unsigned int codepoint);
 int U32StrFind(const U32String haystack, const U32String needle);
 U32String U32StrDup(const U32String string);
 
@@ -20,7 +20,7 @@ U32String U32StrDup(const U32String string);
 void ConvertToAscii(const U32String string, char* outAscii);
 
 // Search is inclusive for both low and high (i.e. ascii search would be 0, 127)
-int CountCharactersInRange(const U32String string, int codepointLow, int codepointHigh);
+int CountCharactersInRange(const U32String string, unsigned int codepointLow, unsigned int codepointHigh);
 
 void DeallocateU32String(U32String string);
 
@@ -314,6 +314,6 @@ struct UnicodeBlockInfo {
 UnicodeBlockInfo* GetUnicodeBlocks();
 
 // TODO: Binary search opt?
-UnicodeBlockType GetBlockTypeOfCodePoint(int c);
+UnicodeBlockType GetBlockTypeOfCodePoint(unsigned int c);
 
 #endif
