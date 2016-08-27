@@ -337,7 +337,8 @@ void Editor::TopPanelGui() {
 
 	if (selectedEntity != -1) {
 		if (gui.TextButton("Remove Entity", 0, 12, x, y, 90, 30)) {
-			//Remove entity
+			scene.DestroyEntityImmediate(selectedEntity);
+			selectedEntity = -1;
 		}
 
 		x += 100;
@@ -345,6 +346,39 @@ void Editor::TopPanelGui() {
 
 	if (gui.TextButton("Save Scene", 0, 12, x, y, 90, 30)) {
 		SaveScene();
+	}
+
+	x += 100;
+
+	if (gui.TextButton("Place Prefab", 0, 12, x, y, 90, 30)) {
+		pickerType = APT_Prefab;
+	}
+
+	if (pickerType == APT_Prefab) {
+		Vector<String> prefabFileNames;
+		scene.res.FindFileNamesByExtension("bnp", &prefabFileNames);
+
+		int pickedIndex = gui.StringPicker((const char**)prefabFileNames.data, prefabFileNames.count,
+			0, 12, x, y - 20, 150, prefabFileNames.count * 16);
+
+		if (pickedIndex > -1) {
+			const String& chosenPrefabFileName = prefabFileNames.Get(pickedIndex);
+
+			int chosenPrefabId = -1;
+			scene.res.assetIdMap.LookUp(chosenPrefabFileName, &chosenPrefabId);
+			ASSERT(chosenPrefabId >= 0);
+
+			Prefab* chosenPrefab = scene.res.prefabs.GetById(chosenPrefabId);
+			ASSERT(chosenPrefab != nullptr);
+
+			Vector3 instantiatePos
+				= editorCamTrans.GetLocalToGlobalMatrix().MultiplyAsPosition(Vector3(0, 0, 3));
+
+			Entity* instance = chosenPrefab->Instantiate(instantiatePos);
+			selectedEntity = instance->id;
+
+			pickerType = APT_None;
+		}
 	}
 }
 
@@ -389,15 +423,13 @@ void Editor::SidePanelGui() {
 
 		String meshName;
 		String matName;
-		for (int i = 0; i < scene.res.drawCalls.currentCount; i++) {
-			if (scene.res.drawCalls.vals[i].entId == ent->id) {
-				uint32 meshId = scene.res.drawCalls.vals[i].meshId;
-				uint32 matId = scene.res.drawCalls.vals[i].matId;
+		DrawCall* dc = scene.GetDrawCallForEntity(ent->id);
+		if (dc != nullptr) {
+			uint32 meshId = dc->meshId;
+			uint32 matId = dc->matId;
 
-				meshName = scene.res.FindFileNameByIdAndExtension("obj", meshId);
-				matName = scene.res.FindFileNameByIdAndExtension("mat", matId);
-				break;
-			}
+			meshName = scene.res.FindFileNameByIdAndExtension("obj", meshId);
+			matName = scene.res.FindFileNameByIdAndExtension("mat", matId);
 		}
 
 		if (meshName.string != nullptr) {
@@ -503,9 +535,6 @@ void Editor::SidePanelGui() {
 
 		} break;
 		}
-	}
-	else {
-		pickerType = APT_None;
 	}
 }
 

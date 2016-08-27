@@ -14,3 +14,8 @@ localDepth: 0.243
 
 --------------------------------------
 For ladder not in water:
+
+localOrigin: {x=0.321241498 y=0.189521313 z=0.823848248 }
+localDirection: {x=-0.241713554 y=-0.437684834 z=0.00255890307 }
+
+Was an issue w/ not re-scaling position in boxes' space, assumed they were all of size (1,1,1)

@@ -28,7 +28,8 @@ enum AssetPickerType {
 	APT_None,
 	APT_ComponentType,
 	APT_Mesh,
-	APT_Material
+	APT_Material,
+	APT_Prefab
 };
 
 enum CopyPasteType {

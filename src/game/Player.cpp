@@ -194,8 +194,8 @@ void PlayerComponent::Update() {
 		ASSERT_WARN("'%s': Yo, currState is all out of wack.", __FUNCTION__);
 	}
 
-	float heightDiff = moveVec.y;
-	moveVec.y = 0;
+	//float heightDiff = moveVec.y;
+	//moveVec.y = 0;
 
 	RaycastHit moveCast = GlobalScene->phys.Raycast(entTrans->position, moveVec.Normalized());
 	if (moveCast.wasHit && moveCast.depth <= playerWidth + moveVec.Magnitude()) {
@@ -206,7 +206,7 @@ void PlayerComponent::Update() {
 		moveVec = goodVec + projectedVec;
 	}
 
-	moveVec.y = heightDiff;
+	//moveVec.y = heightDiff;
 
 	entTrans->position = entTrans->position + moveVec;
 }
