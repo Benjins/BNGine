@@ -23,9 +23,11 @@ struct Mesh : IDBase {
 	
 	GLuint posVbo;
 	GLuint uvVbo;
+	GLuint normalVbo;
 
 	Mesh();
 
+	void GenerateNormals(Vector<Vector3>* outNormals);
 	void UploadToGfxDevice();
 
 	void Destroy();

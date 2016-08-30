@@ -266,8 +266,8 @@ void Editor::Render() {
 		Material* mat = scene.res.materials.GetById(colMatId);
 		ASSERT(mat != nullptr);
 
-		mat->SeMatrix4Uniform("_camMatrix", camera);
-		mat->SeMatrix4Uniform("_perspMatrix", persp);
+		mat->SetMatrix4Uniform("_camMatrix", camera);
+		mat->SetMatrix4Uniform("_perspMatrix", persp);
 
 		Program* prog = scene.res.programs.GetById(mat->programId);
 		glUseProgram(prog->programObj);
@@ -275,7 +275,7 @@ void Editor::Render() {
 		for (int i = 0; i < scene.res.drawCalls.currentCount; i++) {
 			Entity* ent = scene.entities.GetById(scene.res.drawCalls.vals[i].entId);
 			Transform* trans = scene.transforms.GetById(ent->transform);
-			mat->SeMatrix4Uniform("_objMatrix", trans->GetLocalToGlobalMatrix());
+			mat->SetMatrix4Uniform("_objMatrix", trans->GetLocalToGlobalMatrix());
 
 			if ((int)ent->id == selectedEntity) {
 				DrawCurrentGizmo(ent, mat);
@@ -289,8 +289,8 @@ void Editor::Render() {
 		Material* mat = scene.res.materials.GetById(debugColMatId);
 		ASSERT(mat != nullptr);
 
-		mat->SeMatrix4Uniform("_camMatrix", camera);
-		mat->SeMatrix4Uniform("_perspMatrix", persp);
+		mat->SetMatrix4Uniform("_camMatrix", camera);
+		mat->SetMatrix4Uniform("_perspMatrix", persp);
 	}
 
 	if (selectedEntity != -1) {

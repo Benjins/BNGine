@@ -24,7 +24,7 @@ void Program::CompileProgram() {
 	if (success == 0) {
 		GLchar errorLog[1024];
 		glGetProgramInfoLog(programObj, sizeof(errorLog), NULL, errorLog);
-		printf("Error linking shader program: '%s'\n", errorLog);
+		ASSERT_WARN("Error linking shader program: '%s'\n", errorLog);
 	}
 
 	glValidateProgram(programObj);

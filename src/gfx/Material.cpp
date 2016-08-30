@@ -23,6 +23,11 @@ void Material::UpdateUniforms() {
 			glUniformMatrix4fv(uniformLoc, 1, GL_TRUE, (float*)val.m);
 		} break;
 
+		case UT_VEC3: {
+			Vector3 val = uniformValues.Read<Vector3>();
+			glUniform3fv(uniformLoc, 1, &val.x);
+		} break;
+
 		case UT_VEC4: {
 			Vector4 val = uniformValues.Read<Vector4>();
 			glUniform4fv(uniformLoc, 1, &val.x);
@@ -53,7 +58,7 @@ void Material::SetIntUniform(const char* name, int val) {
 	uniformValues.Write<int>(val);
 }
 
-void Material::SeMatrix4Uniform(const char* name, const Mat4x4& val) {
+void Material::SetMatrix4Uniform(const char* name, const Mat4x4& val) {
 	GLint loc = GetUniformLocation(name);
 
 	uniformValues.Write<GLint>(loc);
@@ -67,6 +72,14 @@ void Material::SetVector4Uniform(const char* name, const Vector4& val) {
 	uniformValues.Write<GLint>(loc);
 	uniformValues.Write<UniformType>(UT_VEC4);
 	uniformValues.Write<Vector4>(val);
+}
+
+void Material::SetVector3Uniform(const char* name, const Vector3& val) {
+	GLint loc = GetUniformLocation(name);
+
+	uniformValues.Write<GLint>(loc);
+	uniformValues.Write<UniformType>(UT_VEC3);
+	uniformValues.Write<Vector3>(val);
 }
 
 GLint Material::GetUniformLocation(const char* name) {

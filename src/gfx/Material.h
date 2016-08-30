@@ -39,8 +39,9 @@ struct Material : IDBase {
 
 	void SetFloatUniform(const char* name, float val);
 	void SetIntUniform(const char* name, int val);
-	void SeMatrix4Uniform(const char* name, const Mat4x4& val);
+	void SetMatrix4Uniform(const char* name, const Mat4x4& val);
 	void SetVector4Uniform(const char* name, const Vector4& val);
+	void SetVector3Uniform(const char* name, const Vector3& val);
 };
 
 enum UniformType{

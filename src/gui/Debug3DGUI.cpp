@@ -46,7 +46,7 @@ void DebugDrawWireCube(Vector3 pos, Vector3 size, const Transform* transform /*=
 		if (transform != nullptr) {
 			matrix = transform->GetLocalToGlobalMatrix();
 		}
-		colMat->SeMatrix4Uniform("_objMatrix", matrix);
+		colMat->SetMatrix4Uniform("_objMatrix", matrix);
 
 		glUseProgram(colMat->programId);
 		colMat->SetVector4Uniform("_col", Vector4(1, 1, 1, 1));

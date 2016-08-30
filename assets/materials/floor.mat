@@ -1,3 +1,3 @@
-<Material vs='pos.vs' fs='posCol.fs'>
+<Material vs='posNorm.vs' fs='pixelLight.fs'>
 	<Uniform name='_mainTex' type='tex2D' value='scrib2.bmp'/>
 </Material>
