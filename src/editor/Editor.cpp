@@ -679,6 +679,10 @@ Vector3 Editor::ScreenSpaceCoordsToRay(float pixelX, float pixelY) {
 	float screenspaceY = (pixelY - topBarHeight) / (cam.heightPixels - topBarHeight) * 2 - 1;
 	screenspaceY *= -1;
 
+	// Don't know why, but this makes the editor selection much better.
+	screenspaceX *= 0.5f;
+	screenspaceY *= 0.5f;
+
 	Mat4x4 camMat = editorCamTrans.GetLocalToGlobalMatrix();
 
 	// FOV(rectilinear) = 2 * arctan(frame size / (focal length * 2))
