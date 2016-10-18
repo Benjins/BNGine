@@ -1,4 +1,7 @@
 #include "ResourceManager.h"
+
+#include "GLExtInit.h"
+
 #include "../core/Scene.h"
 #include "../assets/AssetFile.h"
 #include "../metagen/ComponentMeta.h"
@@ -210,6 +213,30 @@ void ResourceManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat)
 	}
 
 	outMat->programId = prog->id;
+
+	//-------------------------
+	// GL Program Binary debug code
+	/*
+	{
+		int progBinLength = 0;
+		glGetProgramiv(prog->programObj, GL_PROGRAM_BINARY_LENGTH, &progBinLength);
+
+		GLsizei actualSize = 0;
+		GLenum binaryFormat = 0;
+		void* progBinBuffer = malloc(progBinLength);
+		glGetProgramBinary(prog->programObj, progBinLength, &actualSize, &binaryFormat, progBinBuffer);
+
+		String matFileName = FindFileNameByIdAndExtension("mat", outMat->id);
+		StringStackBuffer<256> binFileName("%s.bin", matFileName.string);
+
+		FILE* progBin = fopen(binFileName.buffer, "wb");
+		fwrite(progBinBuffer, progBinLength, 1, progBin);
+		fclose(progBin);
+
+		free(progBinBuffer);
+	}
+	*/
+	//--------------------------
 
 	int uniformCount = stream.Read<int>();
 

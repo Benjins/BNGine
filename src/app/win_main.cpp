@@ -56,6 +56,12 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 
 	Scene scn;
 
+#define WIN_DEBUG_PRINT(format, ...) OutputDebugStringA(StringStackBuffer<256>(format, __VA_ARGS__).buffer)
+	WIN_DEBUG_PRINT("GL version: %s\n", glGetString(GL_VERSION));
+	WIN_DEBUG_PRINT("GL vendor: %s\n", glGetString(GL_VENDOR));
+	WIN_DEBUG_PRINT("GL Renderer: %s\n", glGetString(GL_RENDERER));
+#undef WIN_DEBUG_PRINT
+
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glEnable(GL_DEPTH_TEST);
 	glViewport(0, 0, 1280, 720);
