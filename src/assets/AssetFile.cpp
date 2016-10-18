@@ -796,6 +796,8 @@ void WriteUniFontChunk(const char* fontFileName, const Vector<File*>& ttfFiles, 
 
 		fwrite(&fontFileLength, 1, 4, assetFileHandle);
 		fwrite(fontFileBuffer, 1, fontFileLength, assetFileHandle);
+
+		free(fontFileBuffer);
 	}
 
 	int chunkIdFlipped = ~*(int*)chunkId;

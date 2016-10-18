@@ -246,6 +246,7 @@ void Scene::Render() {
 		int fileLength;
 		char* unicodeEncoded = ReadTextFile("assets/strings/chinese_test.txt", &fileLength);
 		unicodeText = DecodeUTF8(unicodeEncoded, fileLength);
+		free(unicodeEncoded);
 	}
 	else {
 		static int fc = 0;
