@@ -8,8 +8,7 @@ git clone --recursive https://github.com/Benjins/CppUtils.git
 ```
 Or run the following after a clone:
 ```
-git submodule init
-git submodule update
+git submodule update --init --recursive
 ```
 
 TODO:
