@@ -1,0 +1,3 @@
+[submodule "ext/CppUtils"]
+	path = ext/CppUtils
+	url = https://github.com/Benjins/CppUtils.git
