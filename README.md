@@ -2,17 +2,25 @@ BNGine
 ===================
 Or how I learned to stop worrying and love...something.
 
-An engine I'm writing in C++.  Makes use of other repos of mine: [3dbasics](https://github.com/Benjins/3dbasics) and [CppUtils](https://github.com/Benjins/CppUtils), though the repos may get slightly out of sync.
+An engine I'm writing in C++.  Makes use of other repos of mine: [3dbasics](https://github.com/Benjins/3dbasics) and [CppUtils](https://github.com/Benjins/CppUtils).  The CppUtils repo is added as a submodule, so run the following command:
+```
+git clone --recursive https://github.com/Benjins/CppUtils.git
+```
+Or run the following after a clone:
+```
+git submodule init
+git submodule update
+```
 
 TODO:
 
 *(aka a bunch of ideas I really wish I could do.  And I just might)*
 
  - Editor
-   [ ] Immediate-mode Gui
-   [ ] Object selection
-   [ ] Component editing 
-   [ ] Saving/loading
+   [X] Immediate-mode Gui
+   [X] Object selection
+   [X] Component editing 
+   [X] Saving/loading
  - Physics
    [ ] Rigidbody simulations
    [ ] Collision detection
