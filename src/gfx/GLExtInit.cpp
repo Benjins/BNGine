@@ -14,14 +14,17 @@
 
 void InitGlExts() {
 #if defined(BNS_OS_MESA)
-#define EXTENSION_PROC(type,name) name = (type)OSMesaGetProcAddress(#name); ASSERT(name != nullptr);
+#define EXTENSION_PROC_OPTIONAL(type,name) name = (type)OSMesaGetProcAddress(#name);
 #elif defined(_WIN32)
-#define EXTENSION_PROC(type,name) name = (type)wglGetProcAddress(#name); ASSERT(name != nullptr);
+#define EXTENSION_PROC_OPTIONAL(type,name) name = (type)wglGetProcAddress(#name);
 #elif defined(__APPLE__)
-#define EXTENSION_PROC(type,name) ASSERT(name != nullptr);
+#define EXTENSION_PROC_OPTIONAL(type,name)
 #else
-#define EXTENSION_PROC(type,name) name = (type)glXGetProcAddress((const unsigned char*)#name); ASSERT(name != nullptr);
+#define EXTENSION_PROC_OPTIONAL(type,name) name = (type)glXGetProcAddress((const unsigned char*)#name);
 #endif
+	
+#define EXTENSION_PROC(type, name) EXTENSION_PROC_OPTIONAL(type, name) ASSERT(name != nullptr);
+
 	EXTENSION_PROC(PFNGLCREATESHADERPROC, glCreateShader);
 	EXTENSION_PROC(PFNGLSHADERSOURCEPROC, glShaderSource);
 	EXTENSION_PROC(PFNGLCOMPILESHADERPROC, glCompileShader);
@@ -48,7 +51,7 @@ void InitGlExts() {
 	EXTENSION_PROC(PFNGLUNIFORM3FVPROC, glUniform3fv);
 	EXTENSION_PROC(PFNGLUNIFORM4FVPROC, glUniform4fv);
 	EXTENSION_PROC(PFNGLDELETEBUFFERSPROC, glDeleteBuffers);
-	EXTENSION_PROC(PFNGLGETPROGRAMBINARYPROC, glGetProgramBinary);
+	EXTENSION_PROC_OPTIONAL(PFNGLGETPROGRAMBINARYPROC, glGetProgramBinary);
 #if defined(_WIN32)
 	EXTENSION_PROC(PFNGLACTIVETEXTUREPROC, glActiveTexture);
 #endif
