@@ -131,8 +131,8 @@ bool CompareFrameBufferAndWriteFile(BitmapData fb, const char* fileName){
 		return false;
 	}
 	
-	const int tolerance = 10;
-	const int maxDiffPixelCount = 30;
+	const int tolerance = 5;
+	const int maxDiffPixelCount = 10;
 	int diffPixelCount = 0;
 	
 	for (int i = 0; i < refBmp.width * refBmp.height; i++){
@@ -183,6 +183,8 @@ int main(int argc, char** argv){
 	Scene scn;
 	
 	scn.StartUp();
+	
+	scn.LockFrameRate(0.02f);
 	
 	scn.input.SetCursorPos(0, 0);
 	
