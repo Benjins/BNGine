@@ -11,8 +11,6 @@ void Shader::CompileShader(const char* shaderText, GLenum _shaderType){
 	progTexts[0] = shaderText;
 	GLint lengths[1];
 	lengths[0] = StrLen(shaderText);
-	
-	ASSERT(shaderText[lengths[0]] == '\0');
 
 	glShaderSource(shaderObj, 1, progTexts, lengths);
 	glCompileShader(shaderObj);
