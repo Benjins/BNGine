@@ -1,7 +1,7 @@
 #version 120
 
 attribute vec3 pos;
-attribute vec3 normal;
+//attribute vec3 normal;
 attribute vec2 uv;
 
 uniform mat4 _objMatrix;
@@ -14,7 +14,7 @@ varying vec3 outPos;
 
 void main(){
 	outUv = uv;
-	outNormal = normal;
+	//outNormal = normal;
 	outPos = pos;
 	
 	vec4 _pos = vec4(pos, 1);
