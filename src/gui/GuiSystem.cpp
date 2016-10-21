@@ -25,6 +25,7 @@ const char* guiTextVShaderText =
 "}\n";
 
 const char* guiTextFShaderText =
+"#version 120\n"
 "varying vec2 outUv;\n"
 "uniform sampler2D _mainTex;\n"
 "\n"
