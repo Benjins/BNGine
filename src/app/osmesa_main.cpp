@@ -131,8 +131,8 @@ bool CompareFrameBufferAndWriteFile(BitmapData fb, const char* fileName){
 		return false;
 	}
 	
-	const int tolerance = 4;
-	const int maxDiffPixelCount = 20;
+	const int tolerance = 10;
+	const int maxDiffPixelCount = 30;
 	int diffPixelCount = 0;
 	
 	for (int i = 0; i < refBmp.width * refBmp.height; i++){
