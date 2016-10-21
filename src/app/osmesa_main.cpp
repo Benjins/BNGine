@@ -176,7 +176,7 @@ int main(int argc, char** argv){
 	int width = 1280, height = 720;
 	unsigned char* imgBuffer = (unsigned char*)malloc(width*height*4);
 	
-	OSMesaMakeCurrent(ctx,  imgBuffer, GL_UNSIGNED_BYTE, width, height);
+	OSMesaMakeCurrent(ctx, imgBuffer, GL_UNSIGNED_BYTE, width, height);
 	
 	InitGlExts();
 	
