@@ -249,7 +249,7 @@ void UniFont::BakeVertexDataDefault(int c, float* x, float y, float width, float
 	*x += info->xAdvance;
 }
 
-float UniFont::BakeU32ToVertexData(U32String string, float xStart, float yStart, float width, float height, float* outPosData, float* outUvData, int* outCharsBaked /*= nullptr*/) {
+float UniFont::BakeU32ToVertexData(U32String string, float xStart, float yStart, float width, float height, float* outPosData, float* outUvData, int* outCharsBaked /*= nullptr*/, int* outTriCount /*= nullptr*/) {
 	float x = xStart, y = yStart;
 
 	Texture* fontTexture = GlobalScene->res.textures.GetById(textureId);
@@ -275,6 +275,10 @@ float UniFont::BakeU32ToVertexData(U32String string, float xStart, float yStart,
 
 	if (outCharsBaked) {
 		*outCharsBaked = string.length;
+	}
+	
+	if (outTriCount) {
+		*outTriCount = index / 6;
 	}
 
 	return x - xStart;
@@ -324,5 +328,9 @@ void UniFont::CleanUp() {
 
 	fontInfos.Clear();
 	fontBuffersInMem.Clear();
+}
+
+UniFont::~UniFont(){
+	CleanUp();
 }
 

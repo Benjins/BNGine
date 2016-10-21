@@ -78,6 +78,10 @@ Entity* Scene::CloneEntity(Entity* srcEnt) {
 
 void Scene::StartUp() {
 	glEnable(GL_SCISSOR_TEST);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glEnable(GL_DEPTH_TEST);
+	glViewport(0, 0, 1280, 720);
+	glLoadIdentity();
 
 	PackAssetFile("assets", "assets.bna");
 

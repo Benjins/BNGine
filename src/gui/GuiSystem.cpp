@@ -83,7 +83,9 @@ void GuiDrawCall::ExecuteDraw() {
 	glBindBuffer(GL_ARRAY_BUFFER, uvVbo);
 	glVertexAttribPointer(uvAttribLoc, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-	glDrawArrays(GL_TRIANGLES, 0, pos.GetLength() / sizeof(float) / 2);
+	
+	int indicesCount = (pos.GetLength() / sizeof(float) / 2);
+	glDrawArrays(GL_TRIANGLES, 0,  indicesCount);
 
 	glDisableVertexAttribArray(posAttribLoc);
 	glDisableVertexAttribArray(uvAttribLoc);
@@ -184,9 +186,10 @@ float GuiSystem::DrawUnicodeLabel(U32String text, uint32 fontId, float scale, fl
 	int quadCount = font->GetQuadCountForText(text);
 	float* posBuffer = (float*)malloc(quadCount * 12 * sizeof(float));
 	float* uvsBuffer = (float*)malloc(quadCount * 12 * sizeof(float));
-
+	
 	int charsWritten = -1;
-	float width = font->BakeU32ToVertexData(text, x, y, w, h, posBuffer, uvsBuffer, &charsWritten);
+	int triCount = -1;
+	float width = font->BakeU32ToVertexData(text, x, y, w, h, posBuffer, uvsBuffer, &charsWritten, &triCount);
 
 	int dcIndex = -1;
 	for (int i = 0; i < guiDrawCalls.count; i++) {
@@ -204,8 +207,8 @@ float GuiSystem::DrawUnicodeLabel(U32String text, uint32 fontId, float scale, fl
 		dcIndex = guiDrawCalls.count - 1;
 	}
 
-	guiDrawCalls.Get(dcIndex).pos.WriteArray(posBuffer, quadCount * 12);
-	guiDrawCalls.Get(dcIndex).uvs.WriteArray(uvsBuffer, quadCount * 12);
+	guiDrawCalls.Get(dcIndex).pos.WriteArray(posBuffer, triCount * 6);
+	guiDrawCalls.Get(dcIndex).uvs.WriteArray(uvsBuffer, triCount * 6);
 
 	free(posBuffer);
 	free(uvsBuffer);

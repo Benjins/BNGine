@@ -51,13 +51,15 @@ struct UniFont : IDBase{
 
 	void BakeVertexDataDefault(int c, float* x, float y, float width, float height, Texture* fontTexture, float* outPosData, float* outUvData, int* index);
 	void BakeVertexDataHangul(int c, float* x, float y, float width, float height, Texture* fontTexture, float* outPosData, float* outUvData, int* index);
-	float BakeU32ToVertexData(U32String string, float xStart, float yStart, float width, float height, float* outPosData, float* outUvData, int* outCharsBaked = nullptr);
+	float BakeU32ToVertexData(U32String string, float xStart, float yStart, float width, float height, float* outPosData, float* outUvData, int* outCharsBaked = nullptr, int* outTriCount = nullptr);
 	
 	int GetQuadCountForText(const U32String string);
 
 	float GetCursorPos(const char* text, int cursorPos);
 
 	void CleanUp();
+
+	~UniFont();
 };
 
 #endif

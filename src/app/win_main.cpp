@@ -62,11 +62,6 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 	WIN_DEBUG_PRINT("GL Renderer: %s\n", glGetString(GL_RENDERER));
 #undef WIN_DEBUG_PRINT
 
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glEnable(GL_DEPTH_TEST);
-	glViewport(0, 0, 1280, 720);
-	glLoadIdentity();
-
 	ReleaseDC(window, hdc);
 
 	scn.StartUp();
