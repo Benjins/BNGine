@@ -84,6 +84,8 @@ void ResourceManager::LoadAssetFile(const char* fileName) {
 			LoadVShaderFromChunk(fileBufferStream, shader);
 		}
 		else if (memcmp(chunkId, "BNFS", 4) == 0) {
+			String shaderFileName = FindFileNameByIdAndExtension("fs", assetId);
+			printf("Loading shader: '%s'\n", shaderFileName.string ? shaderFileName.string : "<NULL>");
 			Shader* shader = shaders.AddWithId(assetId);
 			LoadFShaderFromChunk(fileBufferStream, shader);
 		}
