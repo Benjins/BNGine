@@ -14,8 +14,8 @@ varying vec2 outUv;
 
 void main(){
 	outUv = uv;
-	outNormal = normal;
-	outPos = pos;
+	//outNormal = normal;
+	//outPos = pos;
 	
 	vec4 _pos = vec4(pos, 1);
 	gl_Position = _perspMatrix * _camMatrix * _objMatrix * _pos;
