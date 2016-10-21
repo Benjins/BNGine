@@ -81,15 +81,17 @@ void ResourceManager::LoadAssetFile(const char* fileName) {
 		}
 		else if (memcmp(chunkId, "BNVS", 4) == 0) {
 			String shaderFileName = FindFileNameByIdAndExtension("vs", assetId);
-			printf("Loading shader: '%s'\n", shaderFileName.string ? shaderFileName.string : "<NULL>");
+			printf("Loading shader: '%s'...", shaderFileName.string ? shaderFileName.string : "<NULL>");
 			Shader* shader = shaders.AddWithId(assetId);
 			LoadVShaderFromChunk(fileBufferStream, shader);
+			printf("done.\n");
 		}
 		else if (memcmp(chunkId, "BNFS", 4) == 0) {
 			String shaderFileName = FindFileNameByIdAndExtension("fs", assetId);
-			printf("Loading shader: '%s'\n", shaderFileName.string ? shaderFileName.string : "<NULL>");
+			printf("Loading shader: '%s'...", shaderFileName.string ? shaderFileName.string : "<NULL>");
 			Shader* shader = shaders.AddWithId(assetId);
 			LoadFShaderFromChunk(fileBufferStream, shader);
+			printf("done.\n");
 		}
 		else if (memcmp(chunkId, "BNTX", 4) == 0) {
 			Texture* texture = textures.AddWithId(assetId);
