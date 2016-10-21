@@ -1,8 +1,8 @@
 #version 120
 
-attribute vec3 pos;
-//attribute vec3 normal;
 attribute vec2 uv;
+//attribute vec3 normal;
+//attribute vec3 pos;
 
 uniform mat4 _objMatrix;
 uniform mat4 _camMatrix;
