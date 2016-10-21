@@ -6,9 +6,9 @@ varying vec3 outPos;
 
 uniform sampler2D _mainTex;
 
-uniform vec3 _lightAngle = vec3(0, 0.7, 0.7);
+uniform vec3 _lightAngle;
 
-uniform float _ambientAmount = 0.2;
+uniform float _ambientAmount;
 
 void main(){
 	float lightDot = dot(outNormal, _lightAngle);
