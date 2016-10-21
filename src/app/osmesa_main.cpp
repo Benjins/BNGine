@@ -131,7 +131,7 @@ bool CompareFrameBufferAndWriteFile(BitmapData fb, const char* fileName){
 		return false;
 	}
 	
-	const int tolerance = 1;
+	const int tolerance = 4;
 	const int maxDiffPixelCount = 20;
 	int diffPixelCount = 0;
 	
@@ -141,14 +141,13 @@ bool CompareFrameBufferAndWriteFile(BitmapData fb, const char* fileName){
 		int p1_c[3] = {(p1 & 0xFF), (p1 & 0xFF00) >> 8, (p1 & 0x00FF0000) >> 16};
 		int p2_c[3] = {(p2 & 0xFF), (p2 & 0xFF00) >> 8, (p2 & 0x00FF0000) >> 16};
 
-		if (p1 != p2){
-			diffPixelCount++;
-		}
-		
-
 		int diff = 0;
 		for (int k = 0; k < 3; k++){
 			diff += BNS_ABS(p1_c[k] - p2_c[k]);
+		}
+
+		if (diff > tolerance){
+			diffPixelCount++;
 		}
 
 		if (diffPixelCount > maxDiffPixelCount){
@@ -158,16 +157,6 @@ bool CompareFrameBufferAndWriteFile(BitmapData fb, const char* fileName){
 			return false;
 		}
 
-		if (diff > tolerance){
-			int x = i % refBmp.width;
-			int y = i / refBmp.width;
-			printf("\nError: Images '%s' and '%s' differ at pixel (%d, %d), colors (%d, %d, %d) and (%d, %d, %d).  Failure.\n", 
-				fileName, refImageFile, x, y,
-				p1_c[0], p1_c[2], p1_c[2], p2_c[0], p2_c[2], p2_c[2]);
-			WriteBMPToFile(fb, fileName);
-			free(refBmp.data);
-			return false;
-		}
 	}
 	
 	printf("Images '%s' and '%s' match.\n", fileName, refImageFile);
