@@ -95,7 +95,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 		Sleep(16);
 	}
 	
-	scn.Shutdown();
+	scn.ShutDown();
 
 	return 0;
 }

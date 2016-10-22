@@ -128,7 +128,7 @@ int main(int argc, char** argv){
 		
 	}
 
-	scn.Shutdown();
+	scn.ShutDown();
 
 	glXMakeCurrent(dpy, None, NULL);
 	glXDestroyContext(dpy, glc);
