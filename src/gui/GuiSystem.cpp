@@ -135,6 +135,35 @@ void GuiSystem::Init(){
 	}
 }
 
+void GuiSystem::ShutDown(){
+	
+	{
+		Material* mat = GlobalScene->res.materials.GetById(guiTextMatId);
+		Program* prog = GlobalScene->res.programs.GetById(mat->programId);
+		
+		glDeleteProgram(prog->programObj);
+		
+		Shader* vs = GlobalScene->res.shaders.GetById(prog->vertShader);
+		Shader* fs = GlobalScene->res.shaders.GetById(prog->fragShader);
+		
+		glDeleteShader(vs->shaderObj);
+		glDeleteShader(fs->shaderObj);
+	}
+	
+	{
+		Material* mat = GlobalScene->res.materials.GetById(guiColMatId);
+		Program* prog = GlobalScene->res.programs.GetById(mat->programId);
+		
+		glDeleteProgram(prog->programObj);
+		
+		Shader* vs = GlobalScene->res.shaders.GetById(prog->vertShader);
+		Shader* fs = GlobalScene->res.shaders.GetById(prog->fragShader);
+		
+		glDeleteShader(vs->shaderObj);
+		glDeleteShader(fs->shaderObj);
+	}
+}
+
 float GuiSystem::DrawTextLabel(const char* text, uint32 fontId, float scale, float x, float y, float w /*= 10000*/, float h /*= 10000*/){
 	BitmapFont* font = GlobalScene->res.fonts.GetById(fontId);
 	

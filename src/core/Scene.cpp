@@ -95,6 +95,10 @@ void Scene::StartUp() {
 	frameTimer.Reset();
 }
 
+void Scene::ShutDown(){
+	gui.ShutDown();
+}
+
 void Scene::Update() {
 	phys.AdvanceTime(GetDeltaTime());
 

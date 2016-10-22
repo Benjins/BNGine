@@ -222,6 +222,7 @@ int main(int argc, char** argv){
 	}
 	
 	if (!success){
+		scn.ShutDown();
 		OSMesaDestroyContext(ctx);
 
 		free(imgBuffer);
@@ -229,6 +230,7 @@ int main(int argc, char** argv){
 	}
 	
 	
+	scn.ShutDown();
 	OSMesaDestroyContext(ctx);
 	
 	free(imgBuffer);
