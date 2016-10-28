@@ -315,9 +315,9 @@ float UniFont::GetCursorPos(const char* text, int cursorPos) {
 
 void UniFont::AddFont(unsigned char* fontBuffer, int bufferSize) {
 	stbtt_fontinfo fontInfo;
-	fontInfos.PushBack(fontInfo);
 	int fontOffset = stbtt_GetFontOffsetForIndex(fontBuffer, 0);
-	stbtt_InitFont(&fontInfos.data[fontInfos.count-1], fontBuffer, fontOffset);
+	stbtt_InitFont(&fontInfo, fontBuffer, fontOffset);
+	fontInfos.PushBack(fontInfo);
 	fontBuffersInMem.PushBack(fontBuffer);
 }
 

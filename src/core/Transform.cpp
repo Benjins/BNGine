@@ -6,7 +6,6 @@
 
 Transform::Transform() {
 	parent = -1;
-	position = Vector3();
 	rotation = QUAT_IDENTITY;
 	scale = Vector3(1, 1, 1);
 }

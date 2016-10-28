@@ -10,7 +10,7 @@
 #include "../../ext/3dbasics/Vector3.h"
 
 struct BoxCollider : Component {
-	ColliderFlags flags;
+	ColliderFlags colFlags;
 	bool isTrigger;
 	Vector3 position;
 	Vector3 size;

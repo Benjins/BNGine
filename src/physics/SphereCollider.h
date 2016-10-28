@@ -10,7 +10,7 @@
 #include "../../ext/3dbasics/Vector3.h"
 
 struct SphereCollider : Component {
-	ColliderFlags flags;
+	ColliderFlags colFlags;
 	Vector3 position;
 	float radius;
 };

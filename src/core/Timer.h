@@ -27,14 +27,14 @@ struct Timer{
 	}
 
 	double GetTimeSince(){
-		int divisor = CLOCKS_PER_SEC;
 		clock_t currTime;
 #if !defined(__APPLE__) && !defined(_WIN32) && !defined(_WIN64)
-		divisor = 1000;
+		int divisor = 1000;
 		timeval start;
 		gettimeofday(&start, NULL);
 		currTime = start.tv_sec*1000 + start.tv_usec/1000;
 #else
+		int divisor = CLOCKS_PER_SEC;
 		currTime = clock();
 #endif
 		double deltaTime = ((double)currTime - startTime)/divisor;

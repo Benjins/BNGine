@@ -6,6 +6,10 @@ Texture::Texture(){
 	externalColourFormat = GL_RGB;
 	internalColourFormat = GL_BGR;
 	textureObj = -1;
+
+	width = 0;
+	height = 0;
+	texMem = nullptr;
 }
 
 void Texture::UploadToGraphicsDevice() {
