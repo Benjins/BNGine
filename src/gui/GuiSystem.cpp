@@ -25,6 +25,7 @@ const char* guiTextVShaderText =
 "}\n";
 
 const char* guiTextFShaderText =
+"#version 120\n"
 "varying vec2 outUv;\n"
 "uniform sampler2D _mainTex;\n"
 "\n"
@@ -131,6 +132,35 @@ void GuiSystem::Init(){
 		guiColMat->programId = prog->id;
 
 		guiColMatId = guiColMat->id;
+	}
+}
+
+void GuiSystem::ShutDown(){
+	
+	{
+		Material* mat = GlobalScene->res.materials.GetById(guiTextMatId);
+		Program* prog = GlobalScene->res.programs.GetById(mat->programId);
+		
+		glDeleteProgram(prog->programObj);
+		
+		Shader* vs = GlobalScene->res.shaders.GetById(prog->vertShader);
+		Shader* fs = GlobalScene->res.shaders.GetById(prog->fragShader);
+		
+		glDeleteShader(vs->shaderObj);
+		glDeleteShader(fs->shaderObj);
+	}
+	
+	{
+		Material* mat = GlobalScene->res.materials.GetById(guiColMatId);
+		Program* prog = GlobalScene->res.programs.GetById(mat->programId);
+		
+		glDeleteProgram(prog->programObj);
+		
+		Shader* vs = GlobalScene->res.shaders.GetById(prog->vertShader);
+		Shader* fs = GlobalScene->res.shaders.GetById(prog->fragShader);
+		
+		glDeleteShader(vs->shaderObj);
+		glDeleteShader(fs->shaderObj);
 	}
 }
 

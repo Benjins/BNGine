@@ -15,6 +15,7 @@ Scene* GlobalScene = nullptr;
 
 Scene::Scene() : entities(100), transforms(120), res()	 {
 	GlobalScene = this;
+	frameRateIsLocked = false;
 }
 
 Entity* Scene::AddVisibleEntity(uint32 matId, uint32 meshId) {
@@ -92,6 +93,10 @@ void Scene::StartUp() {
 	LoadLevel("Level1.lvl");
 
 	frameTimer.Reset();
+}
+
+void Scene::ShutDown(){
+	gui.ShutDown();
 }
 
 void Scene::Update() {

@@ -67,6 +67,7 @@ public:
 	}
 	
 	void Init();
+	void ShutDown();
 	
 	void PushMatrix();
 	void LoadIdentity();

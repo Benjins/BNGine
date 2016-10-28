@@ -3,7 +3,7 @@
 
 #include "GLExtInit.h"
 
-void Shader::CompileShader(const char * shaderText, GLenum _shaderType){
+void Shader::CompileShader(const char* shaderText, GLenum _shaderType){
 	shaderObj = glCreateShader(_shaderType);
 	shaderType = _shaderType;
 

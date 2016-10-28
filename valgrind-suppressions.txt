@@ -1,0 +1,39 @@
+{
+   Cond_Uninit_Shader1
+   Memcheck:Cond
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   fun:_ZN6Shader13CompileShaderEPKcj
+   fun:_ZN15ResourceManager20LoadFShaderFromChunkER9MemStreamP6Shader
+   fun:_ZN15ResourceManager13LoadAssetFileEPKc
+   fun:_ZN5Scene7StartUpEv
+}
+
+{
+   Cond_Uninit_Shader2
+   Memcheck:Cond
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.6.5.3
+   fun:_ZN6Shader13CompileShaderEPKcj
+   fun:_ZN15ResourceManager20LoadFShaderFromChunkER9MemStreamP6Shader
+   fun:_ZN15ResourceManager13LoadAssetFileEPKc
+   fun:_ZN5Scene7StartUpEv
+}

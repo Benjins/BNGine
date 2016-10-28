@@ -1,0 +1,11 @@
+<Scene>
+	<Camera nearClip='0.010000' farClip='1000.000000' fov='80'>
+		<Transform pos='0.000000,0.200000,-2.000000' id='1' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='0'/>
+	</Camera>
+	
+	<Entity id='0'>
+		<Transform pos='0.000000,0.000000,0.000000' id='0' scale='0.800000,1.200000,1.000000' rotation='0.988187,0.000000,0.000000,-0.153251' parent='-1'/>
+		<Material src='standard.mat'/>
+		<Mesh src='monkey.obj'/>
+	</Entity>
+</Scene>

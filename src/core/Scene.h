@@ -45,14 +45,27 @@ struct Scene {
 	Timer frameTimer;
 
 	Vector<uint32> entsToDestroy;
+	
+	float lockedFrameRate;
+	bool frameRateIsLocked;
 
+	void LockFrameRate(float rate){
+		lockedFrameRate = rate;
+		frameRateIsLocked = true;
+	}
+	
+	void UnlockFrameRate(){
+		frameRateIsLocked = false;
+	}
+	
 	double GetDeltaTime() {
-		return frameTimer.GetTimeSince();
+		return frameRateIsLocked ? lockedFrameRate : frameTimer.GetTimeSince();
 	}
 
 	Scene();
 
 	void StartUp();
+	void ShutDown();
 
 	void Update();
 	void UpdateCustomComponents();
