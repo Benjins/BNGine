@@ -337,7 +337,7 @@ void Editor::TopPanelGui() {
 
 	if (selectedEntity != -1) {
 		if (gui.TextButton("Remove Entity", 0, 12, x, y, 90, 30)) {
-			scene.DestroyEntityImmediate(selectedEntity);
+			DestroyEntityImmediate(selectedEntity);
 			selectedEntity = -1;
 		}
 
