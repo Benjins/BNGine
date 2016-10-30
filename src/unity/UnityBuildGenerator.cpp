@@ -70,6 +70,9 @@ int main(int argc, char** argv) {
 
 	FILE* genFile = fopen("gen/UnityBuild.cpp", "wb");
 	const char* fileToTop = "../";
+	
+	// HACK: The Windows API doesn't like incuding Winsock2.h after Windows.h, so this is a workaround
+	fprintf(genFile, "#define _WINSOCKAPI_\n");
 
 	for (int i = 0; i < includeFirst.count; i++) {
 		for (int j = 0; j < srcFiles.count; j++) {
