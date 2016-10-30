@@ -9,8 +9,6 @@
 #include "../../ext/CppUtils/filesys.h"
 #include "../../ext/CppUtils/unicode.h"
 
-//#include <windows.h>
-
 Scene* GlobalScene = nullptr;
 
 Scene::Scene() : entities(100), transforms(120), res()	 {
@@ -109,10 +107,9 @@ void Scene::Update() {
 		res.LoadAssetFile("assets.bna");
 	}
 
-	for (int i = 0; i < entsToDestroy.count; i++) {
-		DestroyEntityImmediate(entsToDestroy.Get(i));
+	for (int i = 0; i < deferredActions.count; i++) {
+		ExecuteAction(deferredActions.data[i]);
 	}
-	entsToDestroy.Clear();
 
 	frameTimer.Reset();
 }
@@ -191,37 +188,29 @@ void Scene::SaveLevel(Level* level) {
 }
 
 void Scene::DestroyEntity(uint32 entId) {
-	bool alreadyQueued = false;
-	for (int i = 0; i < entsToDestroy.count; i++) {
-		if (entsToDestroy.Get(i) == entId) {
-			alreadyQueued = true;
-			break;
-		}
-	}
-
-	if (!alreadyQueued) {
-		entsToDestroy.PushBack(entId);
-	}
+	Action& act = deferredActions.EmplaceBack();
+	act.type = AT_DestroyEntityImmediate;
+	act.DestroyEntityImmediate_data.entId = entId;
 }
 
 // TODO: Parent-child destruction?
-void Scene::DestroyEntityImmediate(uint32 entId) {
-	Entity* ent = entities.GetById(entId);
-	ASSERT(ent != nullptr);
+void DestroyEntityImmediate(uint32 entId) {
+	Entity* ent = GlobalScene->entities.GetById(entId);
+	if (ent != nullptr) {
+		uint32 transformId = ent->transform;
+		GlobalScene->entities.RemoveById(entId);
+		GlobalScene->transforms.RemoveById(transformId);
 
-	uint32 transformId = ent->transform;
-	entities.RemoveById(entId);
-	transforms.RemoveById(transformId);
-
-	for (int i = 0; i < res.drawCalls.currentCount; i++) {
-		if (res.drawCalls.vals[i].entId == entId) {
-			uint32 dcId = res.drawCalls.vals[i].id;
-			res.drawCalls.RemoveById(dcId);
-			break;
+		for (int i = 0; i < GlobalScene->res.drawCalls.currentCount; i++) {
+			if (GlobalScene->res.drawCalls.vals[i].entId == entId) {
+				uint32 dcId = GlobalScene->res.drawCalls.vals[i].id;
+				GlobalScene->res.drawCalls.RemoveById(dcId);
+				break;
+			}
 		}
-	}
 
-	DestroyCustomComponentsByEntity(entId);
+		GlobalScene->DestroyCustomComponentsByEntity(entId);
+	}
 }
 
 void Scene::Render() {

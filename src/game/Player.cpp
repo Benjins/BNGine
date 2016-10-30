@@ -8,7 +8,6 @@ void PlayerComponent::Update() {
 
 	Entity* ent = GlobalScene->entities.GetById(entity);
 	Transform* entTrans = GlobalScene->transforms.GetById(ent->transform);
-
 	Transform* camTrans = GlobalScene->transforms.GetById(GlobalScene->cam.transform);
 
 	RaycastHit downCast = GlobalScene->phys.Raycast(entTrans->GetGlobalPosition() + Vector3(0, 0.1f - playerHeight, 0), Y_AXIS * -1);
@@ -46,6 +45,11 @@ void PlayerComponent::Update() {
 
 		Vector3 bulletSpawnPosition = entTrans->GetGlobalPosition() + entTrans->Forward() * 0.21f;
 		pref->Instantiate(bulletSpawnPosition, entTrans->rotation * camTrans->rotation);
+
+		// TODO: Instantiating a prefab invalidates pointers on realloc, should look into that
+		ent = GlobalScene->entities.GetById(entity);
+		entTrans = GlobalScene->transforms.GetById(ent->transform);
+		camTrans = GlobalScene->transforms.GetById(GlobalScene->cam.transform);
 	}
 
 	// States can use this to restore vertical movement, defaults to none

@@ -23,6 +23,8 @@
 
 #include "../gui/GuiSystem.h"
 
+#include "../../gen/Actions.h"
+
 struct DrawCall;
 
 struct Scene {
@@ -44,7 +46,7 @@ struct Scene {
 
 	Timer frameTimer;
 
-	Vector<uint32> entsToDestroy;
+	Vector<Action> deferredActions;
 	
 	float lockedFrameRate;
 	bool frameRateIsLocked;
@@ -88,7 +90,7 @@ struct Scene {
 	Entity* CloneEntity(Entity* ent);
 
 	void DestroyEntity(uint32 entId);
-	void DestroyEntityImmediate(uint32 entId);
+	//void DestroyEntityImmediate(uint32 entId);
 	void DestroyCustomComponentsByEntity(uint32 entId);
 
 	void SendCollisionToCustomComponents(uint32 entity, Collision col);
@@ -118,6 +120,8 @@ struct Scene {
 
 #define FIND_COMPONENT_BY_ENTITY(compType, entityId) GlobalScene->FindComponentByEntity<compType>(CCT_##compType, entityId)
 
+/*[Action]*/
+void DestroyEntityImmediate(uint32 entId);
 
 extern Scene* GlobalScene;
 

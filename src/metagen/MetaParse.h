@@ -57,4 +57,6 @@ Vector<ParseMetaEnum> ParseEnumDefsFromFile(const char* fileName);
 
 ParseMetaAttribute* FindMetaAttribByName(const Vector<ParseMetaAttribute>& attribs, const char* attribName);
 
+Vector<ParseMetaAttribute> ParseMetaAttribsBackward(Vector<SubString> tokens, int index, const char* fileName);
+
 #endif

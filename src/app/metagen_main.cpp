@@ -2,9 +2,31 @@
 
 #include "../../ext/CppUtils/filesys.h"
 #include "../../ext/CppUtils/stringmap.h"
+#include "../../ext/CppUtils/Coroutines/coroutines.h"
 #include "../../ext/CppUtils/xml.h"
 #include "../metagen/MetaParse.h"
 
+// Bleh, this should be unified at some point anyway
+struct ParseMetaFuncDef : MetaFuncDef {
+	Vector<ParseMetaAttribute> attribs;
+};
+
+
+void ParseFunctionHeadersFromFile(const char* fileName, Vector<ParseMetaFuncDef>* outFuncDefs) {
+	String fileContents = ReadStringFromFile(fileName);
+	Vector<SubString> lexedFile = LexString(fileContents);
+
+	for (int i = 0; i < lexedFile.count; i++) {
+		ParseMetaFuncDef def;
+		int end = ParseFuncHeader(lexedFile, i, &def);
+
+		if (end > i && end < lexedFile.count - 1 && lexedFile.data[end + 1] == ";") {
+			def.attribs = ParseMetaAttribsBackward(lexedFile, i - 1, fileName);
+			outFuncDefs->PushBack(def);
+			i = end + 1;
+		}
+	}
+}
 
 MetaType ParseType(const SubString& name, int indirectionLevel, int arrayCount) {
 	if (arrayCount == NOT_AN_ARRAY) {
@@ -95,6 +117,56 @@ void DefineCustomComponentFunction(
 	fprintf(componentMetaFile, "\n}\n");
 }
 
+void DumpTypeInfo(MetaTypeInfo typeInfo, FILE* fp) {
+	if (typeInfo.isConst) {
+		fprintf(fp, "const ");
+	}
+
+	fprintf(fp, "%.*s", typeInfo.typeName.length, typeInfo.typeName.start);
+	if (typeInfo.genericParam.length > 0) {
+		fprintf(fp, "<%.*s>", typeInfo.genericParam.length, typeInfo.genericParam.start);
+	}
+
+	for (int i = 0; i < typeInfo.pointerLevel; i++) {
+		fprintf(fp, "*");
+	}
+
+	if (typeInfo.isReference) {
+		fprintf(fp, "&");
+	}
+}
+
+void DumpFunctionHeader(MetaFuncDef* def, FILE* fp) {
+	DumpTypeInfo(def->retType, fp);
+	fprintf(fp, " %.*s(", def->name.length, def->name.start);
+
+	for (int i = 0; i < def->params.count; i++) {
+		if (i > 0) {
+			fprintf(fp, ", ");
+		}
+
+		MetaVarDecl param = def->params.data[i];
+		char declBuffer[256];
+		SerializeVarDecl(&param.type, param.name.start, param.name.length, declBuffer, sizeof(declBuffer));
+		fprintf(fp, "%s", declBuffer);
+	}
+
+	fprintf(fp, ");");
+}
+
+bool FuncDefHasAttrib(ParseMetaFuncDef* def, const char* attr, ParseMetaAttribute* outAttrib = nullptr) {
+	for (int i = 0; i < def->attribs.count; i++) {
+		if (def->attribs.data[i].name == attr) {
+			if (outAttrib != nullptr) {
+				*outAttrib = def->attribs.data[i];
+			}
+			return true;
+		}
+	}
+
+	return false;
+}
+
 int main(int arc, char** argv) {
 	File srcFiles;
 	srcFiles.Load("src");
@@ -103,6 +175,7 @@ int main(int arc, char** argv) {
 	srcFiles.FindFilesWithExt("h", &headerFiles);
 
 	Vector<ParseMetaStruct> allParseMetaStructs;
+	Vector<ParseMetaFuncDef> allParseMetaFuncs;
 
 	StringMap<String> structToFileMap;
 
@@ -115,6 +188,10 @@ int main(int arc, char** argv) {
 			structToFileMap.Insert(fileParseMetaStructs.data[j].name, headerFiles.data[i]->fullName);
 			allParseMetaStructs.PushBack(fileParseMetaStructs.data[j]);
 		}
+
+		Vector<ParseMetaFuncDef> fileParseFuncDefs;
+		ParseFunctionHeadersFromFile(headerFiles.data[i]->fullName, &fileParseFuncDefs);
+		allParseMetaFuncs.InsertVector(allParseMetaFuncs.count, fileParseFuncDefs);
 	}
 
 	StringMap<int> typeIndices;
@@ -605,6 +682,84 @@ int main(int arc, char** argv) {
 	fprintf(componentMetaFile, "};\n");
 
 	fclose(componentMetaFile);
+
+	FILE* actionHeaderFile = fopen("gen/Actions.h", "wb");
+
+	Vector <ParseMetaFuncDef> funcsWithActionAttrib;
+
+	BNS_VEC_FILTER(allParseMetaFuncs, funcsWithActionAttrib, FuncDefHasAttrib(&item, "Action"));
+
+	fprintf(actionHeaderFile, "#ifndef ACTION_H\n");
+	fprintf(actionHeaderFile, "#define ACTION_H\n\n");
+	fprintf(actionHeaderFile, "#pragma once\n\n");
+
+	fprintf(actionHeaderFile, "#include \"../ext/CppUtils/assert.h\"\n\n");
+
+	for (int i = 0; i < funcsWithActionAttrib.count; i++) {
+		DumpFunctionHeader(&funcsWithActionAttrib.data[i], actionHeaderFile);
+		fprintf(actionHeaderFile, "\n");
+	}
+
+	fprintf(actionHeaderFile, "enum ActionType {\n");
+	for (int i = 0; i < funcsWithActionAttrib.count; i++) {
+		ParseMetaFuncDef* def = &funcsWithActionAttrib.data[i];
+		fprintf(actionHeaderFile, "\tAT_%.*s,\n", def->name.length, def->name.start);
+	}
+	fprintf(actionHeaderFile, "\tAT_Count\n");
+	fprintf(actionHeaderFile, "};\n\n");
+
+	fprintf(actionHeaderFile, "struct Action {\n");
+	fprintf(actionHeaderFile, "\tActionType type;\n");
+
+	fprintf(actionHeaderFile, "\tunion {\n");
+
+	for (int i = 0; i < funcsWithActionAttrib.count; i++) {
+		ParseMetaFuncDef* def = &funcsWithActionAttrib.data[i];
+		fprintf(actionHeaderFile, "\t\tstruct {\n");
+
+		for (int j = 0; j < def->params.count; j++) {
+			char buffer[256] = {};
+			MetaVarDecl* param = &def->params.data[j];
+			SerializeVarDecl(&param->type, param->name.start, param->name.length, buffer, sizeof(buffer));
+			fprintf(actionHeaderFile, "\t\t\t%s;\n", buffer);
+		}
+
+		fprintf(actionHeaderFile, "\t\t} %.*s_data;\n", def->name.length, def->name.start);
+	}
+
+	fprintf(actionHeaderFile, "\t};\n");
+
+	fprintf(actionHeaderFile, "};\n\n");
+
+	fprintf(actionHeaderFile, "inline void ExecuteAction(const Action action){\n");
+	fprintf(actionHeaderFile, "switch (action.type){\n");
+
+	for (int i = 0; i < funcsWithActionAttrib.count; i++) {
+		ParseMetaFuncDef* def = &funcsWithActionAttrib.data[i];
+		fprintf(actionHeaderFile, "\tcase AT_%.*s: {\n", def->name.length, def->name.start);
+
+		fprintf(actionHeaderFile, "\t\t%.*s(", def->name.length, def->name.start);
+		for (int j = 0; j < def->params.count; j++) {
+			if (j > 0) {
+				fprintf(actionHeaderFile, ", ");
+			}
+
+			fprintf(actionHeaderFile, "action.%.*s_data.%.*s",
+				def->name.length, def->name.start, 
+				def->params.data[j].name.length, def->params.data[j].name.start);
+		}
+		fprintf(actionHeaderFile, ");\n");
+
+		fprintf(actionHeaderFile, "\t} break;\n");
+	}
+
+	fprintf(actionHeaderFile, "\tdefault:{ASSERT_WARN(\"%%s\", \"Incorrect value for action!\");break;}\n");
+
+	fprintf(actionHeaderFile, "}\n");
+	fprintf(actionHeaderFile, "}\n\n");
+
+	fprintf(actionHeaderFile, "#endif\n");
+	fclose(actionHeaderFile);
 
 	return 0;
 }
