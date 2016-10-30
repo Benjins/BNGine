@@ -14,7 +14,7 @@ int evtPred(Display* d, XEvent* evt, XPointer xp){
 }
 
 unsigned char KeyStrokeCodeToAscii(Display* display, int keycode){
-	KeySym ksym = XkbKeycodeToKeysym( display, keycode, 0, keycode & ShiftMask ? 1 : 0);
+	KeySym ksym = XkbKeycodeToKeysym( display, keycode, 0, (keycode & ShiftMask) ? 1 : 0);
 	
 	//There's got to be a better way.  In fact there is.  I just haven't done it yet.
 	if(ksym >= 'a' && ksym <= 'z'){
