@@ -99,4 +99,10 @@ struct Editor {
 	void DrawScaleGizmo(const Entity* ent, Material* mat);
 };
 
+/*[Action]*/
+void EditorShiftButton(Editor* ed, uint32 buttonId);
+
+/*[Action]*/
+void EditorResetButton(Editor* ed, uint32 buttonId);
+
 #endif

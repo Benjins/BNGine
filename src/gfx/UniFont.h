@@ -28,6 +28,7 @@ struct UniFont : IDBase{
 	int cacheCursor;
 	int fontScale;
 
+	typedef float (UniFont::* GetCharWidthMemberFunc)(const U32String, int, int);
 	typedef void (UniFont::* CacheGlyphMemberFunc)(int, int, int, Texture*, bool*);
 	typedef void (UniFont::* BakeVertexDataMemberFunc)
 		(int, float*, float, float, float, Texture*, float*, float*, int*);
@@ -37,6 +38,7 @@ struct UniFont : IDBase{
 	struct FontSpecialCase {
 		CacheGlyphMemberFunc cacheGlyphMethod;
 		BakeVertexDataMemberFunc bakeVertexMethod;
+		GetCharWidthMemberFunc getCharWidthMethod;
 		UnicodeBlockType block;
 		int numQuadsPerChar;
 	};
@@ -52,10 +54,11 @@ struct UniFont : IDBase{
 	void BakeVertexDataDefault(int c, float* x, float y, float width, float height, Texture* fontTexture, float* outPosData, float* outUvData, int* index);
 	void BakeVertexDataHangul(int c, float* x, float y, float width, float height, Texture* fontTexture, float* outPosData, float* outUvData, int* index);
 	float BakeU32ToVertexData(U32String string, float xStart, float yStart, float width, float height, float* outPosData, float* outUvData, int* outCharsBaked = nullptr, int* outTriCount = nullptr);
-	
+
 	int GetQuadCountForText(const U32String string);
 
-	float GetCursorPos(const char* text, int cursorPos);
+	float GetCharWidthHangul(const U32String, int index, int c);
+	float GetCursorPos(const U32String string, int cursorPos);
 
 	void CleanUp();
 

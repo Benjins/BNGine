@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "GuiButton.h"
+
 #include "../../ext/CppUtils/idbase.h"
 #include "../../ext/CppUtils/vector.h"
 #include "../../ext/CppUtils/memstream.h"
@@ -58,6 +60,21 @@ public:
 
 	GuiAlignment GetAlignment(){return currAlign;}
 	void SetAlignment(GuiAlignment alignment);
+
+	IDTracker<GuiRect> rects;
+	IDTracker<GuiButton> buttons;
+
+	Vector<GuiRect> cachedRects;
+
+	GuiButton* AddButton(Vector2 pos, Vector2 size) {
+		GuiButton* button = buttons.CreateAndAdd();
+		GuiRect* rect = rects.CreateAndAdd();
+		rect->position = pos;
+		rect->size = size;
+		button->rect = rect->id;
+
+		return button;
+	}
 	
 	GuiSystem(){
 		textInputState.activeIndex = -1;
@@ -84,6 +101,7 @@ public:
 	
 	float DrawUnicodeLabel(U32String text, uint32 fontId, float scale, float x, float y, float w = 10000, float h = 10000);
 
+	void DrawContent(const GuiContent& content, GuiRect rect);
 
 	String TextInput(const String& textIn, uint32 fontId, float scale, float x, float y, float w);
 	
@@ -98,20 +116,6 @@ public:
 	void EndFrame();
 };
 
-
-//TODO
-/*
- - Gui::TextLabel 
- - Gui::TextButton
- - Gui::TextField
- - Gui::CheckBox
-
-
-  - Clipping text label
-  - clipping text input
-  - matrix stack?
-
-
-*/
+Vector2 GetContentNaturalSize(const GuiContent& content);
 
 #endif

@@ -695,11 +695,22 @@ int main(int arc, char** argv) {
 
 	fprintf(actionHeaderFile, "#include \"../ext/CppUtils/assert.h\"\n\n");
 
+	// HACK: This makes the whole thing less automatic.
+	// TODO: Either restructure this to make it unnecessary, or automate this.
+	const char* structForwardDecls[] = {
+		"Editor"
+	};
+
+	for (int i = 0; i < BNS_ARRAY_COUNT(structForwardDecls); i++) {
+		fprintf(actionHeaderFile, "struct %s;\n", structForwardDecls[i]);
+	}
+
 	for (int i = 0; i < funcsWithActionAttrib.count; i++) {
 		DumpFunctionHeader(&funcsWithActionAttrib.data[i], actionHeaderFile);
 		fprintf(actionHeaderFile, "\n");
 	}
 
+	fprintf(actionHeaderFile, "\n");
 	fprintf(actionHeaderFile, "enum ActionType {\n");
 	for (int i = 0; i < funcsWithActionAttrib.count; i++) {
 		ParseMetaFuncDef* def = &funcsWithActionAttrib.data[i];

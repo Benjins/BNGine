@@ -6,7 +6,7 @@
 #include "../assets/AssetFile.h"
 
 const UniFont::FontSpecialCase UniFont::fontFunctionSpecialCases[] = {
-	{&UniFont::CacheGlyphHangul, &UniFont::BakeVertexDataHangul, UBT_HangulSyllables, 3}
+	{&UniFont::CacheGlyphHangul, &UniFont::BakeVertexDataHangul, &UniFont::GetCharWidthHangul, UBT_HangulSyllables, 3}
 };
 
 CodepointInfo* UniFont::GetInfoForCodepoint(int codepoint) {
@@ -309,8 +309,40 @@ int UniFont::GetQuadCountForText(const U32String string) {
 	return quadCount;
 }
 
-float UniFont::GetCursorPos(const char* text, int cursorPos) {
-	return 0;
+float UniFont::GetCharWidthHangul(const U32String, int index, int c) {
+	int codePoints[3] = {};
+	DecomposeHangulToJamo(c, codePoints);
+
+	CodepointInfo* info = GetInfoForCodepoint(codePoints[0]);
+	return info->xAdvance;
+}
+
+float UniFont::GetCursorPos(const U32String string, int cursorPos) {
+	ASSERT(cursorPos <= string.length);
+	float x = 0.0f;
+	for (int i = 0; i < cursorPos; i++) {
+		int codePoint = string.start[i];
+		UnicodeBlockType block = GetBlockTypeOfCodePoint(codePoint);
+
+		bool foundSpecialCase = false;
+		for (int j = 0; j < BNS_ARRAY_COUNT(fontFunctionSpecialCases); j++) {
+			if (block == fontFunctionSpecialCases[j].block) {
+				GetCharWidthMemberFunc specialCase = fontFunctionSpecialCases[j].getCharWidthMethod;
+				x += (this->*specialCase)(string, i, codePoint);
+				foundSpecialCase = true;
+				break;
+			}
+		}
+
+		if (!foundSpecialCase) {
+			CodepointInfo* info = GetInfoForCodepoint(codePoint);
+			if (info != nullptr) {
+				x += info->xAdvance;
+			}
+		}
+	}
+
+	return x;
 }
 
 void UniFont::AddFont(unsigned char* fontBuffer, int bufferSize) {

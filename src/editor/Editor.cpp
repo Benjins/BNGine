@@ -594,6 +594,16 @@ float Editor::EditComponentGui(Component* comp, MetaStruct* meta, float x, float
 	return currY;
 }
 
+void EditorShiftButton(Editor* ed, uint32 buttonId) {
+	GuiButton* button = ed->gui.buttons.GetById(buttonId);
+	button->content.asciiStr = button->content.asciiStr.Insert('#', 0);
+}
+
+void EditorResetButton(Editor* ed, uint32 buttonId) {
+	GuiButton* button = ed->gui.buttons.GetById(buttonId);
+	button->content.asciiStr = "PUSH";
+}
+
 void Editor::StartUp() {
 	cam.fov = 80;
 	cam.nearClip = 0.001f;
@@ -617,6 +627,26 @@ void Editor::StartUp() {
 
 	scene.StartUp();
 	gui.Init();
+
+	GuiButton* button = gui.AddButton(Vector2(5, 5), Vector2(80, 30));
+	button->content.SetType(GCT_Ascii);
+	button->content.asciiStr = "PUSH";
+	button->content.bmpFontId = 0;
+	button->content.textScale = 12;
+
+	button->onClick.type = AT_EditorShiftButton;
+	button->onClick.EditorShiftButton_data.ed = this;
+	button->onClick.EditorShiftButton_data.buttonId = button->id;
+
+	GuiButton* button2 = gui.AddButton(Vector2(100, 150), Vector2(80, 30));
+	button2->content.SetType(GCT_Ascii);
+	button2->content.asciiStr = "RESET";
+	button2->content.bmpFontId = 0;
+	button2->content.textScale = 12;
+
+	button2->onClick.type = AT_EditorResetButton;
+	button2->onClick.EditorShiftButton_data.ed = this;
+	button2->onClick.EditorShiftButton_data.buttonId = button->id;
 }
 
 int Editor::GetSelectedEntity(int pixelX, int pixelY) {

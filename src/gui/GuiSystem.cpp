@@ -164,6 +164,81 @@ void GuiSystem::ShutDown(){
 	}
 }
 
+// TODO: Text wrapping? Fit to width?
+Vector2 GetContentNaturalSize(const GuiContent& content) {
+	switch (content.type) {
+
+	case GCT_None: {
+		// Do nothing
+		// TODO: Should we assert here?
+		return Vector2();
+	} break;
+
+	case GCT_Ascii: {
+		BitmapFont* font = GlobalScene->res.fonts.GetById(content.bmpFontId);
+		float width = font->GetCursorPos(content.asciiStr.string, StrLen(content.asciiStr.string));
+		float height = content.textScale;
+
+		return Vector2(width, height);
+	} break;
+
+	case GCT_Unicode: {
+		UniFont* font = GlobalScene->res.uniFonts.GetById(content.uniFontId);
+		float width = font->GetCursorPos(content.unicodeStr, content.unicodeStr.length);
+		float height = content.textScale;
+
+		return Vector2(width, height);
+	} break;
+
+	case GCT_Texture: {
+		// TODO: Get the width/height of texture
+		return Vector2();
+	} break;
+
+	case GCT_Color: {
+		// TODO: This doesn't really apply here?
+		return Vector2();
+	} break;
+
+	case GCT_Count: {
+		ASSERT_WARN("Calling '%s' on GuiContent with GCT_Count type.", __FUNCTION__);
+		return Vector2();
+	} break;
+
+	}
+}
+
+void GuiSystem::DrawContent(const GuiContent& content, GuiRect rect) {
+	switch (content.type) {
+
+	case GCT_None: {
+		// Draw nothing
+		// TODO: Should we assert here?
+	} break;
+
+	case GCT_Ascii: {
+		DrawTextLabel(content.asciiStr.string, content.bmpFontId, content.textScale, rect.x, rect.y, rect.width, rect.height);
+	} break;
+
+	case GCT_Unicode: {
+		DrawUnicodeLabel(content.unicodeStr, content.uniFontId, content.textScale, rect.x, rect.y, rect.width, rect.height);
+	} break;
+
+	case GCT_Texture: {
+		// TODO:
+	} break;
+
+	case GCT_Color: {
+		ColoredBox(rect.x, rect.y, rect.width, rect.height, content.color);
+	} break;
+
+	case GCT_Count: {
+		ASSERT_WARN("%s", "Trying to draw GuiContent with GCT_Count type.");
+	} break;
+
+	}
+}
+
 float GuiSystem::DrawTextLabel(const char* text, uint32 fontId, float scale, float x, float y, float w /*= 10000*/, float h /*= 10000*/){
 	BitmapFont* font = GlobalScene->res.fonts.GetById(fontId);
 	
@@ -255,7 +330,7 @@ void GuiSystem::ColoredBox(float x, float y, float w, float h, const Vector4 col
 	glUseProgram(prog->programObj);
 	mat->UpdateUniforms();
 
-	Vector2 pos[4] = { { x, y },{ x + w, y },{ x, y - h },{ x + w, y - h } };
+	Vector2 pos[4] = { { x, y },{ x + w, y },{ x, y + h },{ x + w, y + h } };
 
 	glBegin(GL_TRIANGLE_STRIP);
 	for (int i = 0; i < 4; i++) {
@@ -266,7 +341,7 @@ void GuiSystem::ColoredBox(float x, float y, float w, float h, const Vector4 col
 }
 
 String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, float x, float y, float w) {
-	ColoredBox(x, y + scale, w, scale, Vector4(0.4f, 0.4f, 0.4f, 0.85f));
+	ColoredBox(x, y, w, scale, Vector4(0.4f, 0.4f, 0.4f, 0.85f));
 
 	float textOffset = 0.0f;
 	const char* textRenderStart = textInputState.prevEntry.string;
@@ -339,7 +414,7 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 		float cursorOffset = font->GetCursorPos(textRenderStart, textInputState.cursorPos - textInputState.textOffset);
 		float curX = x + cursorOffset + textOffset;
 
-		ColoredBox(curX, y + scale, cursorWidth, scale, Vector4(0.7f, 0.7f, 0.7f, 0.7f));
+		ColoredBox(curX, y - scale, cursorWidth, scale, Vector4(0.7f, 0.7f, 0.7f, 0.7f));
 
 		for (unsigned char c = 'A'; c <= 'Z'; c++) {
 			if (GlobalScene->input.KeyIsPressed(c)) {
@@ -451,6 +526,34 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 }
 
 void GuiSystem::Render() {
+	cachedRects.EnsureCapacity(rects.currentCount);
+	cachedRects.count = rects.currentCount;
+
+	for (int i = 0; i < rects.currentCount; i++) {
+		if (rects.vals[i].isDirty) {
+			cachedRects.data[i] = rects.vals[i].GetFinalRect();
+			rects.vals[i].isDirty = false;
+		}
+	}
+
+	for (int i = 0; i < buttons.currentCount; i++) {
+		Vector2 natSize = GetContentNaturalSize(buttons.vals[i].content);
+
+		GuiRect finalRect = cachedRects.data[i];
+		Vector2 centeredPos = finalRect.position + (finalRect.size - natSize) / 2;
+
+		GuiRect contentRect = {};
+		contentRect.position = centeredPos;
+		contentRect.size = natSize;
+
+		DrawContent(buttons.vals[i].content, contentRect);
+
+		GuiContent colorBox;
+		colorBox.type = GCT_Color;
+		colorBox.color = Vector4(0.7f, 0.7f, 0.7f, (buttons.vals[i].state == GBS_Down ? 0.4f : 0.3f));
+		DrawContent(colorBox, finalRect);
+	}
+
 	for (int i = 0; i < guiDrawCalls.count; i++) {
 		guiDrawCalls.Get(i).ExecuteDraw();
 	}
@@ -486,7 +589,7 @@ bool GuiSystem::TextButton(const char* text, uint32 fontId, float scale, float x
 		}
 	}
 
-	ColoredBox(x, y + h/2, w, h, col);
+	ColoredBox(x, y - h/2, w, h, col);
 
 	BitmapFont* font = GlobalScene->res.fonts.GetById(fontId);
 	float textWidth = font->GetCursorPos(text, StrLen(text));
@@ -496,7 +599,7 @@ bool GuiSystem::TextButton(const char* text, uint32 fontId, float scale, float x
 }
 
 int GuiSystem::StringPicker(const char** stringArr, int count, uint32 fontId, float scale, float x, float y, float w, float h) {
-	ColoredBox(x, y, w, h, Vector4(0.7f, 0.7f, 0.7f, 0.7f));
+	ColoredBox(x, y - h, w, h, Vector4(0.7f, 0.7f, 0.7f, 0.7f));
 
 	int index = -1;
 	float currY = y - scale/2 - 1;
@@ -511,6 +614,33 @@ int GuiSystem::StringPicker(const char** stringArr, int count, uint32 fontId, fl
 }
 
 void GuiSystem::EndFrame() {
+	for (int i = 0; i < buttons.currentCount; i++) {
+		GuiRect* buttonRect = rects.GetById(buttons.vals[i].rect);
+		GuiRect finalRect = cachedRects.data[buttonRect - rects.vals];
+
+		Vector2 mousePos = Vector2(GlobalScene->input.cursorX, GlobalScene->cam.heightPixels - GlobalScene->input.cursorY);
+		bool insideButton = finalRect.ContainsPoint(mousePos);
+		bool mouseDown = GlobalScene->input.MouseButtonIsDown(MouseButton::PRIMARY);
+
+		switch (buttons.vals[i].state) {
+		case GBS_Off: {
+			if (mouseDown && insideButton) {
+				buttons.vals[i].state = GBS_Down;
+			}
+		} break;
+
+		case GBS_Down: {
+			if (!mouseDown) {
+				if (insideButton) {
+					ExecuteAction(buttons.vals[i].onClick);
+				}
+
+				buttons.vals[i].state = GBS_Off;
+			}
+		} break;
+		}
+	}
+
 	if (textInputState.activeIndex >= 0) {
 		if (GlobalScene->input.KeyIsPressed(KC_Tab)) {
 			textInputState.cursorPos = 0;
