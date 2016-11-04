@@ -1,6 +1,8 @@
 #include "Material.h"
-#include "../core/Scene.h"
+#include "Texture.h"
 #include "GLExtInit.h"
+
+#include "../core/Scene.h"
 
 #include "../../ext/3dbasics/Vector4.h"
 
@@ -18,9 +20,18 @@ void Material::UpdateUniforms() {
 			glUniform1i(uniformLoc, uniformValues.Read<int>());
 		} break;
 
+		case UT_TEXTURE2D: {
+			glUniform1i(uniformLoc, uniformValues.Read<int>());
+		} break;
+
 		case UT_MATRIX4: {
 			Mat4x4 val = uniformValues.Read<Mat4x4>();
 			glUniformMatrix4fv(uniformLoc, 1, GL_TRUE, (float*)val.m);
+		} break;
+
+		case UT_VEC2: {
+			Vector2 val = uniformValues.Read<Vector2>();
+			glUniform2f(uniformLoc, val.x, val.y);
 		} break;
 
 		case UT_VEC3: {
@@ -34,6 +45,7 @@ void Material::UpdateUniforms() {
 		} break;
 
 		default:
+			ASSERT_WARN("Invalid uniform of type %d", (int)type);
 			break;
 		}
 	}
@@ -80,6 +92,22 @@ void Material::SetVector3Uniform(const char* name, const Vector3& val) {
 	uniformValues.Write<GLint>(loc);
 	uniformValues.Write<UniformType>(UT_VEC3);
 	uniformValues.Write<Vector3>(val);
+}
+
+void Material::SetVector2Uniform(const char* name, const Vector2& val) {
+	GLint loc = GetUniformLocation(name);
+
+	uniformValues.Write<GLint>(loc);
+	uniformValues.Write<UniformType>(UT_VEC2);
+	uniformValues.Write<Vector2>(val);
+}
+
+void Material::SetTextureUniform(const char* name, const Texture* tex) {
+	GLint loc = GetUniformLocation(name);
+
+	uniformValues.Write<GLint>(loc);
+	uniformValues.Write<UniformType>(UT_TEXTURE2D);
+	uniformValues.Write<GLint>(tex->textureObj);
 }
 
 GLint Material::GetUniformLocation(const char* name) {

@@ -15,6 +15,8 @@
 
 struct Vector4;
 
+struct Texture;
+
 struct Material : IDBase {
 	int texIds[MAX_TEXTURES_PER_MATERIAL];
 	uint32 programId;
@@ -42,6 +44,8 @@ struct Material : IDBase {
 	void SetMatrix4Uniform(const char* name, const Mat4x4& val);
 	void SetVector4Uniform(const char* name, const Vector4& val);
 	void SetVector3Uniform(const char* name, const Vector3& val);
+	void SetVector2Uniform(const char* name, const Vector2& val);
+	void SetTextureUniform(const char* name, const Texture* tex);
 };
 
 enum UniformType{

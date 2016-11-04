@@ -116,7 +116,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 		ed.gui.EndFrame();
 		ed.scene.input.EndFrame();
 
-		Sleep(16);
+		Sleep(6);
 	}
 
 	return 0;

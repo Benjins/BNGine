@@ -414,7 +414,7 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 		float cursorOffset = font->GetCursorPos(textRenderStart, textInputState.cursorPos - textInputState.textOffset);
 		float curX = x + cursorOffset + textOffset;
 
-		ColoredBox(curX, y - scale, cursorWidth, scale, Vector4(0.7f, 0.7f, 0.7f, 0.7f));
+		ColoredBox(curX, y, cursorWidth, scale, Vector4(0.7f, 0.7f, 0.7f, 0.7f));
 
 		for (unsigned char c = 'A'; c <= 'Z'; c++) {
 			if (GlobalScene->input.KeyIsPressed(c)) {

@@ -11,6 +11,11 @@
 
 #include <float.h>
 
+const char* viewNames[EV_Count] = {
+	"Scene",
+	"Prefab"
+};
+
 void Editor::Update() {
 	//scene.Update();
 
@@ -255,7 +260,12 @@ void Editor::Render() {
 	scene.cam.widthPixels = cam.widthPixels - leftBarWidth - rightBarWidth;
 	scene.cam.heightPixels = cam.heightPixels - topBarHeight;
 
-	scene.Render();
+	if (currentView == EV_Scene) {
+		scene.Render();
+	}
+	else if (currentView == EV_Prefab) {
+		// Uhhhh...
+	}
 
 	Mat4x4 camera = scene.cam.GetCameraMatrix();
 	Mat4x4 persp = scene.cam.GetPerspectiveMatrix();
@@ -326,214 +336,355 @@ void Editor::Render() {
 void Editor::TopPanelGui() {
 	float x = leftBarWidth + 20;
 	float y = cam.heightPixels - topBarHeight / 2;
-	if (gui.TextButton("Add Entity", 0, 12, x, y, 90, 30)) {
-		int floorMesh, floorMat;
-		scene.res.assetIdMap.LookUp("floor.obj", &floorMesh);
-		scene.res.assetIdMap.LookUp("floor.mat", &floorMat);
-		scene.AddVisibleEntity(floorMat, floorMesh);
+
+	if (gui.TextButton("Change View", 0, 12, x, y, 90, 30)) {
+		pickerType = APT_EditorView;
+	}
+
+	if (pickerType == APT_EditorView) {
+		int pickedIndex = gui.StringPicker(viewNames, EV_Count, 0, 12, x, y - 100, 80, EV_Count * 14 + 10);
+
+		if (pickedIndex > -1) {
+			currentView = (EditorView)pickedIndex;
+
+			pickerType = APT_None;
+		}
 	}
 
 	x += 100;
 
-	if (selectedEntity != -1) {
-		if (gui.TextButton("Remove Entity", 0, 12, x, y, 90, 30)) {
-			DestroyEntityImmediate(selectedEntity);
-			selectedEntity = -1;
+	if (currentView == EV_Scene) {
+
+		if (gui.TextButton("Add Entity", 0, 12, x, y, 90, 30)) {
+			int floorMesh, floorMat;
+			scene.res.assetIdMap.LookUp("floor.obj", &floorMesh);
+			scene.res.assetIdMap.LookUp("floor.mat", &floorMat);
+			scene.AddVisibleEntity(floorMat, floorMesh);
 		}
 
 		x += 100;
+
+		if (selectedEntity != -1) {
+			if (gui.TextButton("Remove Entity", 0, 12, x, y, 90, 30)) {
+				DestroyEntityImmediate(selectedEntity);
+				selectedEntity = -1;
+			}
+
+			x += 100;
+		}
+
+		if (gui.TextButton("Save Scene", 0, 12, x, y, 90, 30)) {
+			SaveScene();
+		}
+
+		x += 100;
+
+		if (gui.TextButton("Place Prefab", 0, 12, x, y, 90, 30)) {
+			pickerType = APT_Prefab;
+		}
+
+		if (pickerType == APT_Prefab) {
+			Vector<String> prefabFileNames;
+			scene.res.FindFileNamesByExtension("bnp", &prefabFileNames);
+
+			int pickedIndex = gui.StringPicker((const char**)prefabFileNames.data, prefabFileNames.count,
+				0, 12, x, y - 20, 150, prefabFileNames.count * 16);
+
+			if (pickedIndex > -1) {
+				const String& chosenPrefabFileName = prefabFileNames.Get(pickedIndex);
+
+				int chosenPrefabId = -1;
+				scene.res.assetIdMap.LookUp(chosenPrefabFileName, &chosenPrefabId);
+				ASSERT(chosenPrefabId >= 0);
+
+				Prefab* chosenPrefab = scene.res.prefabs.GetById(chosenPrefabId);
+				ASSERT(chosenPrefab != nullptr);
+
+				Vector3 instantiatePos =
+					editorCamTrans.GetLocalToGlobalMatrix().MultiplyAsPosition(Vector3(0, 0, 3));
+
+				Entity* instance = chosenPrefab->Instantiate(instantiatePos);
+				selectedEntity = instance->id;
+
+				pickerType = APT_None;
+			}
+		}
 	}
+	else if (currentView == EV_Prefab) {
+		if (gui.TextButton("Open Prefab", 0, 12, x, y, 90, 30)) {
+			pickerType = APT_Prefab;
+		}
 
-	if (gui.TextButton("Save Scene", 0, 12, x, y, 90, 30)) {
-		SaveScene();
-	}
+		if (pickerType == APT_Prefab) {
+			Vector<String> prefabFileNames;
+			scene.res.FindFileNamesByExtension("bnp", &prefabFileNames);
 
-	x += 100;
+			int pickedIndex = gui.StringPicker((const char**)prefabFileNames.data, prefabFileNames.count,
+				0, 12, x, y - 20, 150, prefabFileNames.count * 16);
 
-	if (gui.TextButton("Place Prefab", 0, 12, x, y, 90, 30)) {
-		pickerType = APT_Prefab;
-	}
+			if (pickedIndex > -1) {
+				bool found = scene.res.assetIdMap.LookUp(prefabFileNames.Get(pickedIndex), &selectedPrefab);
+				ASSERT(found);
 
-	if (pickerType == APT_Prefab) {
-		Vector<String> prefabFileNames;
-		scene.res.FindFileNamesByExtension("bnp", &prefabFileNames);
+				pickerType = APT_None;
+			}
+		}
 
-		int pickedIndex = gui.StringPicker((const char**)prefabFileNames.data, prefabFileNames.count,
-			0, 12, x, y - 20, 150, prefabFileNames.count * 16);
+		x += 100;
 
-		if (pickedIndex > -1) {
-			const String& chosenPrefabFileName = prefabFileNames.Get(pickedIndex);
-
-			int chosenPrefabId = -1;
-			scene.res.assetIdMap.LookUp(chosenPrefabFileName, &chosenPrefabId);
-			ASSERT(chosenPrefabId >= 0);
-
-			Prefab* chosenPrefab = scene.res.prefabs.GetById(chosenPrefabId);
-			ASSERT(chosenPrefab != nullptr);
-
-			Vector3 instantiatePos
-				= editorCamTrans.GetLocalToGlobalMatrix().MultiplyAsPosition(Vector3(0, 0, 3));
-
-			Entity* instance = chosenPrefab->Instantiate(instantiatePos);
-			selectedEntity = instance->id;
-
-			pickerType = APT_None;
+		if (gui.TextButton("Save Prefab", 0, 12, x, y, 90, 30)) {
+			SavePrefab();
 		}
 	}
 }
 
 void Editor::SaveScene() {
-	Level* currLevel = scene.res.levels.GetById(scene.currentLevel);
-	scene.SaveLevel(currLevel);
-	String levelFileName = scene.res.FindFileNameByIdAndExtension("lvl", currLevel->id);
+	if (currentView == EV_Scene) {
+		Level* currLevel = scene.res.levels.GetById(scene.currentLevel);
+		scene.SaveLevel(currLevel);
+		String levelFileName = scene.res.FindFileNameByIdAndExtension("lvl", currLevel->id);
 
-	File assets;
-	assets.Load("assets");
-	Vector<File*> levelFiles;
-	assets.FindFilesWithExt("lvl", &levelFiles);
+		File assets;
+		assets.Load("assets");
+		Vector<File*> levelFiles;
+		assets.FindFilesWithExt("lvl", &levelFiles);
 
-	for (int i = 0; i < levelFiles.count; i++) {
-		if (levelFileName == levelFiles.Get(i)->fileName) {
-			scene.res.SaveLevelToFile(currLevel, levelFiles.Get(i)->fullName);
-			break;
+		for (int i = 0; i < levelFiles.count; i++) {
+			if (levelFileName == levelFiles.Get(i)->fileName) {
+				scene.res.SaveLevelToFile(currLevel, levelFiles.Get(i)->fullName);
+				break;
+			}
 		}
+	}
+	else {
+		// TODO: Assert?
+	}
+}
+
+void Editor::SavePrefab() {
+	if (currentView == EV_Prefab) {
+		Prefab* prefab = scene.res.prefabs.GetById(selectedPrefab);
+		String prefabFileName = scene.res.FindFileNameByIdAndExtension("bnp", prefab->id);
+
+		File assets;
+		assets.Load("assets");
+		Vector<File*> prefabFiles;
+		assets.FindFilesWithExt("bnp", &prefabFiles);
+
+		for (int i = 0; i < prefabFiles.count; i++) {
+			if (prefabFileName == prefabFiles.Get(i)->fileName) {
+				scene.res.SavePrefabToFile(prefab, prefabFiles.Get(i)->fullName);
+				break;
+			}
+		}
+	}
+	else {
+		// TODO: Assert?
 	}
 }
 
 void Editor::SidePanelGui() {
-	if (selectedEntity != -1) {
-		Entity* ent = scene.entities.GetById(selectedEntity);
+	float y = cam.heightPixels - 20;
+	float x = cam.widthPixels - rightBarWidth + 5;
 
-		float y = cam.heightPixels - 20;
-		float x = cam.widthPixels - rightBarWidth + 5;
-		gui.DrawTextLabel(StringStackBuffer<64>("Id: %d", ent->id).buffer, 0, 12, x, y);
-		y -= 14;
-
-		Transform* entTrans = scene.transforms.GetById(ent->transform);
-
-		gui.DrawTextLabel("Position: ", 0, 12, x, y);
-		y -= 14;
-		entTrans->position = Vec3Field(entTrans->position, x, y, rightBarWidth - 5);
-		y -= 14;
-
-		gui.DrawTextLabel("Scale: ", 0, 12, x, y);
-		y -= 14;
-		entTrans->scale = Vec3Field(entTrans->scale, x, y, rightBarWidth - 5);
-		y -= 14;
-
-		String meshName;
-		String matName;
-		DrawCall* dc = scene.GetDrawCallForEntity(ent->id);
-		if (dc != nullptr) {
-			uint32 meshId = dc->meshId;
-			uint32 matId = dc->matId;
-
-			meshName = scene.res.FindFileNameByIdAndExtension("obj", meshId);
-			matName = scene.res.FindFileNameByIdAndExtension("mat", matId);
-		}
-
-		if (meshName.string != nullptr) {
-			float currX = x;
-			currX += gui.DrawTextLabel("Mesh: ", 0, 12, currX, y);
-			String newMeshName = gui.TextInput(meshName, 0, 12, currX, y, cam.widthPixels - currX - 5);
+	if (currentView == EV_Scene) {
+		if (selectedEntity != -1) {
+			Entity* ent = scene.entities.GetById(selectedEntity);
+			gui.DrawTextLabel(StringStackBuffer<64>("Id: %d", ent->id).buffer, 0, 12, x, y);
 			y -= 14;
 
-			if (newMeshName.string != meshName.string) {
-				int newMeshId = -1;
-				bool isValidMesh = scene.res.assetIdMap.LookUp(newMeshName, &newMeshId);
+			Transform* entTrans = scene.transforms.GetById(ent->transform);
 
-				if (isValidMesh) {
-					for (int i = 0; i < scene.res.drawCalls.currentCount; i++) {
-						if (scene.res.drawCalls.vals[i].entId == ent->id) {
-							scene.res.drawCalls.vals[i].meshId = newMeshId;
+			gui.DrawTextLabel("Position: ", 0, 12, x, y);
+			y -= 14;
+			entTrans->position = Vec3Field(entTrans->position, x, y, rightBarWidth - 5);
+			y -= 14;
+
+			gui.DrawTextLabel("Scale: ", 0, 12, x, y);
+			y -= 14;
+			entTrans->scale = Vec3Field(entTrans->scale, x, y, rightBarWidth - 5);
+			y -= 14;
+
+			String meshName;
+			String matName;
+			DrawCall* dc = scene.GetDrawCallForEntity(ent->id);
+			if (dc != nullptr) {
+				uint32 meshId = dc->meshId;
+				uint32 matId = dc->matId;
+
+				meshName = scene.res.FindFileNameByIdAndExtension("obj", meshId);
+				matName = scene.res.FindFileNameByIdAndExtension("mat", matId);
+			}
+
+			if (meshName.string != nullptr) {
+				float currX = x;
+				currX += gui.DrawTextLabel("Mesh: ", 0, 12, currX, y);
+				String newMeshName = gui.TextInput(meshName, 0, 12, currX, y, cam.widthPixels - currX - 5);
+				y -= 14;
+
+				if (newMeshName.string != meshName.string) {
+					int newMeshId = -1;
+					bool isValidMesh = scene.res.assetIdMap.LookUp(newMeshName, &newMeshId);
+
+					if (isValidMesh) {
+						for (int i = 0; i < scene.res.drawCalls.currentCount; i++) {
+							if (scene.res.drawCalls.vals[i].entId == ent->id) {
+								scene.res.drawCalls.vals[i].meshId = newMeshId;
+							}
 						}
 					}
 				}
 			}
-		}
 
-		if (matName.string != nullptr) {
-			float currX = x;
-			currX += gui.DrawTextLabel("Material: ", 0, 12, currX, y);
-			String newMatName = gui.TextInput(matName, 0, 12, currX, y, cam.widthPixels - currX - 5);
-			y -= 14;
+			if (matName.string != nullptr) {
+				float currX = x;
+				currX += gui.DrawTextLabel("Material: ", 0, 12, currX, y);
+				String newMatName = gui.TextInput(matName, 0, 12, currX, y, cam.widthPixels - currX - 5);
+				y -= 14;
 
-			if (newMatName.string != matName.string) {
-				int newMatId = -1;
-				bool isValidMesh = scene.res.assetIdMap.LookUp(newMatName, &newMatId);
+				if (newMatName.string != matName.string) {
+					int newMatId = -1;
+					bool isValidMesh = scene.res.assetIdMap.LookUp(newMatName, &newMatId);
 
-				if (isValidMesh) {
-					for (int i = 0; i < scene.res.drawCalls.currentCount; i++) {
-						if (scene.res.drawCalls.vals[i].entId == ent->id) {
-							scene.res.drawCalls.vals[i].matId = newMatId;
+					if (isValidMesh) {
+						for (int i = 0; i < scene.res.drawCalls.currentCount; i++) {
+							if (scene.res.drawCalls.vals[i].entId == ent->id) {
+								scene.res.drawCalls.vals[i].matId = newMatId;
+							}
 						}
 					}
 				}
 			}
-		}
 
-		for (int i = 0; i < CCT_Count; i++) {
-			Component* compArray = getComponentArrayFuncs[i]();
-			int compCount = getComponentCountFuncs[i]();
-
-			Component* compCursor = compArray;
-			MetaStruct* ms = componentMetaData[i];
-			for (int j = 0; j < compCount; j++) {
-
-				if ((int)compCursor->entity == selectedEntity) {
-					bool toRemove = false;
-					y = EditComponentGui(compCursor, ms, x, y, &toRemove);
-
-					if (toRemove) {
-						removeComponentFuncs[i](compCursor->id);
-						j--;
-						compCursor = (Component*)(((char*)compCursor) - ms->size);
-					}
-				}
-
-				compCursor = (Component*)(((char*)compCursor) + ms->size);
-			}
-		}
-
-		// Just to give us some breathing room
-		y -= 10;
-
-		if (gui.TextButton("Add Component", 0, 12, x, y, (rightBarWidth - 10), 26)) {
-			pickerType = APT_ComponentType;
-		}
-
-		y -= 30;
-
-		switch (pickerType) {
-		case APT_ComponentType: {
-			const char* compNames[CCT_Count] = {};
 			for (int i = 0; i < CCT_Count; i++) {
-				compNames[i] = componentMetaData[i]->name;
+				Component* compArray = getComponentArrayFuncs[i]();
+				int compCount = getComponentCountFuncs[i]();
+
+				Component* compCursor = compArray;
+				MetaStruct* ms = componentMetaData[i];
+				for (int j = 0; j < compCount; j++) {
+
+					if ((int)compCursor->entity == selectedEntity) {
+						bool toRemove = false;
+						y = EditComponentGui(compCursor, ms, x, y, &toRemove);
+
+						if (toRemove) {
+							removeComponentFuncs[i](compCursor->id);
+							j--;
+							compCursor = (Component*)(((char*)compCursor) - ms->size);
+						}
+					}
+
+					compCursor = (Component*)(((char*)compCursor) + ms->size);
+				}
 			}
 
-			int pickedIndex = gui.StringPicker(compNames, CCT_Count, 0, 12, x, y, leftBarWidth - 4, cam.heightPixels - y - 2);
+			// Just to give us some breathing room
+			y -= 10;
 
-			if (pickedIndex > -1) {
-				//Add component.
-				Component* comp = addComponentFuncs[pickedIndex]();
-				comp->entity = selectedEntity;
-
-				pickerType = APT_None;
+			if (gui.TextButton("Add Component", 0, 12, x, y, (rightBarWidth - 10), 26)) {
+				pickerType = APT_ComponentType;
 			}
-		} break;
 
-		case APT_Mesh: {
-			//Vector<String> fileNames;
-			//scene.res.FindFileNamesByExtension("obj", &fileNames);
-		} break;
+			y -= 30;
 
-		case APT_Material: {
+			switch (pickerType) {
+			case APT_ComponentType: {
+				const char* compNames[CCT_Count] = {};
+				for (int i = 0; i < CCT_Count; i++) {
+					compNames[i] = componentMetaData[i]->name;
+				}
 
-		} break;
+				int pickedIndex = gui.StringPicker(compNames, CCT_Count, 0, 12, x, y, leftBarWidth - 4, cam.heightPixels - y - 2);
 
-		case APT_None: {
+				if (pickedIndex > -1) {
+					//Add component.
+					Component* comp = addComponentFuncs[pickedIndex]();
+					comp->entity = selectedEntity;
 
-		} break;
+					pickerType = APT_None;
+				}
+			} break;
+
+			case APT_Mesh: {
+				//Vector<String> fileNames;
+				//scene.res.FindFileNamesByExtension("obj", &fileNames);
+			} break;
+
+			case APT_Material: {
+
+			} break;
+
+			case APT_None: {
+
+			} break;
+			}
+		}
+	}
+	else if (currentView == EV_Prefab){
+		if (selectedPrefab != -1) {
+			Prefab* prefab = GlobalScene->res.prefabs.GetById(selectedPrefab);
+			ASSERT(prefab != nullptr);
+
+			uint32 meshId = prefab->meshId;
+			uint32 matId = prefab->matId;
+
+			String meshName = scene.res.FindFileNameByIdAndExtension("obj", meshId);
+			String matName = scene.res.FindFileNameByIdAndExtension("mat", matId);
+
+			if (meshName.string != nullptr) {
+				float currX = x;
+				currX += gui.DrawTextLabel("Mesh: ", 0, 12, currX, y);
+				String newMeshName = gui.TextInput(meshName, 0, 12, currX, y, cam.widthPixels - currX - 5);
+				y -= 14;
+
+				if (newMeshName.string != meshName.string) {
+					int newMeshId = -1;
+					bool isValidMesh = scene.res.assetIdMap.LookUp(newMeshName, &newMeshId);
+
+					if (isValidMesh) {
+						prefab->meshId = newMeshId;
+					}
+				}
+			}
+
+			if (matName.string != nullptr) {
+				float currX = x;
+				currX += gui.DrawTextLabel("Material: ", 0, 12, currX, y);
+				String newMatName = gui.TextInput(matName, 0, 12, currX, y, cam.widthPixels - currX - 5);
+				y -= 14;
+
+				if (newMatName.string != matName.string) {
+					int newMatId = -1;
+					bool isValidMesh = scene.res.assetIdMap.LookUp(newMatName, &newMatId);
+
+					if (isValidMesh) {
+						prefab->matId = newMatId;
+					}
+				}
+			}
+
+			while (prefab->customComponents.GetLength() > 0) {
+				int id = prefab->customComponents.Read<int>();
+				ASSERT(id >= 0 && id < CCT_Count);
+
+				Component* comp = componentSerializeBuffer[id];
+
+				(componentMemDeserializeFuncs[id])(comp, &prefab->customComponents);
+
+				MetaStruct* ms = componentMetaData[id];
+
+				bool toRemove = false;
+				y = EditComponentGui(comp, ms, x, y, &toRemove);
+
+				if (toRemove) {
+					//removeComponentFuncs[i](compCursor->id);
+					//j--;
+					//compCursor = (Component*)(((char*)compCursor) - ms->size);
+				}
+			}
+
+			prefab->customComponents.readHead = prefab->customComponents.base;
 		}
 	}
 }
@@ -619,6 +770,8 @@ void Editor::StartUp() {
 	selectedEntity = -1;
 	selectedAxis = -1;
 	gizmoType = EG_Position;
+
+	selectedPrefab = -1;
 
 	pickerType = APT_None;
 

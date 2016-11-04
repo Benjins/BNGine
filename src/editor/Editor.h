@@ -29,7 +29,8 @@ enum AssetPickerType {
 	APT_ComponentType,
 	APT_Mesh,
 	APT_Material,
-	APT_Prefab
+	APT_Prefab,
+	APT_EditorView
 };
 
 enum CopyPasteType {
@@ -44,16 +45,26 @@ struct CopyPasteData {
 	};
 };
 
+enum EditorView {
+	EV_None = -1,
+	EV_Scene,
+	EV_Prefab,
+	EV_Count
+};
+
 struct Editor {
 	Scene scene;
 
 	Camera cam;
 	Transform editorCamTrans;
 
+	EditorView currentView;
+
 	int leftBarWidth;
 	int rightBarWidth;
 	int topBarHeight;
 
+	// Scene view -------
 	int selectedEntity;
 	int selectedAxis;
 	SelectionOffset selectionOffset;
@@ -61,12 +72,21 @@ struct Editor {
 
 	float cameraCursorX;
 	float cameraCursorY;
+	// ------------
+
+	// Prefab view ----
+	int selectedPrefab;
+	//------------
 
 	GuiSystem gui;
 
 	AssetPickerType pickerType;
 
 	CopyPasteData copyPasteData;
+
+	Editor() {
+		currentView = EV_Scene;
+	}
 
 	int GetSelectedEntity(int pixelX, int pixelY);
 
@@ -91,6 +111,7 @@ struct Editor {
 	float EditComponentGui(Component* comp, MetaStruct* meta, float x, float y, bool* outRemove);
 
 	void SaveScene();
+	void SavePrefab();
 
 	void DrawCurrentGizmo(const Entity* ent, Material* mat);
 	void DrawSelectGizmo(const Entity* ent, Material* mat);

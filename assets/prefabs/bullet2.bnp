@@ -1,7 +1,7 @@
 <Prefab id='1'>
-	<Transform pos='0.000000,0.000000,0.000000' id='0' scale='0.0400000,0.0400000,0.0400000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+	<Transform pos='0.000000,0.000000,0.000000' id='0' scale='0.040000,0.040000,0.040000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 	<Material src='water.mat'/>
 	<Mesh src='test_2.obj'/>
-	<BoxCollider isTrigger='F' position='0,0,0' size='1,1,1'/>
-	<BulletComponent killTime='4.5' speed='10' currentTime='0'/>
+	<BoxCollider isTrigger='F' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
+	<BulletComponent killTime='4.500000' speed='10.000000'/>
 </Prefab>

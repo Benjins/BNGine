@@ -120,7 +120,6 @@
 	</Entity>
 	<Entity id='19'>
 		<Transform pos='8.896305,-1.333936,2.498240' id='20' scale='0.040000,0.040000,0.040000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<BulletComponent killTime='4.500000' speed='10.000000'/>
 		<BoxCollider isTrigger='F' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='water.mat'/>
 		<Mesh src='test_2.obj'/>
@@ -134,7 +133,6 @@
 	</Entity>
 	<Entity id='21'>
 		<Transform pos='8.495824,-1.333936,2.498240' id='22' scale='0.040000,0.040000,0.040000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<BulletComponent killTime='4.500000' speed='10.000000'/>
 		<BoxCollider isTrigger='F' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='water.mat'/>
 		<Mesh src='test_2.obj'/>

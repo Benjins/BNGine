@@ -432,6 +432,53 @@ void XMLSerializeTransform(XMLElement* elem, const Transform* trans) {
 	elem->attributes.Insert("parent", Itoa(trans->parent));
 }
 
+void ResourceManager::SavePrefabToFile(Prefab* prefab, const char* fileName) {
+	XMLDoc doc;
+	XMLElement* rootElem = doc.AddElement();
+	rootElem->name = STATIC_TO_SUBSTRING("Prefab");
+	rootElem->attributes.Insert("id", Itoa(prefab->id));
+	uint32 rootId = rootElem->id;
+
+	XMLElement* transElem = doc.AddElement();
+	XMLSerializeTransform(transElem, &prefab->transform);
+
+	// It may have re-allocated.  Maybe I didn't think this through...
+	doc.elements.GetById(rootId)->childrenIds.PushBack(transElem->id);
+
+	if (prefab->matId != -1) {
+		if (Material* mat = GlobalScene->res.materials.GetById(prefab->matId)) {
+			XMLElement* matElem = doc.AddElement();
+			matElem->name = STATIC_TO_SUBSTRING("Material");
+			matElem->attributes.Insert("src", FindFileNameByIdAndExtension("mat", mat->id));
+			doc.elements.GetById(rootId)->childrenIds.PushBack(matElem->id);
+		}
+	}
+
+	if (prefab->meshId != -1) {
+		if (Mesh* mesh = GlobalScene->res.meshes.GetById(prefab->meshId)) {
+			XMLElement* meshElem = doc.AddElement();
+			meshElem->name = STATIC_TO_SUBSTRING("Mesh");
+			meshElem->attributes.Insert("src", FindFileNameByIdAndExtension("obj", mesh->id));
+			doc.elements.GetById(rootId)->childrenIds.PushBack(meshElem->id);
+		}
+	}
+
+	while (prefab->customComponents.GetLength() > 0) {
+		int ct = prefab->customComponents.Read<int>();
+
+		Component* buffer = componentSerializeBuffer[ct];
+		componentMemDeserializeFuncs[ct](buffer, &prefab->customComponents);
+		
+		XMLElement* compElem = doc.AddElement();
+		componentXMLSerializeFuncs[ct](buffer, compElem);
+		doc.elements.GetById(rootId)->childrenIds.PushBack(compElem->id);
+	}
+
+	prefab->customComponents.readHead = prefab->customComponents.base;
+
+	SaveXMLDocToFile(&doc, fileName);
+}
+
 void ResourceManager::SaveLevelToFile(const Level* lvl, const char* fileName) {
 	XMLDoc doc;
 	XMLElement* rootElem = doc.AddElement();

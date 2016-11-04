@@ -262,3 +262,19 @@ void Scene::Render() {
 
 	glDisable(GL_BLEND);
 }
+
+// This is unfortunately needed, until we exclude editor headers from metagen for non-editor builds,
+// Or autogen stubs if we mark things as editor only, or something.
+// TODO: Yeah, that.
+#if !defined(BNS_EDITOR)
+
+struct Editor;
+
+void EditorShiftButton(Editor* ed, uint32 buttonId) {
+}
+
+void EditorResetButton(Editor* ed, uint32 buttonId) {
+}
+
+#endif
+

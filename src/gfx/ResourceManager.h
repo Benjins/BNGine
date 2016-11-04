@@ -51,6 +51,7 @@ struct ResourceManager {
 	void LoadPrefabFromChunk(MemStream& stream, Prefab* outPrefab);
 
 	void SaveLevelToFile(const Level* lvl, const char* fileName);
+	void SavePrefabToFile(Prefab* prefab, const char* fileName);
 
 	String FindFileNameByIdAndExtension(const char* ext, uint32 id);
 	void FindFileNamesByExtension(const char* ext, Vector<String>* outFiles);
