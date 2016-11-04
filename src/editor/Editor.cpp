@@ -83,32 +83,50 @@ void Editor::Update() {
 		editorCamTrans.rotation = Quaternion(Y_AXIS, cameraCursorX / 80) * Quaternion(X_AXIS, cameraCursorY / 80);
 	}
 
-	if (scene.input.MouseButtonIsReleased(MouseButton::PRIMARY)) {
-		if (scene.input.cursorX > leftBarWidth && scene.input.cursorX < cam.widthPixels - rightBarWidth
-			&& scene.input.cursorY > topBarHeight) {
+	if (currentView == EV_Scene) {
+		if (scene.input.MouseButtonIsReleased(MouseButton::PRIMARY)) {
+			if (scene.input.cursorX > leftBarWidth && scene.input.cursorX < cam.widthPixels - rightBarWidth
+				&& scene.input.cursorY > topBarHeight) {
 
-			selectedEntity = GetSelectedEntity((int)scene.input.cursorX, (int)scene.input.cursorY);
-			selectedAxis = -1;
+				selectedEntity = GetSelectedEntity((int)scene.input.cursorX, (int)scene.input.cursorY);
+				selectedAxis = -1;
+			}
 		}
-	}
-	else if (scene.input.MouseButtonIsPressed(MouseButton::PRIMARY)) {
-		if (scene.input.cursorX > leftBarWidth && scene.input.cursorX < cam.widthPixels - rightBarWidth
-			&& scene.input.cursorY > topBarHeight && selectedEntity != -1) {
+		else if (scene.input.MouseButtonIsPressed(MouseButton::PRIMARY)) {
+			if (scene.input.cursorX > leftBarWidth && scene.input.cursorX < cam.widthPixels - rightBarWidth
+				&& scene.input.cursorY > topBarHeight && selectedEntity != -1) {
 
-			if (selectedEntity == GetSelectedEntity((int)scene.input.cursorX, (int)scene.input.cursorY)) {
-				HandleGizmoClick();
+				if (selectedEntity == GetSelectedEntity((int)scene.input.cursorX, (int)scene.input.cursorY)) {
+					HandleGizmoClick();
+				}
+			}
+		}
+		else if (scene.input.MouseButtonIsDown(MouseButton::PRIMARY)) {
+			if (scene.input.cursorX > leftBarWidth && scene.input.cursorX < cam.widthPixels - rightBarWidth
+				&& scene.input.cursorY > topBarHeight) {
+				if (selectedEntity != -1) {
+					Entity* selected = scene.entities.GetById(selectedEntity);
+
+					HandleGizmoDrag(selected);
+				}
 			}
 		}
 	}
-	else if (scene.input.MouseButtonIsDown(MouseButton::PRIMARY)) {
-		if (scene.input.cursorX > leftBarWidth && scene.input.cursorX < cam.widthPixels - rightBarWidth
-			&& scene.input.cursorY > topBarHeight) {
-			if (selectedEntity != -1) {
-				Entity* selected = scene.entities.GetById(selectedEntity);
+}
 
-				HandleGizmoDrag(selected);
-			}
-		}
+void Editor::SwitchView(EditorView newView) {
+	if (currentView != newView) {
+
+		// Guess we don't actually need to do anything here yet?
+
+		//if (newView == EV_Scene) {
+		//	scene.LoadLevel("Level1.lvl");
+		//}
+		//else if (newView == EV_Prefab) {
+		//	
+		//}
+
+		currentView = newView;
 	}
 }
 
@@ -247,6 +265,78 @@ void Editor::HandleGizmoDrag(Entity* selected) {
 	}
 }
 
+void Editor::RenderPrefab() {
+	glViewport((int)cam.xOffset, (int)cam.yOffset, (int)cam.widthPixels, (int)cam.heightPixels);
+	glScissor((int)cam.xOffset, (int)cam.yOffset, (int)cam.widthPixels, (int)cam.heightPixels);
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	if (selectedPrefab == -1) {
+		return;
+	}
+
+	Prefab* pf = scene.res.prefabs.GetById(selectedPrefab);
+	ASSERT(pf != nullptr);
+
+	Mat4x4 camera = scene.cam.GetCameraMatrix();
+	Mat4x4 persp  = scene.cam.GetPerspectiveMatrix();
+
+	Material* mat = scene.res.materials.GetById(pf->matId);
+	Program* prog = scene.res.programs.GetById(mat->programId);
+	glUseProgram(prog->programObj);
+
+	Mesh* mesh = GlobalScene->res.meshes.GetById(pf->meshId);
+
+	Transform* trans = &pf->transform;
+
+	mat->SetMatrix4Uniform("_objMatrix", trans->GetLocalToGlobalMatrix());
+	mat->SetMatrix4Uniform("_camMatrix", camera);
+	mat->SetMatrix4Uniform("_perspMatrix", persp);
+	
+	// TODO: better lighting engine
+	//mat->SetVector3Uniform("_lightAngle", lightVec);
+
+	for (int i = 0; i < mat->texCount; i++) {
+		Texture* tex = GlobalScene->res.textures.GetById(mat->texIds[i]);
+		tex->Bind(GL_TEXTURE0 + i);
+	}
+
+	mat->UpdateUniforms();
+
+	GLint posAttribLoc = glGetAttribLocation(prog->programObj, "pos");
+	glEnableVertexAttribArray(posAttribLoc);
+	glBindBuffer(GL_ARRAY_BUFFER, mesh->posVbo);
+	glVertexAttribPointer(posAttribLoc, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	GLint uvAttribLoc = glGetAttribLocation(prog->programObj, "uv");
+	if (uvAttribLoc >= 0) {
+		glEnableVertexAttribArray(uvAttribLoc);
+		glBindBuffer(GL_ARRAY_BUFFER, mesh->uvVbo);
+		glVertexAttribPointer(uvAttribLoc, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	}
+
+	GLint normAttribLoc = glGetAttribLocation(prog->programObj, "normal");
+	if (normAttribLoc >= 0) {
+		glEnableVertexAttribArray(normAttribLoc);
+		glBindBuffer(GL_ARRAY_BUFFER, mesh->normalVbo);
+		glVertexAttribPointer(normAttribLoc, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	}
+
+	glDrawArrays(GL_TRIANGLES, 0, mesh->faces.count * 3);
+
+	glDisableVertexAttribArray(posAttribLoc);
+
+	if (uvAttribLoc >= 0) {
+		glDisableVertexAttribArray(uvAttribLoc);
+	}
+
+	if (normAttribLoc >= 0) {
+		glDisableVertexAttribArray(normAttribLoc);
+	}
+
+
+}
+
 void Editor::Render() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	Transform* sceneCamTrans = scene.transforms.GetById(scene.cam.transform);
@@ -265,6 +355,7 @@ void Editor::Render() {
 	}
 	else if (currentView == EV_Prefab) {
 		// Uhhhh...
+		RenderPrefab();
 	}
 
 	Mat4x4 camera = scene.cam.GetCameraMatrix();
@@ -345,7 +436,7 @@ void Editor::TopPanelGui() {
 		int pickedIndex = gui.StringPicker(viewNames, EV_Count, 0, 12, x, y - 100, 80, EV_Count * 14 + 10);
 
 		if (pickedIndex > -1) {
-			currentView = (EditorView)pickedIndex;
+			SwitchView((EditorView)pickedIndex);
 
 			pickerType = APT_None;
 		}
@@ -354,6 +445,25 @@ void Editor::TopPanelGui() {
 	x += 100;
 
 	if (currentView == EV_Scene) {
+
+		if (gui.TextButton("Open Level", 0, 12, x, y, 90, 30)) {
+			pickerType = APT_Level;
+		}
+
+		if (pickerType == APT_Level) {
+
+			Vector<String> levelNames;
+			scene.res.FindFileNamesByExtension("lvl", &levelNames);
+			int pickedIndex = gui.StringPicker((const char**)levelNames.data, levelNames.count, 0, 12, x, y - 100, 80, levelNames.count * 16);
+
+			if (pickedIndex >= 0) {
+				scene.LoadLevel(levelNames.data[pickedIndex].string);
+				pickerType = APT_None;
+			}
+		}
+
+		x += 100;
+
 
 		if (gui.TextButton("Add Entity", 0, 12, x, y, 90, 30)) {
 			int floorMesh, floorMat;

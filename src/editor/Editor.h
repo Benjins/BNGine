@@ -30,7 +30,8 @@ enum AssetPickerType {
 	APT_Mesh,
 	APT_Material,
 	APT_Prefab,
-	APT_EditorView
+	APT_EditorView,
+	APT_Level
 };
 
 enum CopyPasteType {
@@ -88,6 +89,8 @@ struct Editor {
 		currentView = EV_Scene;
 	}
 
+	void SwitchView(EditorView newView);
+
 	int GetSelectedEntity(int pixelX, int pixelY);
 
 	Vector3 ScreenSpaceCoordsToRay(float pixelX, float pixelY);
@@ -98,6 +101,8 @@ struct Editor {
 	void Update();
 	void Render();
 	void StartUp();
+
+	void RenderPrefab();
 
 	void TopPanelGui();
 	void SidePanelGui();
