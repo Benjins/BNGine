@@ -18,6 +18,7 @@ struct EnemyComponent;
 struct HealthComponent;
 struct WaterVolumeComponent;
 struct LadderComponent;
+struct ScriptInstance;
 
 struct Level : IDBase{
 	Camera cam;
@@ -36,6 +37,7 @@ struct Level : IDBase{
 	Vector<HealthComponent> healthComps;
 	Vector<WaterVolumeComponent> waterComps;
 	Vector<LadderComponent> ladderComps;
+	Vector<ScriptInstance> scriptInsts;
 };
 
 #endif

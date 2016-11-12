@@ -20,7 +20,8 @@ void ParseFunctionHeadersFromFile(const char* fileName, Vector<ParseMetaFuncDef>
 		ParseMetaFuncDef def;
 		int end = ParseFuncHeader(lexedFile, i, &def);
 
-		if (end > i && end < lexedFile.count - 1 && lexedFile.data[end + 1] == ";") {
+		if (end > i && end < lexedFile.count - 1 
+			&& (lexedFile.data[end + 1] == "{" || lexedFile.data[end + 1] == ";")) {
 			def.attribs = ParseMetaAttribsBackward(lexedFile, i - 1, fileName);
 			outFuncDefs->PushBack(def);
 			i = end + 1;
@@ -154,6 +155,19 @@ void DumpFunctionHeader(MetaFuncDef* def, FILE* fp) {
 	fprintf(fp, ");");
 }
 
+bool MetaFieldHasAttrib(ParseMetaField* mf, const char* attr, ParseMetaAttribute* outAttrib = nullptr) {
+	for (int i = 0; i < mf->attrs.count; i++) {
+		if (mf->attrs.data[i].name == attr) {
+			if (outAttrib != nullptr) {
+				*outAttrib = mf->attrs.data[i];
+			}
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool FuncDefHasAttrib(ParseMetaFuncDef* def, const char* attr, ParseMetaAttribute* outAttrib = nullptr) {
 	for (int i = 0; i < def->attribs.count; i++) {
 		if (def->attribs.data[i].name == attr) {
@@ -204,6 +218,24 @@ int main(int arc, char** argv) {
 		// HACK: Transform probably is a special case we'll just do manually.
 		if (allParseMetaStructs.data[i].name != "Transform" && allParseMetaStructs.data[i].parentName == "Component") {
 			componentIndices.PushBack(i);
+			
+			for (int j = 0; j < allParseMetaStructs.data[i].fields.count; j++) {
+				ParseMetaField* mf = &allParseMetaStructs.data[i].fields.data[j];
+				ParseMetaAttribute attrib;
+				if (MetaFieldHasAttrib(mf, "SerializeFromId", &attrib)) {
+					mf->flags = (FieldSerializeFlags)((int)mf->flags | FSF_SerializeFromId);
+					mf->serializeFromId = attrib.args.data[0];
+					mf->serializeExt = attrib.args.data[1];
+
+
+					// Strip off quote marks
+					mf->serializeFromId.start++;
+					mf->serializeFromId.length -= 2;
+
+					mf->serializeExt.start++;
+					mf->serializeExt.length -= 2;
+				}
+			}
 		}
 	}
 
@@ -524,8 +556,14 @@ int main(int arc, char** argv) {
 			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount);
 
 			if (fieldType != MT_Unknown && FindMetaAttribByName(mf.attrs, "DoNotSerialize") == nullptr) {
-				fprintf(componentMetaFile, "\tif(elem->attributes.LookUp(\"%.*s\", &temp)){\n", mf.name.length, mf.name.start);
-				fprintf(componentMetaFile, "\t\tcompCast->%.*s = %s(temp.string);\n\t}\n", mf.name.length, mf.name.start, parseFuncs[(int)fieldType]);
+				if (mf.flags & FSF_SerializeFromId) {
+					fprintf(componentMetaFile, "\tif(elem->attributes.LookUp(\"%.*s\", &temp)){\n", mf.serializeFromId.length, mf.serializeFromId.start);
+					fprintf(componentMetaFile, "\t\tGlobalScene->res.assetIdMap.LookUp(temp.string, &compCast->%.*s);\n\t}\n", mf.name.length, mf.name.start);
+				}
+				else {
+					fprintf(componentMetaFile, "\tif(elem->attributes.LookUp(\"%.*s\", &temp)){\n", mf.name.length, mf.name.start);
+					fprintf(componentMetaFile, "\t\tcompCast->%.*s = %s(temp.string);\n\t}\n", mf.name.length, mf.name.start, parseFuncs[(int)fieldType]);
+				}
 			}
 		}
 
@@ -539,7 +577,14 @@ int main(int arc, char** argv) {
 			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount);
 
 			if (fieldType != MT_Unknown && FindMetaAttribByName(mf.attrs, "DoNotSerialize") == nullptr) {
-				fprintf(componentMetaFile, "\telem->attributes.Insert(\"%.*s\", %s(compCast->%.*s));\n", mf.name.length, mf.name.start, encodeFuncs[(int)fieldType], mf.name.length, mf.name.start);
+				if (mf.flags & FSF_SerializeFromId) {
+					fprintf(componentMetaFile, "\tString id_%d = GlobalScene->res.FindFileNameByIdAndExtension(\"%.*s\", compCast->%.*s);\n",
+						j, mf.serializeFromId.length, mf.serializeFromId.start, mf.name.length, mf.name.start);
+					fprintf(componentMetaFile, "\telem->attributes.Insert(\"%.*s\", id_%d);\n", mf.serializeFromId.length, mf.serializeFromId.start, j);
+				}
+				else {
+					fprintf(componentMetaFile, "\telem->attributes.Insert(\"%.*s\", %s(compCast->%.*s));\n", mf.name.length, mf.name.start, encodeFuncs[(int)fieldType], mf.name.length, mf.name.start);
+				}
 			}
 		}
 
@@ -771,6 +816,92 @@ int main(int arc, char** argv) {
 
 	fprintf(actionHeaderFile, "#endif\n");
 	fclose(actionHeaderFile);
+
+	//-------------------------
+	// Script funcs
+
+	FILE* scriptGenHeaderFile = fopen("gen/ScriptGen.h", "wb");
+	FILE* scriptGenSourceFile = fopen("gen/ScriptGen.cpp", "wb");
+	FILE* scriptGenIncludeFile = fopen("assets/scripts/gen/extern.bni", "wb");
+
+	fprintf(scriptGenSourceFile, "#include \"../ext/CppUtils/bnvm.h\"\n");
+	fprintf(scriptGenSourceFile, "#include \"../ext/3dbasics/Vector3.h\"\n\n");
+
+	fprintf(scriptGenHeaderFile, "#ifndef SCRIPTGEN_H\n");
+	fprintf(scriptGenHeaderFile, "#define SCRIPTGEN_H\n\n");
+
+	fprintf(scriptGenHeaderFile, "#pragma once\n\n");
+
+	fprintf(scriptGenHeaderFile, "void RegisterBNGineVM(BNVM* vm);\n\n");
+
+	Vector<ParseMetaFuncDef> scriptFuncs;
+	for (int i = 0; i < allParseMetaFuncs.count; i++) {
+		if (FuncDefHasAttrib(&allParseMetaFuncs.data[i], "ScriptFunc")) {
+			scriptFuncs.PushBack(allParseMetaFuncs.data[i]);
+		}
+	}
+
+	for (int i = 0; i < scriptFuncs.count; i++) {
+		ParseMetaFuncDef def = scriptFuncs.data[i];
+
+		fprintf(scriptGenIncludeFile, "extern %.*s %.*s(", def.retType.typeName.length, def.retType.typeName.start, def.name.length, def.name.start);
+		for (int j = 0; j < def.params.count; j++) {
+			MetaVarDecl param = def.params.data[j];
+			fprintf(scriptGenIncludeFile, "%s%.*s %.*s", (j > 0 ? ", " : ""), 
+				param.type.typeName.length, param.type.typeName.start, param.name.length, param.name.start);
+		}
+		fprintf(scriptGenIncludeFile, ");\n");
+
+
+		fprintf(scriptGenHeaderFile, "void %.*s_Script(TempStack* stk);\n", def.name.length, def.name.start);
+
+		DumpFunctionHeader(&def, scriptGenSourceFile);
+
+		fprintf(scriptGenSourceFile, "\nvoid %.*s_Script(TempStack* stk){\n", def.name.length, def.name.start);
+		for (int j = 0; j < def.params.count; j++) {
+			MetaVarDecl decl = def.params.data[j];
+			decl.type.isConst = false;
+			decl.type.isReference = false;
+
+			fprintf(scriptGenSourceFile, "\t%.*s %.*s = stk->Pop<%.*s>();\n",
+				decl.type.typeName.length, decl.type.typeName.start,
+				decl.name.length, decl.name.start,
+				decl.type.typeName.length, decl.type.typeName.start);
+		}
+
+		fprintf(scriptGenSourceFile, "\t");
+		if (def.retType.typeName != "void") {
+			fprintf(scriptGenSourceFile, "%.*s _ret = ", def.retType.typeName.length, def.retType.typeName.start);
+		}
+
+		fprintf(scriptGenSourceFile, "%.*s(", def.name.length, def.name.start);
+		for (int j = 0; j < def.params.count; j++) {
+			SubString paramName = def.params.data[j].name;
+			fprintf(scriptGenSourceFile, "%s%.*s", (j > 0 ? ", " : ""), paramName.length, paramName.start);
+		}
+		fprintf(scriptGenSourceFile, ");\n");
+
+		if (def.retType.typeName != "void") {
+			fprintf(scriptGenSourceFile, "\tstk->Push<%.*s>(_ret);\n", def.retType.typeName.length, def.retType.typeName.start);
+		}
+
+		fprintf(scriptGenSourceFile, "}\n\n");
+	}
+
+	fprintf(scriptGenHeaderFile, "#endif\n");
+
+	fprintf(scriptGenSourceFile, "\nvoid RegisterBNGineVM(BNVM* vm){\n");
+	for (int i = 0; i < scriptFuncs.count; i++) {
+		ParseMetaFuncDef def = scriptFuncs.data[i];
+		fprintf(scriptGenSourceFile, "\tvm->RegisterExternFunc(\"%.*s\", %.*s_Script);\n", def.name.length, def.name.start, def.name.length, def.name.start);
+	}
+	fprintf(scriptGenSourceFile, "}\n\n");
+
+	fclose(scriptGenIncludeFile);
+	fclose(scriptGenSourceFile);
+	fclose(scriptGenHeaderFile);
+
+	//-------------------------
 
 	return 0;
 }

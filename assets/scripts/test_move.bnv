@@ -1,0 +1,33 @@
+#include "bngine.bni"
+
+extern void SetLocalPosition(int entId, Vector3 pos);
+
+float currTime;
+
+float speedFactor;
+
+void start(){
+	currTime = 0;
+	speedFactor = 2;
+}
+
+void update(){
+	Vector3 currPos = GetLocalPosition(entity);
+	float deltaTime = GetDeltaTime();
+	
+	currTime = currTime + deltaTime;
+	
+	if (currTime < 1){
+		currPos.y = currPos.y + deltaTime;
+	}
+	
+	if (currTime > 1){
+		currPos.y = currPos.y - deltaTime;
+	}
+	
+	if (currTime > 2){
+		currTime = 0;
+	}
+	
+	SetLocalPosition(entity, currPos);
+}

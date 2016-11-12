@@ -87,7 +87,7 @@ void Scene::StartUp() {
 	res.LoadAssetFile("assets.bna");
 
 	gui.Init();
-	
+
 	LoadLevel("Level1.lvl");
 
 	frameTimer.Reset();
@@ -99,6 +99,8 @@ void Scene::ShutDown(){
 
 void Scene::Update() {
 	phys.AdvanceTime(GetDeltaTime());
+
+	script.Update();
 
 	UpdateCustomComponents();
 
@@ -151,6 +153,9 @@ void Scene::LoadLevel(const char* name) {
 	LoadVectorToIDTracker(level->transforms, transforms);
 
 	LoadCustomComponentsFromLevel(level);
+
+	// TODO: Less hacky way of this
+	script.Start();
 }
 
 void Scene::SaveLevel(Level* level) {

@@ -1,7 +1,11 @@
 #include "AssetFile.h"
 
+#include "../core/Scene.h"
+
 #include "../gfx/Material.h"
 #include "../gfx/BitmapFont.h"
+
+#include "../script/ScriptObject.h"
 
 #include "../util/Serialization.h"
 #include "../metagen/ComponentMeta.h"
@@ -32,7 +36,7 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 	int version = ASSET_FILE_VERSION;
 	fwrite(&version, 1, 4, assetFile);
 
-	StringMap<int> assetFileIds;
+	StringMap<int>& assetFileIds = GlobalScene->res.assetIdMap;
 	
 	Vector<File*> meshFiles;
 	assetDir.FindFilesWithExt("obj", &meshFiles);
@@ -63,6 +67,9 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 
 	Vector<File*> prefabFiles;
 	assetDir.FindFilesWithExt("bnp", &prefabFiles);
+
+	Vector<File*> scriptFiles;
+	assetDir.FindFilesWithExt("bnv", &scriptFiles);
 
 	for (int i = 0; i < meshFiles.count; i++) {
 		assetFileIds.Insert(meshFiles.data[i]->fileName, i);
@@ -98,6 +105,10 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 
 	for (int i = 0; i < prefabFiles.count; i++) {
 		assetFileIds.Insert(prefabFiles.data[i]->fileName, i);
+	}
+
+	for (int i = 0; i < scriptFiles.count; i++) {
+		assetFileIds.Insert(scriptFiles.data[i]->fileName, i);
 	}
 
 	WriteAssetNameIdMap(assetFileIds, assetFile);
@@ -138,10 +149,16 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 		WritePrefabChunk(prefabFiles.data[i]->fullName, assetFileIds, i, assetFile);
 	}
 
+	for (int i = 0; i < scriptFiles.count; i++) {
+		WriteScriptChunk(scriptFiles.data[i]->fullName, assetFileIds, i, assetFile);
+	}
+
 	int bnsaNegated = ~*(int*)fileId;
 	fwrite(&bnsaNegated, 1, 4, assetFile);
 
 	fclose(assetFile);
+
+	assetFileIds.Clear();
 
 	assetDir.Unload();
 }
@@ -750,6 +767,26 @@ void WritePrefabChunk(const char* prefabFileName, const StringMap<int>& assetIds
 	fwrite(&id, 1, 4, assetFileHandle);
 
 	WriteEntitySubChunk(rootElem, assetIds, assetFileHandle);
+
+	int chunkIdFlipped = ~*(int*)chunkId;
+	fwrite(&chunkIdFlipped, 1, 4, assetFileHandle);
+}
+
+void WriteScriptChunk(const char* scriptFileName, const StringMap<int>& assetIds, int id, FILE* assetFileHandle) {
+	BNVParser parser;
+	parser.ParseFile(scriptFileName);
+
+	BNVM vm;
+	parser.AddByteCode(vm);
+
+	MemStream stream;
+	vm.WriteByteCodeToMemStream(&stream);
+
+	char chunkId[] = "BNVM";
+	fwrite(chunkId, 1, 4, assetFileHandle);
+	fwrite(&id, 1, 4, assetFileHandle);
+
+	fwrite(stream.readHead, 1, stream.GetLength(), assetFileHandle);
 
 	int chunkIdFlipped = ~*(int*)chunkId;
 	fwrite(&chunkIdFlipped, 1, 4, assetFileHandle);

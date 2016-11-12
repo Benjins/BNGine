@@ -23,6 +23,8 @@
 
 #include "../gui/GuiSystem.h"
 
+#include "../script/ScriptSystem.h"
+
 #include "../../gen/Actions.h"
 
 struct DrawCall;
@@ -39,6 +41,8 @@ struct Scene {
 	GameplayComponents gameplay;
 
 	PhysicsSystem phys;
+
+	ScriptSystem script;
 	
 	GuiSystem gui;
 

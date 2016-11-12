@@ -1,0 +1,1 @@
+This folder contains generated scripts.  Things like extern declarations for glue functions, etc.

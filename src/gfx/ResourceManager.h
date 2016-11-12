@@ -16,6 +16,8 @@
 #include "UniFont.h"
 #include "Prefab.h"
 
+#include "../script/ScriptObject.h"
+
 struct MemStream;
 struct Transform;
 
@@ -30,6 +32,7 @@ struct ResourceManager {
 	IDTracker<BitmapFont> fonts;
 	IDTracker<UniFont> uniFonts;
 	IDTracker<Prefab> prefabs;
+	IDTracker<ScriptObject> scripts;
 
 	StringMap<int> assetIdMap;
 
@@ -49,6 +52,7 @@ struct ResourceManager {
 	void LoadBitmapFontFromChunk(MemStream& stream, BitmapFont* outFont);
 	void LoadUniFontFromChunk(MemStream& stream, UniFont* outFont);
 	void LoadPrefabFromChunk(MemStream& stream, Prefab* outPrefab);
+	void LoadScriptObjectFromChunk(MemStream& stream, ScriptObject* outScript);
 
 	void SaveLevelToFile(const Level* lvl, const char* fileName);
 	void SavePrefabToFile(Prefab* prefab, const char* fileName);

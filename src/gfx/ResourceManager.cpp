@@ -16,6 +16,8 @@
 
 #include "../../ext/3dbasics/Vector4.h"
 
+#include "../../gen/ScriptGen.h"
+
 ResourceManager::ResourceManager() 
 	: shaders(30), programs(20), materials(15), meshes(30), textures(20), drawCalls(40), levels(10){
 
@@ -118,6 +120,10 @@ void ResourceManager::LoadAssetFile(const char* fileName) {
 		else if (memcmp(chunkId, "BNPF", 4) == 0) {
 			Prefab* prefab = prefabs.AddWithId(assetId);
 			LoadPrefabFromChunk(fileBufferStream, prefab);
+		}
+		else if (memcmp(chunkId, "BNVM", 4) == 0) {
+			ScriptObject* script = scripts.AddWithId(assetId);
+			LoadScriptObjectFromChunk(fileBufferStream, script);
 		}
 		else {
 			ASSERT_WARN("Unkown chunk id: '%.*s'", 4, chunkId);
@@ -389,6 +395,11 @@ void ResourceManager::LoadUniFontFromChunk(MemStream& stream, UniFont* outFont) 
 	tex->externalColourFormat = GL_RED;
 
 	outFont->textureId = tex->id;
+}
+
+void ResourceManager::LoadScriptObjectFromChunk(MemStream& stream, ScriptObject* outScript) {
+	outScript->vm.ReadByteCodeFromMemStream(&stream);
+	RegisterBNGineVM(&outScript->vm);
 }
 
 void ResourceManager::LoadPrefabFromChunk(MemStream& stream, Prefab* outPrefab) {

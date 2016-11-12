@@ -74,6 +74,7 @@ void WriteLevelChunk(const char* levelFileName, const StringMap<int>& assetIds, 
 void WriteBitmapFontChunk(const char* fontFileName, const Vector<File*>& ttfFiles, int id, FILE* assetFileHandle);
 void WriteUniFontChunk(const char* fontFileName, const Vector<File*>& ttfFiles, int id, FILE* assetFileHandle);
 void WritePrefabChunk(const char* prefabFileName, const StringMap<int>& assetIds, int id, FILE* assetFileHandle);
+void WriteScriptChunk(const char* scriptFileName, const StringMap<int>& assetIds, int id, FILE* assetFileHandle);
 
 void WriteAssetNameIdMap(const StringMap<int>& map, FILE* assetFileHandle);
 

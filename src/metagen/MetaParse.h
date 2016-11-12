@@ -9,6 +9,11 @@
 
 #define NOT_AN_ARRAY -1
 
+enum FieldSerializeFlags {
+	FSF_None = 0,
+	FSF_SerializeFromId = (1 << 0)
+};
+
 struct ParseMetaAttribute {
 	SubString name;
 	Vector<SubString> args;
@@ -22,9 +27,14 @@ struct ParseMetaField {
 	int arrayCount;
 	Vector<ParseMetaAttribute> attrs;
 
+	SubString serializeFromId;
+	SubString serializeExt;
+	FieldSerializeFlags flags;
+
 	ParseMetaField() {
 		indirectionLevel = 0;
 		arrayCount = NOT_AN_ARRAY;
+		flags = FSF_None;
 	}
 };
 
