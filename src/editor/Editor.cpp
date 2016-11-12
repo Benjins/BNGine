@@ -788,6 +788,7 @@ void Editor::SidePanelGui() {
 				y = EditComponentGui(comp, ms, x, y, &toRemove);
 
 				if (toRemove) {
+					// TODO: Remove component from stream
 					//removeComponentFuncs[i](compCursor->id);
 					//j--;
 					//compCursor = (Component*)(((char*)compCursor) - ms->size);
