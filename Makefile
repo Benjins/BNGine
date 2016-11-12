@@ -5,12 +5,15 @@ SOURCES += $(shell find ext -name '*.cpp')
 
 OS_MESA ?= 0
 
+EDITOR ?= 0
+
 #uh....
 SOURCES := $(filter-out src/app/win_main.cpp,$(SOURCES))
 SOURCES := $(filter-out src/app/win_editor.cpp,$(SOURCES))
 SOURCES := $(filter-out src/app/x11_main.cpp,$(SOURCES))
 SOURCES := $(filter-out src/app/osmesa_main.cpp,$(SOURCES))
 SOURCES := $(filter-out src/app/metagen_main.cpp,$(SOURCES))
+SOURCES := $(filter-out src/editor/Editor.cpp,$(SOURCES))
 SOURCES := $(filter-out src/unity/UnityBuildGenerator.cpp,$(SOURCES))
 
 ifeq ($(OS_MESA),1)
@@ -23,6 +26,10 @@ LIBFLAGS =-lX11 -lGL
 
 ifeq ($(OS_MESA),1)
     LIBFLAGS = -lOSMesa
+endif
+
+ifeq ($(EDITOR),1)
+    SOURCES += src/editor/Editor.cpp
 endif
 
 OBJ_SUFF := .o

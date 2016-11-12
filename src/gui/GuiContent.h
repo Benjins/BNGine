@@ -21,23 +21,23 @@ enum GuiContentType {
 struct GuiContent {
 	GuiContentType type;
 
-	union {
-		struct {
-			union {
-				struct {
-					String asciiStr;
-					uint32 bmpFontId;
-				};
-				struct {
-					U32String unicodeStr;
-					uint32 uniFontId;
-				};
-			};
-			float textScale;
-		};
-		Vector4 color;
-		uint32 texId;
-	};
+
+	//------------------
+	// TODO: Ideally, we'd put these in a union.
+	// But it seems C++ is wary of unions containing non-POD data, so for now we don't.
+
+	U32String unicodeStr;
+	uint32 uniFontId;
+
+	String asciiStr;
+	uint32 bmpFontId;
+
+	float textScale;
+
+	Vector4 color;
+	uint32 texId;
+
+	//-----------------
 
 	GuiContent() {
 		type = GCT_None;

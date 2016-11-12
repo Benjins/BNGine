@@ -1,5 +1,6 @@
 #include "GuiRect.h"
 
+#include "../core/Scene.h"
 
 GuiRect GuiRect::GetFinalRect(){
 	if (parent == -1) {

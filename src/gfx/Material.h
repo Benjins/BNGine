@@ -13,6 +13,7 @@
 
 #define MAX_TEXTURES_PER_MATERIAL 14
 
+struct Vector2;
 struct Vector4;
 
 struct Texture;

@@ -4,6 +4,7 @@
 
 #include "../core/Scene.h"
 
+#include "../../ext/3dbasics/Vector2.h"
 #include "../../ext/3dbasics/Vector4.h"
 
 void Material::UpdateUniforms() {
