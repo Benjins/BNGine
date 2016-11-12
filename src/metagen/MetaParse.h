@@ -9,11 +9,6 @@
 
 #define NOT_AN_ARRAY -1
 
-enum FieldSerializeFlags {
-	FSF_None = 0,
-	FSF_SerializeFromId = (1 << 0)
-};
-
 struct ParseMetaAttribute {
 	SubString name;
 	Vector<SubString> args;

@@ -24,9 +24,16 @@ void LoadVectorToIDTracker(const Vector<T>& from, IDTracker<T>& to) {
 template<typename T>
 void LoadIDTrackerToVector(const IDTracker<T>& from, Vector<T>& to) {
 	to.EnsureCapacity(from.currentCount);
+
+	to.Clear();
+	for (int i = 0; i < from.currentCount; i++) {
+		new (&to.data[i]) T();
+	}
+
 	for (int i = 0; i < from.currentCount; i++) {
 		to.data[i] = from.vals[i];
 	}
+
 	to.count = from.currentCount;
 }
 

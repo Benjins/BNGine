@@ -13,6 +13,8 @@ struct ScriptInstance : Component {
 	/*[SerializeFromId("src", "bnv")]*/
 	int vmId;
 
+	void OnLoad();
+
 	void UpdateScript();
 };
 

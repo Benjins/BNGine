@@ -471,7 +471,8 @@ int main(int arc, char** argv) {
 		fprintf(componentMetaFile, "}\n\n");
 
 		fprintf(componentMetaFile, "Component* %.*s_createAndAdd(){\n", ms->name.length, ms->name.start);
-		fprintf(componentMetaFile, "\tComponent* comp = %s.CreateAndAdd();\n", getComponentPathList.data[i].string);
+		fprintf(componentMetaFile, "\t%.*s* comp = %s.CreateAndAdd();\n", ms->name.length, ms->name.start, getComponentPathList.data[i].string);
+		fprintf(componentMetaFile, "\tcomp->type = CCT_%.*s;\n", ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "\tcomp->type = CCT_%.*s;\n", ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "\treturn comp;\n");
 		fprintf(componentMetaFile, "}\n\n");
@@ -510,11 +511,13 @@ int main(int arc, char** argv) {
 			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount);
 			if (fieldType != MT_Unknown) {
 				usedFieldCount++;
-				fprintf(componentMetaFile, "\t{\"%.*s\", (int)(size_t)(&((%.*s*)0)->%.*s), (MetaType)%d},\n",
+				fprintf(componentMetaFile, "\t{\"%.*s\", (int)(size_t)(&((%.*s*)0)->%.*s), (MetaType)%d, \"%.*s\", (FieldSerializeFlags)%d},\n",
 					mf.name.length, mf.name.start,
 					ms->name.length, ms->name.start,
 					mf.name.length, mf.name.start, 
-					(int)fieldType);
+					(int)fieldType,
+					mf.serializeExt.length, mf.serializeExt.start,
+					mf.flags);
 			}
 		}
 		fprintf(componentMetaFile, "};\n\n");
@@ -579,7 +582,7 @@ int main(int arc, char** argv) {
 			if (fieldType != MT_Unknown && FindMetaAttribByName(mf.attrs, "DoNotSerialize") == nullptr) {
 				if (mf.flags & FSF_SerializeFromId) {
 					fprintf(componentMetaFile, "\tString id_%d = GlobalScene->res.FindFileNameByIdAndExtension(\"%.*s\", compCast->%.*s);\n",
-						j, mf.serializeFromId.length, mf.serializeFromId.start, mf.name.length, mf.name.start);
+						j, mf.serializeExt.length, mf.serializeExt.start, mf.name.length, mf.name.start);
 					fprintf(componentMetaFile, "\telem->attributes.Insert(\"%.*s\", id_%d);\n", mf.serializeFromId.length, mf.serializeFromId.start, j);
 				}
 				else {

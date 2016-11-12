@@ -5,6 +5,11 @@
 
 #include "MetaType.h"
 
+enum FieldSerializeFlags {
+	FSF_None = 0,
+	FSF_SerializeFromId = (1 << 0)
+};
+
 struct MetaAttribute {
 	const char* name;
 	const char** args;
@@ -15,6 +20,9 @@ struct MetaField {
 	const char* name;
 	int offset;
 	MetaType type;
+
+	char* serializeExt;
+	FieldSerializeFlags flags;
 };
 
 struct MetaEnumEntry {

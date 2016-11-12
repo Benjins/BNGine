@@ -825,7 +825,19 @@ float Editor::EditComponentGui(Component* comp, MetaStruct* meta, float x, float
 
 		float width = cam.widthPixels - x - 5;
 
-		if (mf->type == MT_Int) {
+		if (((int)mf->flags) & FSF_SerializeFromId) {
+			int* fieldVal = (int*)fieldPtr;
+
+			String fileName = scene.res.FindFileNameByIdAndExtension(mf->serializeExt, *fieldVal);
+
+			fileName = gui.TextInput(fileName, 0, 12, x, currY, width);
+
+			int newVal;
+			if (scene.res.assetIdMap.LookUp(fileName, &newVal)) {
+				*fieldVal = newVal;
+			}
+		}
+		else if (mf->type == MT_Int) {
 			int* fieldVal = (int*)fieldPtr;
 			*fieldVal = IntField(*fieldVal, x, currY, width);
 		}

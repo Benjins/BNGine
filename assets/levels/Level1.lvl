@@ -125,15 +125,16 @@
 		<Mesh src='test_2.obj'/>
 	</Entity>
 	<Entity id='20'>
-		<Transform pos='8.768596,-1.564978,2.498240' id='21' scale='0.10000,0.10000,0.10000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<ScriptInstance src='test_move.bnv'/>
+		<Transform pos='8.768596,-1.564978,2.498240' id='21' scale='0.100000,0.100000,0.100000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 		<BoxCollider isTrigger='F' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
+		<ScriptInstance src='test_move.bnv'/>
 		<Material src='water.mat'/>
 		<Mesh src='test_2.obj'/>
 	</Entity>
 	<Entity id='21'>
 		<Transform pos='8.495824,-1.333936,2.498240' id='22' scale='0.040000,0.040000,0.040000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 		<BoxCollider isTrigger='F' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
+		<ScriptInstance src='test_move.bnv'/>
 		<Material src='water.mat'/>
 		<Mesh src='test_2.obj'/>
 	</Entity>
