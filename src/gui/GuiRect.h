@@ -6,8 +6,6 @@
 #include "../../ext/CppUtils/idbase.h"
 #include "../../ext/3dbasics/Vector2.h"
 
-#include "../core/Scene.h"
-
 struct GuiRect : IDBase {
 	union {
 		struct{
