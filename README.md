@@ -20,19 +20,29 @@ TODO:
    - [X] Object selection
    - [X] Component editing 
    - [X] Saving/loading
+   - [ ] better pan/orbit control
+   - [ ] separate editors for different things:
+    + [X] prefab editor
+	+ [ ] material editor
+	+ [ ] particle editor
  * Physics
-   - [ ] Rigidbody simulations
-   - [ ] Collision detection
+   - [ ] basic Rigidbody simulation
    - [ ] Sphere-sphere collisions
    - [ ] Sphere-box collisons
    - [ ] Mesh colliders/GJK/Minkowski stuff?
  * Gui
-   - [ ] Not just immediate based anymore
-   - [ ] Have buttons, views, labels, icons, slice-9 stuff, etc?
+   - [X] Have non-imm buttons
+   - [ ] sliders (either imm or not, I just want some)
+   - [ ] non-imm checkboxes
+   - [ ] non-imm labels
+   - [ ] non-imm string picker lists
+   - [ ] non-imm frames/rects
+   - [ ] non-imm scrollable rects
  * Graphics
    - [ ] better shading model, specular, etc.
    - [ ] cube maps, sky boxes, static reflections
    - [ ] armature, animations
+   - [ ] particle systems
  * Networking
    - [ ] basic matchmaking server backend, just for testing
    - [ ] Reliable and streaming packets, ACK's
@@ -47,8 +57,10 @@ TODO:
    - [ ] Hotloading
    - [X] Use metaGen system to generate script files
  * MetaGen
-   - [ ] Parse attributse
+   - [X] Parse attributse
    - [ ] Parse enums
-   - [ ] Parse functions/methods
+   - [X] Parse functions/methods
  * Misc
-   - [ ] Break out application entry point and platform entry point
+   - [X] Break out application entry point and platform entry point
+   - [ ] Make XML unicode aware
+   - [ ] Some kind of ref-counted unicode strings, like String/SubString
