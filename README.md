@@ -2,7 +2,10 @@ BNGine
 ===================
 Or how I learned to stop worrying and love...something.
 
-An engine I'm writing in C++.  Makes use of other repos of mine: [3dbasics](https://github.com/Benjins/3dbasics) and [CppUtils](https://github.com/Benjins/CppUtils).  The CppUtils repo is added as a submodule, so run the following command:
+An engine I'm writing in C++.  Makes use of other repos of mine: [3dbasics](https://github.com/Benjins/3dbasics) and [CppUtils](https://github.com/Benjins/CppUtils).  The CppUtils repo is added as a submodule.
+
+Installing
+--------------
 ```
 git clone --recursive https://github.com/Benjins/CppUtils.git
 ```
@@ -10,6 +13,13 @@ Or run the following after a clone:
 ```
 git submodule update --init --recursive
 ```
+
+Building
+-------------
+*Windows*: Run ```build.bat runtime``` to build the runtime exe, or ```build.bat editor``` to build the editor.
+
+*Linux*: Run ```./build.sh runtime``` to build the runtime exe, or ```./build.sh editor``` to build the editor.
+
 
 TODO:
 
