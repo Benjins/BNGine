@@ -41,11 +41,11 @@ TODO:
    - [ ] Packet design, spawning/destroying entities?
  * Metagen
    - [ ] Collect coroutines into discrimnated union
-   - [ ] Gui button actions, collect into enum and discriminated union
+   - [X] Gui button actions, collect into enum and discriminated union
  * Script integration
    - [ ] yield/wait for seconds command
    - [ ] Hotloading
-   - [ ] Use metaGen system to generate script files
+   - [X] Use metaGen system to generate script files
  * MetaGen
    - [ ] Parse attributse
    - [ ] Parse enums
