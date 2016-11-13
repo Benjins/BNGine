@@ -22,7 +22,7 @@ echo "Ran metaGen parser"
 
 ./unityBuild.out osmesa test
 
-eval "$CXX -std=c++11 -Og -g -Wall -DBNS_DEBUG -DBNS_OS_MESA gen/*.cpp -lOSMesa -o BNgine_test.out"
+eval "$CXX -std=c++11 -O0 -g -Wall -DBNS_DEBUG -DBNS_OS_MESA gen/*.cpp -lOSMesa -o BNgine_test.out"
 
 echo "Built test"
 
