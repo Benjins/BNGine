@@ -1,24 +1,24 @@
 set -e
 
-g++ -std=c++11 src/unity/UnityBuildGenerator.cpp -o unityBuild
+g++ -std=c++11 src/unity/UnityBuildGenerator.cpp -o unityBuild.out
 
 echo "Built unity build generator."
 
-./unityBuild console metagen
+./unityBuild.out console metagen
 
-g++ -Og -g -Wall -DBNS_DEBUG gen/UnityBuild.cpp -o BNSMetaGen
+g++ -std=c++11 -Og -g -Wall -DBNS_DEBUG gen/UnityBuild.cpp -o BNSMetaGen.out
 
 echo "Built metaGen parser."
 
-./BNSMetaGen.exe
+./BNSMetaGen.out
 
 echo "Ran metaGen parser"
 
-unityBuild.exe osmesa test
+./unityBuild.out osmesa test
 
-g++ -Og -g -Wall -DBNS_DEBUG gen/*.cpp -o BNgine_$1
+g++ -std=c++11 -Og -g -Wall -DBNS_DEBUG -DBNS_OS_MESA gen/*.cpp -lOSMesa -o BNgine_test.out
 
-echo "Built $1"
+echo "Built test"
 
-./BNGine.out --compare
-valgrind --suppressions=valgrind-suppressions.txt --num-callers=15 --leak-check=full --error-exitcode=12 ./BNGine.out
+./BNgine_test.out --compare
+valgrind --suppressions=valgrind-suppressions.txt --num-callers=15 --leak-check=full --error-exitcode=12 ./BNgine_test.out

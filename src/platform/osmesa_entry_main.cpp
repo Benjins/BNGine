@@ -10,8 +10,7 @@ int main(int argc, char** argv){
 
 	OSMesaContext ctx = OSMesaCreateContext(OSMESA_RGBA, NULL);
 	
-	int width = 1280, height = 720;
-	unsigned char* imgBuffer = (unsigned char*)malloc(width*height*4);
+	imgBuffer = (unsigned char*)malloc(width*height*4);
 	
 	OSMesaMakeCurrent(ctx, imgBuffer, GL_UNSIGNED_BYTE, width, height);
 	
@@ -19,10 +18,10 @@ int main(int argc, char** argv){
 
 	AppPostInit(argc, argv);
 	
-	success = AppUpdate(argc, argv);
+	bool success = AppUpdate(argc, argv);
 	
 	if (!success){
-		AppShutdown();
+		AppShutdown(argc, argv);
 		OSMesaDestroyContext(ctx);
 
 		free(imgBuffer);
@@ -30,7 +29,7 @@ int main(int argc, char** argv){
 	}
 	
 	
-	AppShutdown();
+	AppShutdown(argc, argv);
 
 	OSMesaDestroyContext(ctx);
 	

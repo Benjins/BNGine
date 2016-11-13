@@ -7,11 +7,13 @@ typedef struct {
 	int* data;
 } BitmapData;
 
+// We actually don't need this definition, because the unity build already provides one.
+/*
 #if defined(_MSC_VER)
 #pragma pack(1)
-typedef struct {
+struct BitMapHeader{
 #else
-typedef struct __attribute((packed))__{
+struct BitMapHeader __attribute((packed))__{
 #endif
 	short fileTag;
 	int fileSize;
@@ -30,10 +32,15 @@ typedef struct __attribute((packed))__{
 	int verticalResolution;
 	int numPaletteColors;
 	int numImportantColors;
-} BitMapHeader;
+};
 #if defined(_MSC_VER)
 #pragma pack()
-#endif
+#endifBitMapHeader
+*/
+
+const int width = 1280;
+const int height = 720;
+unsigned char* imgBuffer = nullptr;
 
 void WriteBMPToFile(BitmapData bmp, const char* fileName) {
 	FILE* bmpFile = fopen(fileName, "wb");
@@ -163,26 +170,26 @@ bool CompareFrameBufferAndWriteFile(BitmapData fb, const char* fileName) {
 }
 
 void AppPostInit(int argc, char** argv) {
-	Scene scn;
+	GlobalScene = new Scene();
 
 	glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 	glViewport(0, 0, 1280, 720);
 	glLoadIdentity();
 
-	scn.StartUp();
+	GlobalScene->StartUp();
 
-	scn.LockFrameRate(0.02f);
+	GlobalScene->LockFrameRate(0.02f);
 
-	scn.input.SetCursorPos(0, 0);
+	GlobalScene->input.SetCursorPos(0, 0);
 }
 
 bool doCompare = false;
 
 bool AppUpdate(int argc, char** argv) {
 	for (int i = 0; i < 5; i++) {
-		scn.Update();
-		scn.Render();
+		GlobalScene->Update();
+		GlobalScene->Render();
 	}
 
 	BitmapData frameData = {};
@@ -196,17 +203,14 @@ bool AppUpdate(int argc, char** argv) {
 	}
 
 	if (!success) {
-		OSMesaDestroyContext(ctx);
-
-		free(imgBuffer);
-		return -1;
+		return false;
 	}
 
-	scn.LoadLevel("Test_Level.lvl");
+	GlobalScene->LoadLevel("Test_Level.lvl");
 
 	for (int i = 0; i < 5; i++) {
-		scn.Update();
-		scn.Render();
+		GlobalScene->Update();
+		GlobalScene->Render();
 	}
 
 	if (doCompare) {
@@ -218,6 +222,7 @@ bool AppUpdate(int argc, char** argv) {
 
 void AppShutdown(int argc, char** argv) {
 	GlobalScene->ShutDown();
+	delete GlobalScene;
 }
 
 void AppMouseMove(int x, int y) {

@@ -1,14 +1,14 @@
-g++ -std=c++11 src/unity/UnityBuildGenerator.cpp -o unityBuild
+g++ -std=c++11 src/unity/UnityBuildGenerator.cpp -o unityBuild.out
 
 echo "Built unity build generator."
 
-./unityBuild console metagen
+./unityBuild.out console metagen
 
-g++ -Og -g -Wall -DBNS_DEBUG gen/UnityBuild.cpp -o BNSMetaGen
+g++ -std=c++11  -Og -g -Wall -DBNS_DEBUG gen/UnityBuild.cpp -o BNSMetaGen.out
 
 echo "Built metaGen parser."
 
-./BNSMetaGen.exe
+./BNSMetaGen.out
 
 echo "Ran metaGen parser"
 

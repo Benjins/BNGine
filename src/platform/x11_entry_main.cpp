@@ -122,7 +122,7 @@ int main(int argc, char** argv) {
 
 	}
 
-	AppShutdown();
+	AppShutdown(argc, argv);
 
 	glXMakeCurrent(dpy, None, NULL);
 	glXDestroyContext(dpy, glc);
