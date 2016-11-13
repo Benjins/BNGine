@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#include "app_funcs.h"
+
 #include "../../ext/CppUtils/filesys.h"
 #include "../../ext/CppUtils/stringmap.h"
 #include "../../ext/CppUtils/Coroutines/coroutines.h"
@@ -181,7 +183,16 @@ bool FuncDefHasAttrib(ParseMetaFuncDef* def, const char* attr, ParseMetaAttribut
 	return false;
 }
 
-int main(int arc, char** argv) {
+void AppPostInit(int argc, char** argv) {}
+bool AppUpdate(int argc, char** argv) { return false; }
+void AppShutdown(int argc, char** argv) {}
+void AppMouseMove(int x, int y){}
+void AppMouseUp(int button) {}
+void AppMouseDown(int button) {}
+void AppKeyUp(unsigned char key) {}
+void AppKeyDown(unsigned char key) {}
+
+void AppPreInit(int argc, char** argv){
 	File srcFiles;
 	srcFiles.Load("src");
 
@@ -905,8 +916,6 @@ int main(int arc, char** argv) {
 	fclose(scriptGenHeaderFile);
 
 	//-------------------------
-
-	return 0;
 }
 
 

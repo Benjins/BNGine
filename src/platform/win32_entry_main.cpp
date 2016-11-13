@@ -1,43 +1,28 @@
-
-#if defined(BNS_DEBUG)
-#include <io.h>
-#include <fcntl.h>
-#endif
-
 #include <Windows.h>
 #include <Windowsx.h>
 #include <gl/GL.h>
 
-#include "../editor/Editor.h"
+#include "../app/app_funcs.h"
+
 #define EXT_EXTERN extern
 #include "../gfx/GLExtInit.h"
 
+#include "../../ext/CppUtils/commandline.h"
+
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-Editor* GlobalEd = nullptr;
+KeyStrokeCode SystemKeyToKeyStrokeCode(int key);
 
 int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmdShow) {
 
-	//Set up a console window for debug.
-	// TODO: Why is this not working?
-#if defined(BNS_DEBUG) && 0
-	AllocConsole();
+	CommandLineParser parser;
+	parser.InitializeFromStringNoCopy(cmdLine);
 
-	HANDLE handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
-	int hCrt = _open_osfhandle((long)handle_out, _O_TEXT);
-	FILE* hf_out = _fdopen(hCrt, "w");
-	setvbuf(hf_out, NULL, _IONBF, 1);
-	*stdout = *hf_out;
+	int argc = parser.argCount;
+	// NOTE: This is a const cast, might want to watch it
+	char** argv = (char**)parser.args;
 
-	HANDLE handle_in = GetStdHandle(STD_INPUT_HANDLE);
-	hCrt = _open_osfhandle((long)handle_in, _O_TEXT);
-	FILE* hf_in = _fdopen(hCrt, "r");
-	setvbuf(hf_in, NULL, _IONBF, 128);
-	*stdin = *hf_in;
-
-	printf("%s", "Hahahahahhah printf\n");
-	fprintf(stdout, "%s", "Hahahahahhah printf\n");
-#endif
+	AppPreInit(argc, argv);
 
 	WNDCLASS windowCls = {};
 	windowCls.hInstance = instance;
@@ -55,7 +40,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 	float winWidth = winRect.right - winRect.left;
 	float winHeight = winRect.bottom - winRect.top;
 
-	HWND window = CreateWindow(windowCls.lpszClassName, "BNgine Editor", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 50, 50, winWidth, winHeight, 0, 0, instance, 0);
+	HWND window = CreateWindow(windowCls.lpszClassName, "BNgine Runtime", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 50, 50, winWidth, winHeight, 0, 0, instance, 0);
 
 	HDC hdc = GetDC(window);
 
@@ -80,15 +65,15 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 
 	InitGlExts();
 
-	Editor ed;
-	GlobalEd = &ed;
+#define WIN_DEBUG_PRINT(format, ...) OutputDebugStringA(StringStackBuffer<256>(format, __VA_ARGS__).buffer)
+	WIN_DEBUG_PRINT("GL version: %s\n", glGetString(GL_VERSION));
+	WIN_DEBUG_PRINT("GL vendor: %s\n", glGetString(GL_VENDOR));
+	WIN_DEBUG_PRINT("GL Renderer: %s\n", glGetString(GL_RENDERER));
+#undef WIN_DEBUG_PRINT
 
-	glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
-	glEnable(GL_DEPTH_TEST);
+	AppPostInit(argc, argv);
 
 	ReleaseDC(window, hdc);
-
-	ed.StartUp();
 
 	bool isRunning = true;
 	while (isRunning) {
@@ -106,23 +91,18 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 
 		HDC hdc = GetDC(window);
 
-		ed.Update();
-
-		ed.Render();
+		isRunning &= AppUpdate(argc, argv);
 
 		SwapBuffers(hdc);
 		ReleaseDC(window, hdc);
 
-		ed.gui.EndFrame();
-		ed.scene.input.EndFrame();
-
-		Sleep(6);
+		Sleep(16);
 	}
+
+	AppShutdown(argc, argv);
 
 	return 0;
 }
-
-KeyStrokeCode SystemKeyToKeyStrokeCode(int key);
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	LRESULT result = 0;
@@ -147,16 +127,6 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		GlobalScene->input.MouseButtonReleased(MouseButton::PRIMARY);
 	}break;
 
-	case WM_RBUTTONDOWN:
-	{
-		GlobalScene->input.MouseButtonPressed(MouseButton::SECONDARY);
-	}break;
-
-	case WM_RBUTTONUP:
-	{
-		GlobalScene->input.MouseButtonReleased(MouseButton::SECONDARY);
-	}break;
-
 	case WM_SYSKEYDOWN:
 	case WM_SYSKEYUP:
 	case WM_KEYDOWN:
@@ -164,6 +134,14 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		int code = wParam;
 		bool wasDown = (lParam & (1 << 30)) != 0;
 		bool  isDown = (lParam & (1 << 31)) == 0;
+
+#if 0
+		if (isDown && !wasDown) {
+			char buffer[256] = { 0 };
+			_snprintf(buffer, 256, "Pressed key: %d.\n", code);
+			OutputDebugStringA(buffer);
+		}
+#endif
 
 		KeyStrokeCode keyCode = SystemKeyToKeyStrokeCode(code);
 
@@ -183,9 +161,9 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 
 		//When we first create the window, we don't actually have a scene pointer
 		//because we have no GL context
-		if (GlobalEd) {
-			GlobalEd->cam.widthPixels = width;
-			GlobalEd->cam.heightPixels = height;
+		if (GlobalScene) {
+			GlobalScene->cam.widthPixels = width;
+			GlobalScene->cam.heightPixels = height;
 		}
 	} break;
 

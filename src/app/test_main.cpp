@@ -1,7 +1,5 @@
-#include <GL/osmesa.h>
-
+#include "app_funcs.h"
 #include "../core/Scene.h"
-#include "../gfx/GLExtInit.h"
 
 typedef struct {
 	int width;
@@ -118,39 +116,39 @@ BitmapData LoadBMPFromFile(const char* fileName) {
 	return bmpData;
 }
 
-bool CompareFrameBufferAndWriteFile(BitmapData fb, const char* fileName){
+bool CompareFrameBufferAndWriteFile(BitmapData fb, const char* fileName) {
 	char refImageFile[256] = {};
 	snprintf(refImageFile, sizeof(refImageFile), "tests/ref_img/%s", fileName);
-	
+
 	BitmapData refBmp = LoadBMPFromFile(refImageFile);
-	
-	if (refBmp.width != fb.width || refBmp.height != fb.height){
+
+	if (refBmp.width != fb.width || refBmp.height != fb.height) {
 		printf("\nError: Images '%s' and '%s' differ in dimensions.  Failure.\n", fileName, refImageFile);
 		WriteBMPToFile(fb, fileName);
 		free(refBmp.data);
 		return false;
 	}
-	
+
 	const int tolerance = 5;
 	const int maxDiffPixelCount = 10;
 	int diffPixelCount = 0;
-	
-	for (int i = 0; i < refBmp.width * refBmp.height; i++){
+
+	for (int i = 0; i < refBmp.width * refBmp.height; i++) {
 		int p1 = (refBmp.data[i] & 0x00FFFFFF);
 		int p2 = (fb.data[i] & 0x00FFFFFF);
-		int p1_c[3] = {(p1 & 0xFF), (p1 & 0xFF00) >> 8, (p1 & 0x00FF0000) >> 16};
-		int p2_c[3] = {(p2 & 0xFF), (p2 & 0xFF00) >> 8, (p2 & 0x00FF0000) >> 16};
+		int p1_c[3] = { (p1 & 0xFF), (p1 & 0xFF00) >> 8, (p1 & 0x00FF0000) >> 16 };
+		int p2_c[3] = { (p2 & 0xFF), (p2 & 0xFF00) >> 8, (p2 & 0x00FF0000) >> 16 };
 
 		int diff = 0;
-		for (int k = 0; k < 3; k++){
+		for (int k = 0; k < 3; k++) {
 			diff += BNS_ABS(p1_c[k] - p2_c[k]);
 		}
 
-		if (diff > tolerance){
+		if (diff > tolerance) {
 			diffPixelCount++;
 		}
 
-		if (diffPixelCount > maxDiffPixelCount){
+		if (diffPixelCount > maxDiffPixelCount) {
 			printf("\nError: Images '%s' and '%s' differ at more than %d pixels. Failure.\n", fileName, refImageFile, maxDiffPixelCount);
 			WriteBMPToFile(fb, fileName);
 			free(refBmp.data);
@@ -158,82 +156,98 @@ bool CompareFrameBufferAndWriteFile(BitmapData fb, const char* fileName){
 		}
 
 	}
-	
+
 	printf("Images '%s' and '%s' match.\n", fileName, refImageFile);
 	free(refBmp.data);
 	return true;
 }
 
-int main(int argc, char** argv){
-
-	bool doCompare = false;
-	if (argc > 1 && StrEqual(argv[1], "--compare")){
-		doCompare = true;
-	}
-
-	OSMesaContext ctx = OSMesaCreateContext(OSMESA_RGBA, NULL);
-	
-	int width = 1280, height = 720;
-	unsigned char* imgBuffer = (unsigned char*)malloc(width*height*4);
-	
-	OSMesaMakeCurrent(ctx, imgBuffer, GL_UNSIGNED_BYTE, width, height);
-	
-	InitGlExts();
-	
+void AppPostInit(int argc, char** argv) {
 	Scene scn;
-	
+
+	glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
+	glEnable(GL_DEPTH_TEST);
+	glViewport(0, 0, 1280, 720);
+	glLoadIdentity();
+
 	scn.StartUp();
-	
+
 	scn.LockFrameRate(0.02f);
-	
+
 	scn.input.SetCursorPos(0, 0);
-	
-	for(int i = 0; i < 5; i++){
+}
+
+bool doCompare = false;
+
+bool AppUpdate(int argc, char** argv) {
+	for (int i = 0; i < 5; i++) {
 		scn.Update();
 		scn.Render();
 	}
-	
+
 	BitmapData frameData = {};
 	frameData.width = width;
 	frameData.height = height;
 	frameData.data = (int*)imgBuffer;
 
 	bool success = true;
-	if (doCompare){
+	if (doCompare) {
 		success = CompareFrameBufferAndWriteFile(frameData, "frame_04.bmp");
 	}
-	
-	if (!success){
-		OSMesaDestroyContext(ctx);
-	
-		free(imgBuffer);
-		return -1;
-	}
-	
-	scn.LoadLevel("Test_Level.lvl");
-	
-	for(int i = 0; i < 5; i++){
-		scn.Update();
-		scn.Render();
-	}
-	
-	if (doCompare){
-		success = CompareFrameBufferAndWriteFile(frameData, "Test_Level.bmp");
-	}
-	
-	if (!success){
-		scn.ShutDown();
+
+	if (!success) {
 		OSMesaDestroyContext(ctx);
 
 		free(imgBuffer);
 		return -1;
 	}
-	
-	
-	scn.ShutDown();
-	OSMesaDestroyContext(ctx);
-	
-	free(imgBuffer);
-	
-	return 0;
+
+	scn.LoadLevel("Test_Level.lvl");
+
+	for (int i = 0; i < 5; i++) {
+		scn.Update();
+		scn.Render();
+	}
+
+	if (doCompare) {
+		success = CompareFrameBufferAndWriteFile(frameData, "Test_Level.bmp");
+	}
+
+	return success;
 }
+
+void AppShutdown(int argc, char** argv) {
+	GlobalScene->ShutDown();
+}
+
+void AppMouseMove(int x, int y) {
+	GlobalScene->input.SetCursorPos(x, y);
+}
+
+void AppMouseUp(int button) {
+	GlobalScene->input.MouseButtonReleased((MouseButton)button);
+}
+
+void AppMouseDown(int button) {
+	GlobalScene->input.MouseButtonPressed((MouseButton)button);
+}
+
+void AppKeyUp(unsigned char key) {
+	GlobalScene->input.KeyReleased(key);
+}
+
+void AppKeyDown(unsigned char key) {
+	GlobalScene->input.KeyPressed(key);
+}
+
+void AppPreInit(int argc, char** argv) {
+	if (argc > 1 && StrEqual(argv[1], "--compare")) {
+		doCompare = true;
+	}
+}
+
+void AppSetWindowSize(int w, int h) {
+	GlobalScene->cam.widthPixels = w;
+	GlobalScene->cam.heightPixels = h;
+}
+

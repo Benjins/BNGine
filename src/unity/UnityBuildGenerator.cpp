@@ -1,7 +1,37 @@
 #include "../../ext/CppUtils/filesys.cpp"
+#include "../../ext/CppUtils/strings.cpp"
+
+enum Platform {
+	P_X11,
+	P_Win32,
+	P_Console,
+	P_OSMesa,
+	P_Count
+};
+
+enum Application {
+	A_Runtime,
+	A_MetaGen,
+	A_Editor,
+	A_Test,
+	A_Count
+};
+
+const char* platformNames[P_Count] = {
+	"x11",
+	"win32",
+	"console",
+	"osmesa"
+};
+
+const char* appNames[A_Count] = {
+	"runtime",
+	"metagen",
+	"editor",
+	"test"
+};
 
 int main(int argc, char** argv) {
-
 	File srcDir;
 	srcDir.Load("src");
 
@@ -10,23 +40,44 @@ int main(int argc, char** argv) {
 
 	Vector<const char*> exceptions;
 	exceptions.PushBack("app");
+	exceptions.PushBack("platform");
 	exceptions.PushBack("unity");
 
 	Vector<const char*> includeFirst;
 	includeFirst.PushBack("GLExtInit.cpp");
 
-	bool isEditor = false;
-	bool isMetaGen = false;
-	for (int i = 1; i < argc; i++) {
-		if (!strcmp(argv[1], "-e")) {
-			isEditor = true;
-		}
-		else if (!strcmp(argv[1], "-mg")) {
-			isMetaGen = true;
+	if (argc != 3) {
+		printf("Need an application and a platform in args!\n");
+		exit(-1);
+	}
+
+	Platform platform = P_Count;
+	for (int i = 0; i < P_Count; i++) {
+		if (StrEqual(platformNames[i], argv[1])) {
+			platform = (Platform)i;
+			break;
 		}
 	}
 
-	if (!isEditor) {
+	if (platform == P_Count) {
+		printf("Could not find platform '%s'\n.", argv[1]);
+		exit(-1);
+	}
+
+	Application app = A_Count;
+	for (int i = 0; i < P_Count; i++) {
+		if (StrEqual(appNames[i], argv[2])) {
+			app = (Application)i;
+			break;
+		}
+	}
+
+	if (app == A_Count) {
+		printf("Could not find app '%s'\n.", argv[2]);
+		exit(-1);
+	}
+
+	if (app != A_Editor) {
 		exceptions.PushBack("editor");
 	}
 
@@ -39,7 +90,7 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	if (isMetaGen) {
+	if (app == A_MetaGen) {
 		Vector<File*> srcSubFiles;
 		srcDir.Find("metagen")->FindFilesWithExt("cpp", &srcSubFiles);
 
@@ -74,6 +125,10 @@ int main(int argc, char** argv) {
 	// HACK: The Windows API doesn't like incuding Winsock2.h after Windows.h, so this is a workaround
 	fprintf(genFile, "#define _WINSOCKAPI_\n");
 
+	if (app == A_Editor) {
+		fprintf(genFile, "#define BNS_EDITOR\n");
+	}
+
 	for (int i = 0; i < includeFirst.count; i++) {
 		for (int j = 0; j < srcFiles.count; j++) {
 			if (!strcmp(srcFiles.Get(j)->fileName, includeFirst.Get(i))) {
@@ -87,6 +142,23 @@ int main(int argc, char** argv) {
 	for (int i = 0; i < srcFiles.count; i++) {
 		fprintf(genFile, "#include \"%s%s\"\n", fileToTop, srcFiles.Get(i)->fullName);
 	}
+
+	const char* appFiles[A_Count] = {
+		"src/app/runtime_main.cpp",
+		"src/app/metagen_main.cpp",
+		"src/app/editor_main.cpp",
+		"src/app/test_main.cpp"
+	};
+
+	const char* platformFiles[P_Count] = {
+		"src/platform/x11_entry_main.cpp",
+		"src/platform/win32_entry_main.cpp",
+		"src/platform/console_entry_main.cpp",
+		"src/platform/osmesa_entry_main.cpp"
+	};
+
+	fprintf(genFile, "#include \"%s%s\"\n", fileToTop, appFiles[(int)app]);
+	fprintf(genFile, "#include \"%s%s\"\n", fileToTop, platformFiles[(int)platform]);
 
 	fclose(genFile);
 
