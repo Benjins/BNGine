@@ -23,7 +23,7 @@ void update(){
 		currPos.y = currPos.y - deltaTime;
 	}
 	
-	if (currTime > 1.0){
+	if (currTime >= 1.0){
 		currTime = 0;
 	}
 	

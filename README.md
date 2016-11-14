@@ -74,3 +74,4 @@ TODO:
    - [X] Break out application entry point and platform entry point
    - [ ] Make XML unicode aware
    - [ ] Some kind of ref-counted unicode strings, like String/SubString
+   - [ ] console menu with console commands
