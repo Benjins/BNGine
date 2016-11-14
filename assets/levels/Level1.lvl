@@ -128,6 +128,7 @@
 		<Transform pos='8.768596,-1.564978,2.498240' id='21' scale='0.100000,0.100000,0.100000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 		<BoxCollider isTrigger='F' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
 		<ScriptInstance src='test_move.bnv'/>
+		<ScriptInstance src='test_move.bnv'/>
 		<Material src='water.mat'/>
 		<Mesh src='test_2.obj'/>
 	</Entity>

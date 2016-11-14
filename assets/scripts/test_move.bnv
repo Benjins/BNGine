@@ -1,7 +1,5 @@
 #include "bngine.bni"
 
-extern void SetLocalPosition(int entId, Vector3 pos);
-
 float currTime;
 
 float speedFactor;
@@ -17,15 +15,15 @@ void update(){
 	
 	currTime = currTime + deltaTime;
 	
-	if (currTime < 1){
+	if (currTime < 0.5){
 		currPos.y = currPos.y + deltaTime;
 	}
 	
-	if (currTime > 1){
+	if (currTime > 0.5){
 		currPos.y = currPos.y - deltaTime;
 	}
 	
-	if (currTime > 2){
+	if (currTime > 1.0){
 		currTime = 0;
 	}
 	

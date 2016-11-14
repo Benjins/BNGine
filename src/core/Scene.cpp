@@ -105,8 +105,10 @@ void Scene::Update() {
 	UpdateCustomComponents();
 
 	if (GlobalScene->input.KeyIsReleased('R')) {
+		gui.ShutDown();
 		PackAssetFile("assets", "assets.bna");
 		res.LoadAssetFile("assets.bna");
+		gui.Init();
 	}
 
 	for (int i = 0; i < deferredActions.count; i++) {
