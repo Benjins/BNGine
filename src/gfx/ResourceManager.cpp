@@ -305,7 +305,8 @@ void ResourceManager::LoadLevelFromChunk(MemStream& stream, Level* outLevel) {
 
 		outLevel->cam.transform = trans.id;
 
-		ASSERT(stream.Read<int>() == ~*(int*)camChunkId);
+		int endId = stream.Read<int>()
+		ASSERT(endId == ~*(int*)camChunkId);
 	}
 
 	int entCount = stream.Read<int>();
@@ -341,7 +342,8 @@ void ResourceManager::LoadLevelFromChunk(MemStream& stream, Level* outLevel) {
 			toAdd->entity = ent.id;
 		}
 
-		ASSERT(stream.Read<int>() == ~*(int*)enttChunkId);
+		int endId = stream.Read<int>();
+		ASSERT(endId == ~*(int*)enttChunkId);
 	}
 }
 
@@ -429,7 +431,8 @@ void ResourceManager::LoadPrefabFromChunk(MemStream& stream, Prefab* outPrefab) 
 		(componentMemSerializeFuncs[id])(comp, &outPrefab->customComponents);
 	}
 
-	ASSERT(stream.Read<int>() == ~*(int*)enttChunkId);
+	int endId = stream.Read<int>();
+	ASSERT(endId == ~*(int*)enttChunkId);
 
 }
 
