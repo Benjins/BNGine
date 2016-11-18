@@ -38,8 +38,11 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 
 	StringMap<int>& assetFileIds = GlobalScene->res.assetIdMap;
 	
-	Vector<File*> meshFiles;
-	assetDir.FindFilesWithExt("obj", &meshFiles);
+	Vector<File*> objFiles;
+	assetDir.FindFilesWithExt("obj", &objFiles);
+
+	Vector<File*> daeFiles;
+	assetDir.FindFilesWithExt("dae", &daeFiles);
 
 	Vector<File*> vShaderFiles;
 	assetDir.FindFilesWithExt("vs", &vShaderFiles);
@@ -71,8 +74,12 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 	Vector<File*> scriptFiles;
 	assetDir.FindFilesWithExt("bnv", &scriptFiles);
 
-	for (int i = 0; i < meshFiles.count; i++) {
-		assetFileIds.Insert(meshFiles.data[i]->fileName, i);
+	for (int i = 0; i < objFiles.count; i++) {
+		assetFileIds.Insert(objFiles.data[i]->fileName, i);
+	}
+
+	for (int i = 0; i < daeFiles.count; i++) {
+		assetFileIds.Insert(daeFiles.data[i]->fileName, objFiles.count + i);
 	}
 
 	for (int i = 0; i < vShaderFiles.count; i++) {
@@ -113,8 +120,12 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 
 	WriteAssetNameIdMap(assetFileIds, assetFile);
 
-	for (int i = 0; i < meshFiles.count; i++) {
-		WriteMeshChunk(meshFiles.data[i]->fullName, i, assetFile);
+	for (int i = 0; i < objFiles.count; i++) {
+		WriteMeshChunk(objFiles.data[i]->fullName, i, assetFile);
+	}
+
+	for (int i = 0; i < daeFiles.count; i++) {
+		WriteSkinnedMeshChunk(daeFiles.data[i]->fullName, assetFileIds, objFiles.count + i, assetFile);
 	}
 
 	for (int i = 0; i < vShaderFiles.count; i++) {
@@ -839,5 +850,170 @@ void WriteUniFontChunk(const char* fontFileName, const Vector<File*>& ttfFiles, 
 
 	int chunkIdFlipped = ~*(int*)chunkId;
 	fwrite(&chunkIdFlipped, 1, 4, assetFileHandle);
+}
+
+Vector<float> ParseFloatArray(const char* str, int len, int expectedCount) {
+	Vector<float> vals;
+	vals.EnsureCapacity(expectedCount);
+
+	const char* cursor = str;
+	while (cursor && (cursor - str) < len) {
+		float val = Atof(cursor);
+		vals.PushBack(val);
+
+		int next = FindChar(cursor, ' ');
+		cursor = (next < 0 ? nullptr : cursor + next + 1);
+	}
+
+	ASSERT(vals.count == expectedCount);
+
+	return vals;
+}
+
+Vector<int> ParseIntArray(const char* str, int len, int expectedCount) {
+	Vector<int> vals;
+	vals.EnsureCapacity(expectedCount);
+
+	const char* cursor = str;
+	while (cursor && (cursor - str) < len) {
+		int val = Atoi(cursor);
+		vals.PushBack(val);
+
+		int next = FindChar(cursor, ' ');
+		cursor = (next < 0 ? nullptr : cursor + next + 1);
+	}
+
+	ASSERT(vals.count == expectedCount);
+
+	return vals;
+}
+
+void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& assetIds, int id, FILE* assetFileHandle) {
+	XMLDoc doc;
+	XMLError err = ParseXMLStringFromFile(colladaFileName, &doc);
+	ASSERT(err == XMLE_NONE);
+
+	//SaveXMLDocToFile(&doc, "test_collada.xml");
+
+	int flags = MCF_NONE;
+
+	XMLElement* colladaElem = &doc.elements.vals[0];
+	XMLElement* geomList = colladaElem->GetChild("library_geometries");
+
+	int geomIndex = 0;
+	XMLElement* geomElem = geomList->GetChild("geometry", geomIndex);
+	//while (geomElem != nullptr) {
+
+	String geomId = geomElem->GetExistingAttrValue("id");
+
+	XMLElement* meshElem = geomElem->GetChild("mesh");
+
+	XMLElement* polyListElem = meshElem->GetChild("polylist");
+	String polyCountStr = polyListElem->GetExistingAttrValue("count");
+	int polyCount = Atoi(polyCountStr.string);
+
+	XMLElement* vCountElem = polyListElem->GetChild("vcount");
+	Vector<int> vCountData = ParseIntArray(vCountElem->plainText.start, vCountElem->plainText.length, polyCount);
+	for (int i = 0; i < vCountData.count; i++) {
+		ASSERT(vCountData.Get(i) == 3);
+	}
+
+	char* uvId = nullptr;
+	int uvOffset = -1;
+
+	char* posId = nullptr;
+	int posOffset = -1;
+
+	int maxOffset = 0;
+	int inputIndex = 0;
+	XMLElement* inputElem = polyListElem->GetChild("input", inputIndex);
+	while (inputElem != nullptr) {
+		String semantic = inputElem->GetExistingAttrValue("semantic");
+		String source = inputElem->GetExistingAttrValue("source");
+
+		String offsetStr;
+		bool hasOffset = inputElem->attributes.LookUp("offset", &offsetStr);
+		int offset = (hasOffset ? Atoi(offsetStr.string) : 0);
+
+		maxOffset = BNS_MAX(offset, maxOffset);
+
+		if (semantic == "VERTEX") {
+			XMLElement* verticesElem = meshElem->GetChildWithAttr("vertices", "id", source.string + 1);
+			ASSERT(verticesElem != nullptr);
+
+			XMLElement* positionInputElem = verticesElem->GetChildWithAttr("input", "semantic", "POSITION");
+			String inputId = positionInputElem->GetExistingAttrValue("source");
+			posId = inputId.string + 1;
+			posOffset = offset;
+			flags |= MCF_POSITIONS;
+		}
+		else if (semantic == "TEXCOORD") {
+			uvId = source.string + 1;
+			uvOffset = offset;
+			flags |= MCF_UVS;
+		}
+
+		inputIndex++;
+		inputElem = polyListElem->GetChild("input", inputIndex);
+	}
+
+	XMLElement* polyElem = polyListElem->GetChild("p");
+	Vector<int> vIdxData = ParseIntArray(polyElem->plainText.start, polyElem->plainText.length, polyCount * 3 * (maxOffset + 1));
+
+	Vector<int> indices;
+
+	int vertCount = 0;
+	for (int i = 0; i < vIdxData.count; i += (maxOffset + 1)) {
+		if (flags & MCF_POSITIONS) {
+			int posIdx = vIdxData.data[i + posOffset];
+			indices.PushBack(posIdx);
+		}
+
+		if (flags & MCF_UVS) {
+			int uvsIdx = vIdxData.data[i + uvOffset];
+			indices.PushBack(uvsIdx);
+		}
+
+		vertCount++;
+	}
+
+	ASSERT(vertCount == polyCount * 3);
+
+	char chunkId[] = "BNMD";
+	fwrite(chunkId, 1, 4, assetFileHandle);
+	fwrite(&id, 1, 4, assetFileHandle);
+	fwrite(&flags, 1, 4, assetFileHandle);
+
+	if (flags & MCF_POSITIONS) {
+		XMLElement* posFloatArray = meshElem->GetChildWithAttr("source", "id", posId)->GetChild("float_array");
+		ASSERT(posFloatArray != nullptr);
+
+		int posCount = Atoi(posFloatArray->GetExistingAttrValue("count").string);
+		Vector<float> posFloats = ParseFloatArray(posFloatArray->plainText.start, posFloatArray->plainText.length, posCount);
+
+		int vecCount = posFloats.count / 3;
+		fwrite(&vecCount, 1, 4, assetFileHandle);
+		fwrite(posFloats.data, sizeof(float), posFloats.count, assetFileHandle);
+	}
+
+	if (flags & MCF_UVS) {
+		XMLElement* uvsFloatArray = meshElem->GetChildWithAttr("source", "id", uvId)->GetChild("float_array");
+		ASSERT(uvsFloatArray != nullptr);
+
+		int uvsCount = Atoi(uvsFloatArray->GetExistingAttrValue("count").string);
+		Vector<float> uvsFloats = ParseFloatArray(uvsFloatArray->plainText.start, uvsFloatArray->plainText.length, uvsCount);
+
+		int vecCount = uvsFloats.count / 2;
+		fwrite(&vecCount, 1, 4, assetFileHandle);
+		fwrite(uvsFloats.data, sizeof(float), uvsFloats.count, assetFileHandle);
+	}
+
+	fwrite(&indices.count, 1, 4, assetFileHandle);
+	fwrite(indices.data, sizeof(int), indices.count, assetFileHandle);
+
+	int chunkIdFlipped = ~*(int*)chunkId;
+	fwrite(&chunkIdFlipped, 1, 4, assetFileHandle);
+
+	int xy = 0;
 }
 

@@ -13,7 +13,9 @@ void Mesh::UploadToGfxDevice() {
 	positionsData.EnsureCapacity(faces.count*3);
 	for (int i = 0; i < faces.count; i++) {
 		for (int j = 0; j < 3; j++) {
-			positionsData.PushBack(positions.data[faces.data[i].posIndices[j]]);
+			int posIdx = faces.data[i].posIndices[j];
+			ASSERT(posIdx < positions.count);
+			positionsData.PushBack(positions.data[posIdx]);
 		}
 	}
 
