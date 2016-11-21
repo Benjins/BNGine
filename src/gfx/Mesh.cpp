@@ -6,6 +6,8 @@ Mesh::Mesh() {
 	posVbo = -1;
 	uvVbo = -1;
 	normalVbo = -1;
+
+	armatureId = -1;
 }
 
 void Mesh::UploadToGfxDevice() {
