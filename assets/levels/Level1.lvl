@@ -3,9 +3,9 @@
 		<Transform pos='0.000000,0.200000,0.000000' id='1' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='8'/>
 	</Camera>
 	<Entity id='0'>
-		<Transform pos='-2.331934,0.000000,0.000000' id='0' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<Material src='standard.mat'/>
-		<Mesh src='monkey.obj'/>
+		<Transform pos='0.556506,0.013706,1.500000' id='0' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<Material src='water.mat'/>
+		<Mesh src='char_basic_01.dae'/>
 	</Entity>
 	<Entity id='1'>
 		<Transform pos='0.556506,2.013706,2.000000' id='2' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
@@ -127,6 +127,7 @@
 	<Entity id='20'>
 		<Transform pos='8.768596,-1.564978,2.498240' id='21' scale='0.100000,0.100000,0.100000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 		<BoxCollider isTrigger='F' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
+		<ScriptInstance src='test_move.bnv'/>
 		<ScriptInstance src='test_move.bnv'/>
 		<Material src='water.mat'/>
 		<Mesh src='test_2.obj'/>

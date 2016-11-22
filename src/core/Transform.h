@@ -26,4 +26,6 @@ struct Transform : Component{
 	Vector3 GetGlobalPosition() const;
 };
 
+Mat4x4 LocRotScaleToMat(Vector3 loc, Quaternion rot, Vector3 scale);
+
 #endif

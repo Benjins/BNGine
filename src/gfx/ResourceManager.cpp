@@ -34,6 +34,8 @@ void ResourceManager::Reset() {
 	programs.Reset();
 	shaders.Reset();
 	textures.Reset();
+	scripts.Reset();
+	prefabs.Reset();
 }
 
 void ResourceManager::LoadAssetFile(const char* fileName) {
@@ -81,21 +83,17 @@ void ResourceManager::LoadAssetFile(const char* fileName) {
 			Mesh* mesh = meshes.AddWithId(assetId);
 			LoadMeshFromChunk(fileBufferStream, mesh);
 		}
+		else if (memcmp(chunkId, "BNAM", 4) == 0) {
+			Armature* arm = armatures.AddWithId(assetId);
+			LoadArmatureFromChunk(fileBufferStream, arm);
+		}
 		else if (memcmp(chunkId, "BNVS", 4) == 0) {
-			String shaderFileName = FindFileNameByIdAndExtension("vs", assetId);
-			printf("Loading shader: '%s'...", shaderFileName.string ? shaderFileName.string : "<NULL>");
-			fflush(stdout);
 			Shader* shader = shaders.AddWithId(assetId);
 			LoadVShaderFromChunk(fileBufferStream, shader);
-			printf("done.\n");
 		}
 		else if (memcmp(chunkId, "BNFS", 4) == 0) {
-			String shaderFileName = FindFileNameByIdAndExtension("fs", assetId);
-			printf("Loading shader: '%s'...", shaderFileName.string ? shaderFileName.string : "<NULL>");
-			fflush(stdout);
 			Shader* shader = shaders.AddWithId(assetId);
 			LoadFShaderFromChunk(fileBufferStream, shader);
-			printf("done.\n");
 		}
 		else if (memcmp(chunkId, "BNTX", 4) == 0) {
 			Texture* texture = textures.AddWithId(assetId);
@@ -142,6 +140,7 @@ void ResourceManager::LoadAssetFile(const char* fileName) {
 
 void ResourceManager::LoadMeshFromChunk(MemStream& stream, Mesh* outMesh) {
 	int flags = stream.Read<int>();
+	outMesh->armatureId = stream.Read<int>();
 
 	int posCount = stream.Read<int>();
 
@@ -181,6 +180,40 @@ void ResourceManager::LoadMeshFromChunk(MemStream& stream, Mesh* outMesh) {
 	}
 
 	outMesh->UploadToGfxDevice();
+}
+
+void ResourceManager::LoadArmatureFromChunk(MemStream& stream, Armature* outArmature) {
+	int boneCount = stream.Read<int>();
+
+	for (int i = 0; i < boneCount; i++) {
+		BoneTransform* bt = outArmature->AddBone();
+		stream.ReadArray<char>(bt->name, MAX_BONE_NAME_LENGTH);
+		stream.ReadArray<float>((float*)&outArmature->inverseBindPoses[i].m, 16);
+	}
+
+	ASSERT(outArmature->boneCount == boneCount);
+
+	int vertCount = stream.Read<int>();
+	outArmature->boneWeights.EnsureCapacity(vertCount * MAX_BONES_PER_VERTEX);
+	outArmature->boneIndices.EnsureCapacity(vertCount * MAX_BONES_PER_VERTEX);
+	for (int i = 0; i < vertCount; i++) {
+		int boneCount = stream.Read<int>();
+		ASSERT(boneCount < MAX_BONES_PER_VERTEX);
+
+		for (int j = 0; j < boneCount; j++) {
+			outArmature->boneIndices.PushBack(stream.Read<int>());
+			outArmature->boneWeights.PushBack(stream.Read<float>());
+		}
+
+		//Pad to MAX_BONES_PER_VERTEX bones
+		for (int j = boneCount; j < MAX_BONES_PER_VERTEX; j++) {
+			outArmature->boneIndices.PushBack(0);
+			outArmature->boneWeights.PushBack(0.0f);
+		}
+	}
+
+	ASSERT(outArmature->boneIndices.count == vertCount * MAX_BONES_PER_VERTEX);
+	ASSERT(outArmature->boneWeights.count == vertCount * MAX_BONES_PER_VERTEX);
 }
 
 void ResourceManager::LoadVShaderFromChunk(MemStream& stream, Shader* outShader) {

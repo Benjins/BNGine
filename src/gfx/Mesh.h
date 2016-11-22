@@ -25,6 +25,8 @@ struct Mesh : IDBase {
 	GLuint uvVbo;
 	GLuint normalVbo;
 
+	int armatureId;
+
 	Mesh();
 
 	void GenerateNormals(Vector<Vector3>* outNormals);

@@ -15,6 +15,7 @@
 #include "BitmapFont.h"
 #include "UniFont.h"
 #include "Prefab.h"
+#include "Armature.h"
 
 #include "../script/ScriptObject.h"
 
@@ -33,6 +34,7 @@ struct ResourceManager {
 	IDTracker<UniFont> uniFonts;
 	IDTracker<Prefab> prefabs;
 	IDTracker<ScriptObject> scripts;
+	IDTracker<Armature> armatures;
 
 	StringMap<int> assetIdMap;
 
@@ -43,6 +45,7 @@ struct ResourceManager {
 	void LoadAssetFile(const char* fileName);
 
 	void LoadMeshFromChunk(MemStream& stream, Mesh* outModel);
+	void LoadArmatureFromChunk(MemStream& stream, Armature* outArmature);
 	void LoadVShaderFromChunk(MemStream& stream, Shader* outShader);
 	void LoadFShaderFromChunk(MemStream& stream, Shader* outShader);
 	void LoadTextureFromChunk(MemStream& stream, Texture* outTexture);

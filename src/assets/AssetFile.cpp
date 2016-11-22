@@ -38,8 +38,11 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 
 	StringMap<int>& assetFileIds = GlobalScene->res.assetIdMap;
 	
-	Vector<File*> meshFiles;
-	assetDir.FindFilesWithExt("obj", &meshFiles);
+	Vector<File*> objFiles;
+	assetDir.FindFilesWithExt("obj", &objFiles);
+
+	Vector<File*> daeFiles;
+	assetDir.FindFilesWithExt("dae", &daeFiles);
 
 	Vector<File*> vShaderFiles;
 	assetDir.FindFilesWithExt("vs", &vShaderFiles);
@@ -71,86 +74,94 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 	Vector<File*> scriptFiles;
 	assetDir.FindFilesWithExt("bnv", &scriptFiles);
 
-	for (int i = 0; i < meshFiles.count; i++) {
-		assetFileIds.Insert(meshFiles.data[i]->fileName, i);
+	for (int i = 0; i < objFiles.count; i++) {
+		assetFileIds.Insert(objFiles.Get(i)->fileName, i);
+	}
+
+	for (int i = 0; i < daeFiles.count; i++) {
+		assetFileIds.Insert(daeFiles.Get(i)->fileName, objFiles.count + i);
 	}
 
 	for (int i = 0; i < vShaderFiles.count; i++) {
-		assetFileIds.Insert(vShaderFiles.data[i]->fileName, i);
+		assetFileIds.Insert(vShaderFiles.Get(i)->fileName, i);
 	}
 
 	for (int i = 0; i < fShaderFiles.count; i++) {
-		assetFileIds.Insert(fShaderFiles.data[i]->fileName, vShaderFiles.count + i);
+		assetFileIds.Insert(fShaderFiles.Get(i)->fileName, vShaderFiles.count + i);
 	}
 
 	for (int i = 0; i < textureFiles.count; i++) {
-		assetFileIds.Insert(textureFiles.data[i]->fileName, i);
+		assetFileIds.Insert(textureFiles.Get(i)->fileName, i);
 	}
 
 	for (int i = 0; i < materialFiles.count; i++) {
-		assetFileIds.Insert(materialFiles.data[i]->fileName, i);
+		assetFileIds.Insert(materialFiles.Get(i)->fileName, i);
 	}
 
 	for (int i = 0; i < levelFiles.count; i++) {
-		assetFileIds.Insert(levelFiles.data[i]->fileName, i);
+		assetFileIds.Insert(levelFiles.Get(i)->fileName, i);
 	}
 
 	for (int i = 0; i < bitmapFontFiles.count; i++) {
-		assetFileIds.Insert(bitmapFontFiles.data[i]->fileName, i);
+		assetFileIds.Insert(bitmapFontFiles.Get(i)->fileName, i);
 	}
 
 	for (int i = 0; i < uniFontFiles.count; i++) {
-		assetFileIds.Insert(uniFontFiles.data[i]->fileName, i);
+		assetFileIds.Insert(uniFontFiles.Get(i)->fileName, i);
 	}
 
 	for (int i = 0; i < prefabFiles.count; i++) {
-		assetFileIds.Insert(prefabFiles.data[i]->fileName, i);
+		assetFileIds.Insert(prefabFiles.Get(i)->fileName, i);
 	}
 
 	for (int i = 0; i < scriptFiles.count; i++) {
-		assetFileIds.Insert(scriptFiles.data[i]->fileName, i);
+		assetFileIds.Insert(scriptFiles.Get(i)->fileName, i);
 	}
 
 	WriteAssetNameIdMap(assetFileIds, assetFile);
 
-	for (int i = 0; i < meshFiles.count; i++) {
-		WriteMeshChunk(meshFiles.data[i]->fullName, i, assetFile);
+	for (int i = 0; i < objFiles.count; i++) {
+		WriteMeshChunk(objFiles.Get(i)->fullName, i, assetFile);
+	}
+
+	for (int i = 0; i < daeFiles.count; i++) {
+		WriteSkinnedMeshChunk(daeFiles.Get(i)->fullName, assetFileIds, objFiles.count + i, i, assetFile);
 	}
 
 	for (int i = 0; i < vShaderFiles.count; i++) {
-		WriteVShaderChunk(vShaderFiles.data[i]->fullName, i, assetFile);
+		WriteVShaderChunk(vShaderFiles.Get(i)->fullName, i, assetFile);
 	}
 
 	for (int i = 0; i < fShaderFiles.count; i++) {
-		WriteFShaderChunk(fShaderFiles.data[i]->fullName, vShaderFiles.count + i, assetFile);
+		WriteFShaderChunk(fShaderFiles.Get(i)->fullName, vShaderFiles.count + i, assetFile);
 	}
 
 	for (int i = 0; i < textureFiles.count; i++) {
-		WriteTextureChunk(textureFiles.data[i]->fullName, i, assetFile);
+		WriteTextureChunk(textureFiles.Get(i)->fullName, i, assetFile);
 	}
 
 	for (int i = 0; i < materialFiles.count; i++) {
-		WriteMaterialChunk(materialFiles.data[i]->fullName, assetFileIds, i, assetFile);
+		WriteMaterialChunk(materialFiles.Get(i)->fullName, assetFileIds, i, assetFile);
 	}
 
 	for (int i = 0; i < levelFiles.count; i++) {
-		WriteLevelChunk(levelFiles.data[i]->fullName, assetFileIds, i, assetFile);
+		WriteLevelChunk(levelFiles.Get(i)->fullName, assetFileIds, i, assetFile);
 	}
 
 	for (int i = 0; i < bitmapFontFiles.count; i++) {
-		WriteBitmapFontChunk(bitmapFontFiles.data[i]->fullName, ttfFiles, i, assetFile);
+		WriteBitmapFontChunk(bitmapFontFiles.Get(i)->fullName, ttfFiles, i, assetFile);
 	}
 
 	for (int i = 0; i < uniFontFiles.count; i++) {
-		WriteUniFontChunk(uniFontFiles.data[i]->fullName, ttfFiles, i, assetFile);
+		WriteUniFontChunk(uniFontFiles.Get(i)->fullName, ttfFiles, i, assetFile);
 	}
 
 	for (int i = 0; i < prefabFiles.count; i++) {
-		WritePrefabChunk(prefabFiles.data[i]->fullName, assetFileIds, i, assetFile);
+		WritePrefabChunk(prefabFiles.Get(i)->fullName, assetFileIds, i, assetFile);
 	}
 
 	for (int i = 0; i < scriptFiles.count; i++) {
-		WriteScriptChunk(scriptFiles.data[i]->fullName, assetFileIds, i, assetFile);
+		WriteScriptChunk(scriptFiles.Get(i)->fullName, assetFileIds, i, assetFile);
 	}
 
 	int bnsaNegated = ~*(int*)fileId;
@@ -249,6 +260,8 @@ void WriteMeshChunk(const char* modelFileName, int id, FILE* assetFileHandle) {
 	fwrite(chunkId, 1, 4, assetFileHandle);
 	fwrite(&id, 1, 4, assetFileHandle);
 	fwrite(&flags, 1, 4, assetFileHandle);
+	int armId = -1;
+	fwrite(&armId, 1, 4, assetFileHandle);
 
 	fwrite(&positions.count, 1, 4, assetFileHandle);
 	fwrite(positions.data, sizeof(Vector3), positions.count, assetFileHandle);
@@ -515,7 +528,7 @@ void WriteTransformData(XMLElement* transElem, FILE* assetFileHandle) {
 
 void WriteCameraSubChunk(XMLElement* entElem, FILE* assetFileHandle) {
 	ASSERT(entElem->childrenIds.count == 1);
-	XMLElement* transElem = entElem->doc->elements.GetById(entElem->childrenIds.data[0]);
+	XMLElement* transElem = entElem->doc->elements.GetById(entElem->childrenIds.Get(0));
 	ASSERT(transElem->name == "Transform");
 
 	char subChunkId[] = "CMRA";
@@ -569,7 +582,7 @@ void WriteEntitySubChunk(XMLElement* entElem, const StringMap<int>& assetIds, FI
 	int customComponentCount = 0;
 	MemStream customComponents;
 	for (int i = 0; i < entElem->childrenIds.count; i++) {
-		XMLElement* childElem = entElem->doc->elements.GetById(entElem->childrenIds.data[i]);
+		XMLElement* childElem = entElem->doc->elements.GetById(entElem->childrenIds.Get(i));
 		String name = childElem->name;
 		int metaDataIndex = FindStructByName(name.string);
 
@@ -615,7 +628,7 @@ void WriteLevelChunk(const char* levelFileName, const StringMap<int>& assetIds, 
 	int entCount = 0;
 
 	for (int i = 0; i < rootElem->childrenIds.count; i++) {
-		XMLElement* childElem = lvlDoc.elements.GetById(rootElem->childrenIds.data[i]);
+		XMLElement* childElem = lvlDoc.elements.GetById(rootElem->childrenIds.Get(i));
 		if (childElem->name == "Entity") {
 			entCount++;
 		}
@@ -624,7 +637,7 @@ void WriteLevelChunk(const char* levelFileName, const StringMap<int>& assetIds, 
 	fwrite(&entCount, 1, 4, assetFileHandle);
 
 	for (int i = 0; i < rootElem->childrenIds.count; i++) {
-		XMLElement* childElem = lvlDoc.elements.GetById(rootElem->childrenIds.data[i]);
+		XMLElement* childElem = lvlDoc.elements.GetById(rootElem->childrenIds.Get(i));
 		if (childElem->name == "Entity") {
 			WriteEntitySubChunk(childElem, assetIds, assetFileHandle);
 		}
@@ -839,5 +852,353 @@ void WriteUniFontChunk(const char* fontFileName, const Vector<File*>& ttfFiles, 
 
 	int chunkIdFlipped = ~*(int*)chunkId;
 	fwrite(&chunkIdFlipped, 1, 4, assetFileHandle);
+}
+
+Vector<SubString> ParseStringArray(const SubString& substr, int expectedCount) {
+	Vector<SubString> vals;
+	vals.EnsureCapacity(expectedCount);
+
+	char* cursor = substr.start;
+	while (cursor && (cursor - substr.start) < substr.length) {
+		int next = FindChar(cursor, ' ');
+
+		// TODO: There's got to be a better way...
+		SubString val = substr;
+		val.start = cursor;
+		val.length = next;
+		vals.PushBack(val);
+
+		cursor = (next < 0 ? nullptr : cursor + next + 1);
+	}
+
+	ASSERT(vals.count == expectedCount);
+
+	return vals;
+}
+
+Vector<float> ParseFloatArray(const char* str, int len, int expectedCount) {
+	Vector<float> vals;
+	vals.EnsureCapacity(expectedCount);
+
+	const char* cursor = str;
+	while (cursor && (cursor - str) < len) {
+		float val = Atof(cursor);
+		vals.PushBack(val);
+
+		int next = FindChar(cursor, ' ');
+		cursor = (next < 0 ? nullptr : cursor + next + 1);
+	}
+
+	ASSERT(vals.count == expectedCount);
+
+	return vals;
+}
+
+Vector<int> ParseIntArray(const char* str, int len, int expectedCount) {
+	Vector<int> vals;
+	vals.EnsureCapacity(expectedCount);
+
+	const char* cursor = str;
+	while (cursor && (cursor - str) < len) {
+		int val = Atoi(cursor);
+		vals.PushBack(val);
+
+		int next = FindChar(cursor, ' ');
+		cursor = (next < 0 ? nullptr : cursor + next + 1);
+	}
+
+	ASSERT(vals.count == expectedCount);
+
+	return vals;
+}
+
+inline Vector3 Vec4ToVec3(Vector4 vec) {
+	return Vector3(vec.x, vec.y, vec.z);
+}
+
+void DecomposeMatrixIntoLocRotScale(Mat4x4 mat, Vector3* outPos, Quaternion* outRot, Vector3* outScale) {
+	*outPos = Vec4ToVec3(mat.GetColumn(3));
+	for (int i = 0; i < 3; i++) {
+		(*outScale)[i] = Vec4ToVec3(mat.GetColumn(i)).Magnitude();
+	}
+}
+
+void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& assetIds, int id, int armId, FILE* assetFileHandle) {
+	XMLDoc doc;
+	XMLError err = ParseXMLStringFromFile(colladaFileName, &doc);
+	ASSERT(err == XMLE_NONE);
+
+	int flags = MCF_NONE;
+
+	XMLElement* colladaElem = &doc.elements.vals[0];
+	XMLElement* geomList = colladaElem->GetChild("library_geometries");
+
+	int geomIndex = 0;
+	XMLElement* geomElem = geomList->GetChild("geometry", geomIndex);
+	//while (geomElem != nullptr) {
+
+	String geomId = geomElem->GetExistingAttrValue("id");
+
+	XMLElement* meshElem = geomElem->GetChild("mesh");
+
+	XMLElement* polyListElem = meshElem->GetChild("polylist");
+	String polyCountStr = polyListElem->GetExistingAttrValue("count");
+	int polyCount = Atoi(polyCountStr.string);
+
+	XMLElement* vCountElem = polyListElem->GetChild("vcount");
+	Vector<int> vCountData = ParseIntArray(vCountElem->plainText.start, vCountElem->plainText.length, polyCount);
+	for (int i = 0; i < vCountData.count; i++) {
+		ASSERT(vCountData.Get(i) == 3);
+	}
+
+	char* uvId = nullptr;
+	int uvOffset = -1;
+
+	char* posId = nullptr;
+	int posOffset = -1;
+
+	int maxOffset = 0;
+	int inputIndex = 0;
+	XMLElement* inputElem = polyListElem->GetChild("input", inputIndex);
+	while (inputElem != nullptr) {
+		String semantic = inputElem->GetExistingAttrValue("semantic");
+		String source = inputElem->GetExistingAttrValue("source");
+
+		String offsetStr;
+		bool hasOffset = inputElem->attributes.LookUp("offset", &offsetStr);
+		int offset = (hasOffset ? Atoi(offsetStr.string) : 0);
+
+		maxOffset = BNS_MAX(offset, maxOffset);
+
+		if (semantic == "VERTEX") {
+			XMLElement* verticesElem = meshElem->GetChildWithAttr("vertices", "id", source.string + 1);
+			ASSERT(verticesElem != nullptr);
+
+			XMLElement* positionInputElem = verticesElem->GetChildWithAttr("input", "semantic", "POSITION");
+			String inputId = positionInputElem->GetExistingAttrValue("source");
+			posId = inputId.string + 1;
+			posOffset = offset;
+			flags |= MCF_POSITIONS;
+		}
+		else if (semantic == "TEXCOORD") {
+			uvId = source.string + 1;
+			uvOffset = offset;
+			flags |= MCF_UVS;
+		}
+
+		inputIndex++;
+		inputElem = polyListElem->GetChild("input", inputIndex);
+	}
+
+	XMLElement* polyElem = polyListElem->GetChild("p");
+	Vector<int> vIdxData = ParseIntArray(polyElem->plainText.start, polyElem->plainText.length, polyCount * 3 * (maxOffset + 1));
+
+	Vector<int> indices;
+
+	int vertCount = 0;
+	for (int i = 0; i < vIdxData.count; i += (maxOffset + 1)) {
+		if (flags & MCF_POSITIONS) {
+			int posIdx = vIdxData.Get(i + posOffset);
+			indices.PushBack(posIdx);
+		}
+
+		if (flags & MCF_UVS) {
+			int uvsIdx = vIdxData.Get(i + uvOffset);
+			indices.PushBack(uvsIdx);
+		}
+
+		vertCount++;
+	}
+
+	ASSERT(vertCount == polyCount * 3);
+
+	XMLElement* controllerList = colladaElem->GetChild("library_controllers");
+	XMLElement* controller = (controllerList == nullptr) ? nullptr : controllerList->GetChild("controller");
+	XMLElement* skinElem = (controller == nullptr) ? nullptr : controller->GetChild("skin");
+
+	{
+		char chunkId[] = "BNMD";
+		fwrite(chunkId, 1, 4, assetFileHandle);
+		fwrite(&id, 1, 4, assetFileHandle);
+		fwrite(&flags, 1, 4, assetFileHandle);
+		int armatureId = (skinElem == nullptr) ? -1 : armId;
+		fwrite(&armatureId, 1, 4, assetFileHandle);
+
+		if (flags & MCF_POSITIONS) {
+			XMLElement* posFloatArray = meshElem->GetChildWithAttr("source", "id", posId)->GetChild("float_array");
+			ASSERT(posFloatArray != nullptr);
+
+			int posCount = Atoi(posFloatArray->GetExistingAttrValue("count").string);
+			Vector<float> posFloats = ParseFloatArray(posFloatArray->plainText.start, posFloatArray->plainText.length, posCount);
+
+			int vecCount = posFloats.count / 3;
+			fwrite(&vecCount, 1, 4, assetFileHandle);
+			fwrite(posFloats.data, sizeof(float), posFloats.count, assetFileHandle);
+		}
+
+		if (flags & MCF_UVS) {
+			XMLElement* uvsFloatArray = meshElem->GetChildWithAttr("source", "id", uvId)->GetChild("float_array");
+			ASSERT(uvsFloatArray != nullptr);
+
+			int uvsCount = Atoi(uvsFloatArray->GetExistingAttrValue("count").string);
+			Vector<float> uvsFloats = ParseFloatArray(uvsFloatArray->plainText.start, uvsFloatArray->plainText.length, uvsCount);
+
+			int vecCount = uvsFloats.count / 2;
+			fwrite(&vecCount, 1, 4, assetFileHandle);
+			fwrite(uvsFloats.data, sizeof(float), uvsFloats.count, assetFileHandle);
+		}
+
+		fwrite(&indices.count, 1, 4, assetFileHandle);
+		fwrite(indices.data, sizeof(int), indices.count, assetFileHandle);
+
+		int chunkIdFlipped = ~*(int*)chunkId;
+		fwrite(&chunkIdFlipped, 1, 4, assetFileHandle);
+	}
+
+	if (skinElem != nullptr) {
+		XMLElement* joints = skinElem->GetChild("joints");
+		ASSERT(joints != nullptr);
+		String invBindSource = joints->GetChildWithAttr("input", "semantic", "INV_BIND_MATRIX")->GetExistingAttrValue("source");
+
+		XMLElement* vertexWeightsElem = skinElem->GetChild("vertex_weights");
+		ASSERT(vertexWeightsElem != nullptr);
+		int vWeightCount = Atoi(vertexWeightsElem->GetExistingAttrValue("count").string);
+
+		char* jointId = nullptr;
+		int jointOffset = 0;
+
+		char* weightId = nullptr;
+		int weightOffset = 0;
+
+		// TODO: Maybe move the upper parsing into a naked scope, so shadowing isn't a conern?
+		maxOffset = 0;
+		int inputIdx = 0;
+		XMLElement* vWeightInput = vertexWeightsElem->GetChild("input", inputIdx);
+		while (vWeightInput != nullptr) {
+
+			String semantic = vWeightInput->GetExistingAttrValue("semantic");
+			char* source = vWeightInput->GetExistingAttrValue("source").string + 1;
+			int offset = Atoi(vWeightInput->GetExistingAttrValue("offset").string);
+
+			if (semantic == "JOINT") {
+				jointId = source;
+				jointOffset = offset;
+			}
+			else if (semantic == "WEIGHT") {
+				weightId = source;
+				weightOffset = offset;
+			}
+
+			maxOffset = BNS_MAX(maxOffset, offset);
+
+			inputIdx++;
+			vWeightInput = vertexWeightsElem->GetChild("input", inputIdx);
+		}
+
+		ASSERT(jointId != nullptr);
+		XMLElement* jointsArray = skinElem->GetChildWithAttr("source", "id", jointId)->GetChild("Name_array");
+		ASSERT(jointsArray != nullptr);
+
+		ASSERT(weightId != nullptr);
+		XMLElement* weightsArray = skinElem->GetChildWithAttr("source", "id", weightId)->GetChild("float_array");
+		ASSERT(weightsArray != nullptr);
+
+		Vector<SubString> boneNames = ParseStringArray(jointsArray->plainText, Atoi(jointsArray->GetExistingAttrValue("count").string));
+
+		int expectedWeightCount = Atoi(weightsArray->GetExistingAttrValue("count").string);
+		Vector<float> boneWeights = ParseFloatArray(weightsArray->plainText.start, weightsArray->plainText.length, expectedWeightCount);
+
+		XMLElement* invBindPoseArray = skinElem->GetChildWithAttr("source", "id", invBindSource.string + 1)->GetChild("float_array");
+		int expectedBindPoseCount = Atoi(invBindPoseArray->GetExistingAttrValue("count").string);
+		Vector<float> invBindPoses = ParseFloatArray(invBindPoseArray->plainText.start, invBindPoseArray->plainText.length, expectedBindPoseCount);
+
+		XMLElement* vCountElem = vertexWeightsElem->GetChild("vcount");
+		Vector<int> vCount = ParseIntArray(vCountElem->plainText.start, vCountElem->plainText.length, vWeightCount);
+
+		int vDataCount = 0;
+		// TODO: What is the perf issue with this?
+		//BNS_VEC_FOLDR(vDataCount, vCount, 0, acc + item);
+		//vDataCount = 0;
+		for (int i = 0; i < vCount.count; i++) {
+			vDataCount += vCount.Get(i);
+		}
+
+		XMLElement* vDataElem = vertexWeightsElem->GetChild("v");
+		Vector<int> vData = ParseIntArray(vDataElem->plainText.start, vDataElem->plainText.length, vDataCount * 2);
+
+		{
+			char chunkId[] = "BNAM";
+			fwrite(chunkId, 1, 4, assetFileHandle);
+			fwrite(&armId, 1, 4, assetFileHandle);
+
+			XMLElement* uvsFloatArray = meshElem->GetChildWithAttr("source", "id", uvId)->GetChild("float_array");
+			ASSERT(uvsFloatArray != nullptr);
+
+			fwrite(&boneNames.count, 1, sizeof(int), assetFileHandle);
+			for (int i = 0; i < boneNames.count; i++) {
+				char boneName[MAX_BONE_NAME_LENGTH] = {};
+				snprintf(boneName, sizeof(boneName) - 1, "%.*s", boneNames.Get(i).length, boneNames.Get(i).start);
+				fwrite(boneName, 1, MAX_BONE_NAME_LENGTH, assetFileHandle);
+
+				fwrite(&invBindPoses.Get(i * 16), sizeof(float), 16, assetFileHandle);
+			}
+
+			fwrite(&vCount.count, 1, sizeof(int), assetFileHandle);
+
+			Vector<float> weightsBuffer;
+			Vector<int> indicesBuffer;
+			int vertDataIdx = 0;
+			for (int i = 0; i < vCount.count; i++) {
+				weightsBuffer.Clear();
+				indicesBuffer.Clear();
+				for (int j = 0; j < vCount.Get(i); j++) {
+					int jointIdx = vData.Get(vertDataIdx);
+					int weightIdx = vData.Get(vertDataIdx + 1);
+
+					float jointWeight = boneWeights.Get(weightIdx);
+
+					// Keep a sorted list of the most weighted bones
+					int insertIdx = 0;
+					while (insertIdx < weightsBuffer.count && jointWeight > weightsBuffer.Get(insertIdx)) {
+						insertIdx++;
+					}
+
+					weightsBuffer.Insert(insertIdx, jointWeight);
+					indicesBuffer.Insert(insertIdx, jointIdx);
+
+					vertDataIdx += 2;
+				}
+
+				// Clip the most weighted bones, ignore the rest
+				int actualBoneCount = BNS_MIN(vCount.Get(i), MAX_BONES_PER_VERTEX);
+
+				// Normalize the bone weights we're actually adding
+				float mag = 0.0f;
+				for (int j = 0; j < actualBoneCount; j++) {
+					mag += weightsBuffer.Get(j) * weightsBuffer.Get(j);
+				}
+
+				ASSERT(mag > 0);
+				mag = sqrtf(mag);
+
+				for (int j = 0; j < actualBoneCount; j++) {
+					ASSERT(j < weightsBuffer.count);
+					weightsBuffer.Get(j) /= mag;
+				}
+
+				fwrite(&actualBoneCount, 1, sizeof(int), assetFileHandle);
+
+				for (int j = 0; j < actualBoneCount; j++) {
+					fwrite(&indicesBuffer.Get(j), 1, sizeof(int),   assetFileHandle);
+					fwrite(&weightsBuffer.Get(j), 1, sizeof(float), assetFileHandle);
+				}
+			}
+
+			int chunkIdFlipped = ~*(int*)chunkId;
+			fwrite(&chunkIdFlipped, 1, 4, assetFileHandle);
+		}
+	}
+
+	int xy = 0;
 }
 

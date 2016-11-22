@@ -12,7 +12,7 @@ void ExecuteDrawCalls(DrawCall* calls, int count) {
 	Mat4x4 persp = GlobalScene->cam.GetPerspectiveMatrix();
 
 	static Vector3 lightVec = Vector3(0, 0.7f, 0.7f);
-	static Quaternion lightRot = Quaternion(Y_AXIS, 0.2f);
+	static Quaternion lightRot = Quaternion(Y_AXIS, 0.005f);
 
 	lightVec = Rotate(lightVec, lightRot).Normalized();
 

@@ -23,11 +23,7 @@ Vector3 Transform::Up(){
 }
 
 Mat4x4 Transform::GetLocalToGlobalMatrix() const {
-	Mat4x4 matrix;
-	matrix.SetColumn(0, Vector4(Rotate(X_AXIS * scale.x, rotation), 0));
-	matrix.SetColumn(1, Vector4(Rotate(Y_AXIS * scale.y, rotation), 0));
-	matrix.SetColumn(2, Vector4(Rotate(Z_AXIS * scale.z, rotation), 0));
-	matrix.SetColumn(3, Vector4(position, 1));
+	Mat4x4 matrix = LocRotScaleToMat(position, rotation, scale);
 	
 	if (parent < 0) {
 		return matrix;
@@ -65,3 +61,14 @@ Vector3 Transform::GetGlobalPosition() const {
 	Mat4x4 loc2glob = GetLocalToGlobalMatrix();
 	return loc2glob.MultiplyAsPosition(Vector3(0, 0, 0));
 }
+
+Mat4x4 LocRotScaleToMat(Vector3 loc, Quaternion rot, Vector3 scale) {
+	Mat4x4 matrix;
+	matrix.SetColumn(0, Vector4(Rotate(X_AXIS * scale.x, rot), 0));
+	matrix.SetColumn(1, Vector4(Rotate(Y_AXIS * scale.y, rot), 0));
+	matrix.SetColumn(2, Vector4(Rotate(Z_AXIS * scale.z, rot), 0));
+	matrix.SetColumn(3, Vector4(loc, 1));
+
+	return matrix;
+}
+
