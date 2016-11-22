@@ -861,6 +861,7 @@ Vector<SubString> ParseStringArray(const SubString& substr, int expectedCount) {
 	char* cursor = substr.start;
 	while (cursor && (cursor - substr.start) < substr.length) {
 		int next = FindChar(cursor, ' ');
+		next = BNS_MIN(next, (substr.length - (cursor - substr.start)));
 
 		// TODO: There's got to be a better way...
 		SubString val = substr;
@@ -912,6 +913,68 @@ Vector<int> ParseIntArray(const char* str, int len, int expectedCount) {
 	return vals;
 }
 
+#define BNS_SIGN(x) ((x) >= 0 ? 1 : -1)
+
+Quaternion MatrixToQuaternion(const Mat4x4& matrix) {
+
+	float r11 = matrix.m[0][0];
+	float r12 = matrix.m[0][1];
+	float r13 = matrix.m[0][2];
+
+	float r21 = matrix.m[1][0];
+	float r22 = matrix.m[1][1];
+	float r23 = matrix.m[1][2];
+
+	float r31 = matrix.m[2][0];
+	float r32 = matrix.m[2][1];
+	float r33 = matrix.m[2][2];
+
+	float q0 = (r11 + r22 + r33 + 1.0f) / 4.0f;
+	float q1 = (r11 - r22 - r33 + 1.0f) / 4.0f;
+	float q2 = (-r11 + r22 - r33 + 1.0f) / 4.0f;
+	float q3 = (-r11 - r22 + r33 + 1.0f) / 4.0f;
+
+	if (q0 < 0.0f) q0 = 0.0f;
+	if (q1 < 0.0f) q1 = 0.0f;
+	if (q2 < 0.0f) q2 = 0.0f;
+	if (q3 < 0.0f) q3 = 0.0f;
+	q0 = sqrtf(q0);
+	q1 = sqrtf(q1);
+	q2 = sqrtf(q2);
+	q3 = sqrtf(q3);
+	if (q0 >= q1 && q0 >= q2 && q0 >= q3) {
+		//q0 *= +1.0f;
+		q1 *= BNS_SIGN(r32 - r23);
+		q2 *= BNS_SIGN(r13 - r31);
+		q3 *= BNS_SIGN(r21 - r12);
+	}
+	else if (q1 >= q0 && q1 >= q2 && q1 >= q3) {
+		q0 *= BNS_SIGN(r32 - r23);
+		//q1 *= +1.0f;
+		q2 *= BNS_SIGN(r21 + r12);
+		q3 *= BNS_SIGN(r13 + r31);
+	}
+	else if (q2 >= q0 && q2 >= q1 && q2 >= q3) {
+		q0 *= BNS_SIGN(r13 - r31);
+		q1 *= BNS_SIGN(r21 + r12);
+		//q2 *= +1.0f;
+		q3 *= BNS_SIGN(r32 + r23);
+	}
+	else if (q3 >= q0 && q3 >= q1 && q3 >= q2) {
+		q0 *= BNS_SIGN(r21 - r12);
+		q1 *= BNS_SIGN(r31 + r13);
+		q2 *= BNS_SIGN(r32 + r23);
+		//q3 *= +1.0f;
+	}
+	else {
+		printf("coding error\n");
+	}
+
+	return Quaternion(q0, q1, q2, q3).Normalized();
+}
+
+#undef BNS_SIGN
+
 inline Vector3 Vec4ToVec3(Vector4 vec) {
 	return Vector3(vec.x, vec.y, vec.z);
 }
@@ -920,6 +983,50 @@ void DecomposeMatrixIntoLocRotScale(Mat4x4 mat, Vector3* outPos, Quaternion* out
 	*outPos = Vec4ToVec3(mat.GetColumn(3));
 	for (int i = 0; i < 3; i++) {
 		(*outScale)[i] = Vec4ToVec3(mat.GetColumn(i)).Magnitude();
+	}
+
+	*outRot = MatrixToQuaternion(mat);
+}
+
+struct ColladaBoneData {
+	Vector3 pos;
+	Quaternion rot;
+	Vector3 scale;
+	String boneParent;
+};
+
+void ParseColladaBoneData(XMLElement* nodeElem, StringMap<ColladaBoneData>* outBoneData, String parent) {
+	String id = nodeElem->GetExistingAttrValue("id");
+	XMLElement* matrix = nodeElem->GetChild("matrix");
+
+	ColladaBoneData data;
+	data.boneParent = parent;
+	if (matrix == nullptr) {
+		XMLElement* translate = nodeElem->GetChild("translate");
+		XMLElement* scale = nodeElem->GetChild("scale");
+
+		Vector<float> translateFloats = ParseFloatArray(translate->plainText.start, translate->plainText.length, 3);
+		Vector<float> scaleFloats = ParseFloatArray(scale->plainText.start, scale->plainText.length, 3);
+
+		data.pos = *(Vector3*)translateFloats.data;
+		data.scale = *(Vector3*)scaleFloats.data;
+	}
+	else {
+		Vector<float> matrixFloats = ParseFloatArray(matrix->plainText.start, matrix->plainText.length, 16);
+		Mat4x4 mat = *(Mat4x4*)matrixFloats.data;
+
+		DecomposeMatrixIntoLocRotScale(mat, &data.pos, &data.rot, &data.scale);
+	}
+
+	outBoneData->Insert(id, data);
+
+	int childNodeIndex = 0;
+	XMLElement* childNode = nodeElem->GetChild("node", childNodeIndex);
+	while (childNode != nullptr) {
+		ParseColladaBoneData(childNode, outBoneData, id);
+
+		childNodeIndex++;
+		childNode = nodeElem->GetChild("node", childNodeIndex);
 	}
 }
 
@@ -1056,6 +1163,26 @@ void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& as
 	}
 
 	if (skinElem != nullptr) {
+		String controllerName = controller->GetExistingAttrValue("name");
+
+		XMLElement* visualSceneLib = colladaElem->GetChild("library_visual_scenes"); 
+		ASSERT(visualSceneLib != nullptr);
+		XMLElement* visualScene = visualSceneLib->GetChild("visual_scene");
+		ASSERT(visualScene != nullptr);
+		XMLElement* armatureElem = visualScene->GetChildWithAttr("node", "id", controllerName.string);
+		ASSERT(armatureElem != nullptr);
+
+		StringMap<ColladaBoneData> colladaBoneData;
+
+		int childNodeIndex = 0;
+		XMLElement* childNode = armatureElem->GetChild("node", childNodeIndex);
+		while (childNode != nullptr) {
+			ParseColladaBoneData(childNode, &colladaBoneData, "");
+
+			childNodeIndex++;
+			childNode = armatureElem->GetChild("node", childNodeIndex);
+		}
+
 		XMLElement* joints = skinElem->GetChild("joints");
 		ASSERT(joints != nullptr);
 		String invBindSource = joints->GetChildWithAttr("input", "semantic", "INV_BIND_MATRIX")->GetExistingAttrValue("source");
@@ -1141,6 +1268,23 @@ void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& as
 				fwrite(boneName, 1, MAX_BONE_NAME_LENGTH, assetFileHandle);
 
 				fwrite(&invBindPoses.Get(i * 16), sizeof(float), 16, assetFileHandle);
+
+				ColladaBoneData boneData;
+				bool found = colladaBoneData.LookUp(boneName, &boneData);
+				ASSERT(found);
+
+				int parentIndex = -1;
+				for (int j = 0; j < boneNames.count; j++) {
+					if (boneData.boneParent == boneNames.Get(j)) {
+						parentIndex = j;
+						break;
+					}
+				}
+
+				fwrite(&parentIndex, 1, sizeof(int), assetFileHandle);
+				fwrite(&boneData.pos,   1, sizeof(Vector3),    assetFileHandle);
+				fwrite(&boneData.rot,   1, sizeof(Quaternion), assetFileHandle);
+				fwrite(&boneData.scale, 1, sizeof(Vector3),    assetFileHandle);
 			}
 
 			fwrite(&vCount.count, 1, sizeof(int), assetFileHandle);
@@ -1201,4 +1345,3 @@ void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& as
 
 	int xy = 0;
 }
-

@@ -30,6 +30,14 @@ void Material::UpdateUniforms() {
 			glUniformMatrix4fv(uniformLoc, 1, GL_TRUE, (float*)val.m);
 		} break;
 
+		case UT_MATRIX4_ARRAY: {
+			int count = uniformValues.Read<int>();
+
+			// TODO: Bleh, hacky
+			glUniformMatrix4fv(uniformLoc, count, GL_TRUE, (float*)uniformValues.readHead);
+			uniformValues.readHead = VOID_PTR_ADD(uniformValues.readHead, count*sizeof(Mat4x4));
+		} break;
+
 		case UT_VEC2: {
 			Vector2 val = uniformValues.Read<Vector2>();
 			glUniform2f(uniformLoc, val.x, val.y);
@@ -77,6 +85,15 @@ void Material::SetMatrix4Uniform(const char* name, const Mat4x4& val) {
 	uniformValues.Write<GLint>(loc);
 	uniformValues.Write<UniformType>(UT_MATRIX4);
 	uniformValues.Write<Mat4x4>(val);
+}
+
+void Material::SetMatrix4ArrayUniform(const char* name, const Mat4x4* vals, int count) {
+	GLint loc = GetUniformLocation(name);
+
+	uniformValues.Write<GLint>(loc);
+	uniformValues.Write<UniformType>(UT_MATRIX4_ARRAY);
+	uniformValues.Write<int>(count);
+	uniformValues.WriteArray<Mat4x4>(vals, count);
 }
 
 void Material::SetVector4Uniform(const char* name, const Vector4& val) {

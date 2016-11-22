@@ -28,12 +28,14 @@ struct BoneTransform {
 
 struct Armature : IDBase {
 	Mat4x4 inverseBindPoses[MAX_BONE_COUNT];
-	Mat4x4 boneMatrices[MAX_BONE_COUNT];
 	BoneTransform bones[MAX_BONE_COUNT];
 	int boneCount;
 
 	Vector<float> boneWeights;
-	Vector<int> boneIndices;
+	Vector<float> boneIndices;
+
+	GLuint boneWeightsVbo;
+	GLuint boneIndicesVbo;
 
 	BoneTransform* AddBone() {
 		ASSERT(boneCount < MAX_BONE_COUNT);
@@ -41,6 +43,11 @@ struct Armature : IDBase {
 		boneCount++;
 		return bone;
 	}
+
+	void CalculateBoneMatrices(Mat4x4* mats);
+	Mat4x4 GetBoneMatrix(int index);
+
+	void UploadDataToGfxDevice();
 };
 
 

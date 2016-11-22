@@ -42,6 +42,7 @@ struct Material : IDBase {
 
 	void SetFloatUniform(const char* name, float val);
 	void SetIntUniform(const char* name, int val);
+	void SetMatrix4ArrayUniform(const char* name, const Mat4x4* vals, int count);
 	void SetMatrix4Uniform(const char* name, const Mat4x4& val);
 	void SetVector4Uniform(const char* name, const Vector4& val);
 	void SetVector3Uniform(const char* name, const Vector3& val);
@@ -55,6 +56,7 @@ enum UniformType{
 	UT_FLOAT,
 	UT_TEXTURE2D,
 	UT_MATRIX4,
+	UT_MATRIX4_ARRAY,
 	UT_VEC2,
 	UT_VEC3,
 	UT_VEC4,

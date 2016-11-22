@@ -188,7 +188,11 @@ void ResourceManager::LoadArmatureFromChunk(MemStream& stream, Armature* outArma
 	for (int i = 0; i < boneCount; i++) {
 		BoneTransform* bt = outArmature->AddBone();
 		stream.ReadArray<char>(bt->name, MAX_BONE_NAME_LENGTH);
-		stream.ReadArray<float>((float*)&outArmature->inverseBindPoses[i].m, 16);
+		stream.ReadArray<Mat4x4>(&outArmature->inverseBindPoses[i], 1);
+		bt->parent = stream.Read<int>();
+		bt->pos = stream.Read<Vector3>();
+		bt->rot = stream.Read<Quaternion>();
+		bt->scale = stream.Read<Vector3>();
 	}
 
 	ASSERT(outArmature->boneCount == boneCount);
@@ -214,6 +218,8 @@ void ResourceManager::LoadArmatureFromChunk(MemStream& stream, Armature* outArma
 
 	ASSERT(outArmature->boneIndices.count == vertCount * MAX_BONES_PER_VERTEX);
 	ASSERT(outArmature->boneWeights.count == vertCount * MAX_BONES_PER_VERTEX);
+
+	outArmature->UploadDataToGfxDevice();
 }
 
 void ResourceManager::LoadVShaderFromChunk(MemStream& stream, Shader* outShader) {

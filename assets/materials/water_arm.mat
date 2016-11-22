@@ -1,0 +1,3 @@
+<Material vs='armature_norm.vs' fs='pixelLight.fs'>
+	<Uniform name='_mainTex' type='tex2D' value='water.bmp'/>
+</Material>
