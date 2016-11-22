@@ -198,7 +198,7 @@ void ResourceManager::LoadArmatureFromChunk(MemStream& stream, Armature* outArma
 	outArmature->boneIndices.EnsureCapacity(vertCount * MAX_BONES_PER_VERTEX);
 	for (int i = 0; i < vertCount; i++) {
 		int boneCount = stream.Read<int>();
-		ASSERT(boneCount < MAX_BONES_PER_VERTEX);
+		ASSERT(boneCount <= MAX_BONES_PER_VERTEX);
 
 		for (int j = 0; j < boneCount; j++) {
 			outArmature->boneIndices.PushBack(stream.Read<int>());
