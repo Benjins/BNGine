@@ -1257,6 +1257,7 @@ void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& as
 			char chunkId[] = "BNAM";
 			fwrite(chunkId, 1, 4, assetFileHandle);
 			fwrite(&armId, 1, 4, assetFileHandle);
+			fwrite(&id, 1, 4, assetFileHandle);
 
 			XMLElement* uvsFloatArray = meshElem->GetChildWithAttr("source", "id", uvId)->GetChild("float_array");
 			ASSERT(uvsFloatArray != nullptr);
