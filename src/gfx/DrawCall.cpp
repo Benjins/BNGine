@@ -31,7 +31,7 @@ void ExecuteDrawCalls(DrawCall* calls, int count) {
 			arm = GlobalScene->res.armatures.GetById(mesh->armatureId);
 			ASSERT(arm != nullptr);
 
-			arm->bones[3].rot = arm->bones[3].rot * Quaternion(Y_AXIS, 0.01f);
+			arm->bones[1].rot = arm->bones[1].rot * Quaternion(Y_AXIS, 0.0005f);
 
 			Mat4x4 boneMats[MAX_BONE_COUNT];
 			arm->CalculateBoneMatrices(boneMats);	

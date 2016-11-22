@@ -16,7 +16,7 @@ Mat4x4 Armature::GetBoneMatrix(int index) {
 
 void Armature::CalculateBoneMatrices(Mat4x4* mats) {
 	for (int i = 0; i < boneCount; i++) {
-		mats[i] = GetBoneMatrix(i);
+		mats[i] = GetBoneMatrix(i) * inverseBindPoses[i];
 	}
 }
 
