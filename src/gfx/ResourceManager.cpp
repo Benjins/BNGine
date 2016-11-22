@@ -338,7 +338,7 @@ void ResourceManager::LoadLevelFromChunk(MemStream& stream, Level* outLevel) {
 
 		outLevel->cam.transform = trans.id;
 
-		int endId = stream.Read<int>()
+		int endId = stream.Read<int>();
 		ASSERT(endId == ~*(int*)camChunkId);
 	}
 
