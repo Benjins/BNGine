@@ -158,6 +158,43 @@ void Scene::LoadLevel(const char* name) {
 
 	// TODO: Less hacky way of this
 	script.Start();
+
+	for (int i = 0; i < res.armatures.currentCount; i++) {
+		Armature* arm = &res.armatures.vals[i];
+
+		for (int j = 0; j < res.drawCalls.currentCount; j++) {
+			if (res.drawCalls.vals[j].matId == arm->modelId) {
+
+				for (int k = 0; k < arm->boneCount; k++) {
+					int boneAnims[3];
+					for (int c = 0; c < 3; c++) {
+						Component* comp = addComponentFuncs[CCT_AnimationInstance]();
+						AnimationInstance* inst = (AnimationInstance*)comp;
+						inst->entity = res.drawCalls.vals[j].entId;
+
+						inst->flags = (ComponentFlags)((inst->flags) | CF_RuntimeOnly);
+
+						inst->autoPlay = true;
+						inst->isPlaying = true;
+						inst->shouldLoop = true;
+						inst->target.targetType = ATT_BoneTransform;
+						inst->target.bone.armId = arm->id;
+						inst->target.bone.boneIndex = k;
+
+						boneAnims[c] = inst->id;
+					}
+
+					anims.animInsts.GetById(boneAnims[0])->animId = arm->boneTrackData[k].posTrack;
+					anims.animInsts.GetById(boneAnims[1])->animId = arm->boneTrackData[k].rotTrack;
+					anims.animInsts.GetById(boneAnims[2])->animId = arm->boneTrackData[k].scaleTrack;
+
+					anims.animInsts.GetById(boneAnims[0])->target.bone.target3d = A3DT_Position;
+					anims.animInsts.GetById(boneAnims[1])->target.bone.target3d = A3DT_Rotation;
+					anims.animInsts.GetById(boneAnims[2])->target.bone.target3d = A3DT_Scale;
+				}
+			}
+		}
+	}
 }
 
 void Scene::SaveLevel(Level* level) {

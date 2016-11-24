@@ -3,7 +3,7 @@
 		<Transform pos='0.000000,0.200000,0.000000' id='1' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='8'/>
 	</Camera>
 	<Entity id='0'>
-		<Transform pos='0.556506,0.013706,1.500000' id='0' scale='0.200000,0.200000,0.200000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<Transform pos='0.755092,0.325729,1.500000' id='0' scale='0.200000,0.200000,0.200000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 		<Material src='water_arm.mat'/>
 		<Mesh src='char_basic_01.dae'/>
 	</Entity>
@@ -42,7 +42,7 @@
 		<Mesh src='floor.obj'/>
 	</Entity>
 	<Entity id='7'>
-		<Transform pos='0.000000,0.036339,-0.000696' id='8' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<Transform pos='0.000561,0.036339,-0.000696' id='8' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 		<PlayerComponent jumpVelocity='3.000000' playerWidth='0.200000' playerHeight='0.600000'/>
 	</Entity>
 	<Entity id='8'>

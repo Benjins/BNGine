@@ -677,6 +677,13 @@ void AppPreInit(int argc, char** argv){
 	}
 	fprintf(componentMetaFile, "};\n");
 
+	fprintf(componentMetaFile, "GetComponentFunc* getComponentFuncs[CCT_Count] = {\n");
+	for (int i = 0; i < componentIndices.count; i++) {
+		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
+		fprintf(componentMetaFile, "\t%.*s_getComponentById,\n", structName.length, structName.start);
+	}
+	fprintf(componentMetaFile, "};\n");
+
 	fprintf(componentMetaFile, "AddComponentFunc* addComponentFuncs[CCT_Count] = {\n");
 	for (int i = 0; i < componentIndices.count; i++) {
 		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;

@@ -623,6 +623,9 @@ void Editor::SidePanelGui() {
 				uint32 matId = dc->matId;
 
 				meshName = scene.res.FindFileNameByIdAndExtension("obj", meshId);
+				if (meshName == "") {
+					meshName = scene.res.FindFileNameByIdAndExtension("dae", meshId);
+				}
 				matName = scene.res.FindFileNameByIdAndExtension("mat", matId);
 			}
 

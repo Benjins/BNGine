@@ -87,6 +87,10 @@ void ResourceManager::LoadAssetFile(const char* fileName) {
 			Armature* arm = armatures.AddWithId(assetId);
 			LoadArmatureFromChunk(fileBufferStream, arm);
 		}
+		else if (memcmp(chunkId, "BNAT", 4) == 0) {
+			AnimationTrack* track = anims.AddWithId(assetId);
+			LoadAnimationTrackFromChunk(fileBufferStream, track);
+		}
 		else if (memcmp(chunkId, "BNVS", 4) == 0) {
 			Shader* shader = shaders.AddWithId(assetId);
 			LoadVShaderFromChunk(fileBufferStream, shader);
@@ -186,11 +190,18 @@ void ResourceManager::LoadArmatureFromChunk(MemStream& stream, Armature* outArma
 	int meshId = stream.Read<int>();
 	int boneCount = stream.Read<int>();
 
+	outArmature->modelId = meshId;
+
 	for (int i = 0; i < boneCount; i++) {
 		BoneTransform* bt = outArmature->AddBone();
 		stream.ReadArray<char>(bt->name, MAX_BONE_NAME_LENGTH);
 		stream.ReadArray<Mat4x4>(&outArmature->inverseBindPoses[i], 1);
 		bt->parent = stream.Read<int>();
+
+		outArmature->boneTrackData[i].posTrack = stream.Read<int>();
+		outArmature->boneTrackData[i].rotTrack = stream.Read<int>();
+		outArmature->boneTrackData[i].scaleTrack = stream.Read<int>();
+
 		bt->pos = stream.Read<Vector3>();
 		bt->rot = stream.Read<Quaternion>();
 		bt->scale = stream.Read<Vector3>();
@@ -240,6 +251,20 @@ void ResourceManager::LoadArmatureFromChunk(MemStream& stream, Armature* outArma
 	}
 
 	outArmature->UploadDataToGfxDevice();
+}
+
+void ResourceManager::LoadAnimationTrackFromChunk(MemStream& stream, AnimationTrack* outTrack) {
+	outTrack->type = stream.Read<AnimationType>();
+	int keyCount = stream.Read<int>();
+
+	outTrack->times.EnsureCapacity(keyCount);
+	stream.ReadArray<float>(outTrack->times.data, keyCount);
+	outTrack->times.count = keyCount;
+
+	int dataSize = keyCount * animTypeKeySize[outTrack->type] / 4;
+	outTrack->data.EnsureCapacity(dataSize);
+	stream.ReadArray<float>(outTrack->data.data, dataSize);
+	outTrack->data.count = dataSize;
 }
 
 void ResourceManager::LoadVShaderFromChunk(MemStream& stream, Shader* outShader) {
@@ -531,7 +556,11 @@ void ResourceManager::SavePrefabToFile(Prefab* prefab, const char* fileName) {
 		if (Mesh* mesh = GlobalScene->res.meshes.GetById(prefab->meshId)) {
 			XMLElement* meshElem = doc.AddElement();
 			meshElem->name = STATIC_TO_SUBSTRING("Mesh");
-			meshElem->attributes.Insert("src", FindFileNameByIdAndExtension("obj", mesh->id));
+			String meshName = FindFileNameByIdAndExtension("obj", mesh->id);
+			if (meshName == "") {
+				meshName = FindFileNameByIdAndExtension("dae", mesh->id);
+			}
+			meshElem->attributes.Insert("src", meshName);
 			doc.elements.GetById(rootId)->childrenIds.PushBack(meshElem->id);
 		}
 	}
@@ -605,7 +634,7 @@ void ResourceManager::SaveLevelToFile(const Level* lvl, const char* fileName) {
 			for (int j = 0; j < compCount; j++) {
 				Component* currComp = (Component*)compCursor;
 
-				if (currComp->entity == ent->id) {
+				if (!(currComp->flags & CF_RuntimeOnly) && currComp->entity == ent->id) {
 					XMLElement* compElem = doc.AddElement();
 					componentXMLSerializeFuncs[ct](currComp, compElem);
 
@@ -626,7 +655,11 @@ void ResourceManager::SaveLevelToFile(const Level* lvl, const char* fileName) {
 		if (Mesh* mesh = GlobalScene->res.meshes.GetById(lvl->meshIds.Get(i))) {
 			XMLElement* meshElem = doc.AddElement();
 			meshElem->name = STATIC_TO_SUBSTRING("Mesh");
-			meshElem->attributes.Insert("src", FindFileNameByIdAndExtension("obj", mesh->id));
+			String meshName = FindFileNameByIdAndExtension("obj", mesh->id);
+			if (meshName == "") {
+				meshName = FindFileNameByIdAndExtension("dae", mesh->id);
+			}
+			meshElem->attributes.Insert("src", meshName);
 			doc.elements.GetById(entElemId)->childrenIds.PushBack(meshElem->id);
 		}
 	}

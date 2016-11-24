@@ -17,6 +17,8 @@
 #include "Prefab.h"
 #include "Armature.h"
 
+#include "../anim/Animations.h"
+
 #include "../script/ScriptObject.h"
 
 struct MemStream;
@@ -35,6 +37,7 @@ struct ResourceManager {
 	IDTracker<Prefab> prefabs;
 	IDTracker<ScriptObject> scripts;
 	IDTracker<Armature> armatures;
+	IDTracker<AnimationTrack> anims;
 
 	StringMap<int> assetIdMap;
 
@@ -56,6 +59,7 @@ struct ResourceManager {
 	void LoadUniFontFromChunk(MemStream& stream, UniFont* outFont);
 	void LoadPrefabFromChunk(MemStream& stream, Prefab* outPrefab);
 	void LoadScriptObjectFromChunk(MemStream& stream, ScriptObject* outScript);
+	void LoadAnimationTrackFromChunk(MemStream& stream, AnimationTrack* outTrack);
 
 	void SaveLevelToFile(const Level* lvl, const char* fileName);
 	void SavePrefabToFile(Prefab* prefab, const char* fileName);

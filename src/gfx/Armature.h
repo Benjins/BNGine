@@ -26,13 +26,22 @@ struct BoneTransform {
 
 #define MAX_BONE_COUNT 32
 
+struct BoneAnimTracks {
+	int posTrack;
+	int rotTrack;
+	int scaleTrack;
+};
+
 struct Armature : IDBase {
 	Mat4x4 inverseBindPoses[MAX_BONE_COUNT];
 	BoneTransform bones[MAX_BONE_COUNT];
+	BoneAnimTracks boneTrackData[MAX_BONE_COUNT];
 	int boneCount;
 
 	Vector<float> boneWeights;
 	Vector<float> boneIndices;
+
+	int modelId;
 
 	GLuint boneWeightsVbo;
 	GLuint boneIndicesVbo;

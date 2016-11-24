@@ -1030,6 +1030,21 @@ void ParseColladaBoneData(XMLElement* nodeElem, StringMap<ColladaBoneData>* outB
 	}
 }
 
+void WriteAnimTrackChunkHelper(float* times, float* data, int keyCount, AnimationType type, int id, FILE* assetFileHandle) {
+	char chunkId[] = "BNAT";
+	int flippedChunkId = ~*(int*)chunkId;
+	fwrite(&chunkId, 1, 4, assetFileHandle);
+	fwrite(&id, 1, 4, assetFileHandle);
+
+	fwrite(&type, 1, sizeof(AnimationType), assetFileHandle);
+	fwrite(&keyCount, 1, 4, assetFileHandle);
+
+	fwrite(times, sizeof(float), keyCount, assetFileHandle);
+	fwrite(data, animTypeKeySize[type], keyCount, assetFileHandle);
+
+	fwrite(&flippedChunkId, 1, 4, assetFileHandle);
+}
+
 void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& assetIds, int id, int armId, FILE* assetFileHandle) {
 	XMLDoc doc;
 	XMLError err = ParseXMLStringFromFile(colladaFileName, &doc);
@@ -1250,6 +1265,76 @@ void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& as
 			vDataCount += vCount.Get(i);
 		}
 
+		StringMap<int> boneTrackMapping;
+
+		XMLElement* animLib = colladaElem->GetChild("library_animations");
+		if (animLib != nullptr) {
+			int animIndex = 0;
+			XMLElement* animElem = animLib->GetChild("animation", animIndex);
+			while (animElem != nullptr) {
+				XMLElement* sampler = animElem->GetChild("sampler");
+				ASSERT(sampler != nullptr);
+				XMLElement* input = sampler->GetChildWithAttr("input", "semantic", "INPUT");
+				ASSERT(input != nullptr);
+				XMLElement* output = sampler->GetChildWithAttr("input", "semantic", "OUTPUT");
+				ASSERT(output != nullptr);
+
+				{
+					XMLElement* channel = animElem->GetChild("channel");
+					ASSERT(channel != nullptr);
+					String targetName = channel->GetExistingAttrValue("target");
+					int slash = FindChar(targetName.string, '/');
+					targetName.string[slash] = '\0';
+					boneTrackMapping.Insert(targetName.string, animIndex * 3);
+				}
+
+				char*  inputSourceName = input->GetExistingAttrValue("source").string + 1;
+				char* outputSourceName = output->GetExistingAttrValue("source").string + 1;
+
+				XMLElement*  inputSource = animElem->GetChildWithAttr("source", "id", inputSourceName);
+				XMLElement* outputSource = animElem->GetChildWithAttr("source", "id", outputSourceName);
+
+				XMLElement* inputSourceData = inputSource->GetChild("float_array");
+				int inputSourceCount = Atoi(inputSourceData->GetExistingAttrValue("count").string);
+				Vector<float> inputSourceFloats =
+					ParseFloatArray(inputSourceData->plainText.start, inputSourceData->plainText.length, inputSourceCount);
+
+				XMLElement* outputSourceData = outputSource->GetChild("float_array");
+				int outputSourceCount = Atoi(outputSourceData->GetExistingAttrValue("count").string);
+				Vector<float> outputSourceFloats =
+					ParseFloatArray(outputSourceData->plainText.start, outputSourceData->plainText.length, outputSourceCount);
+
+				int keyCount = inputSourceFloats.count;
+				ASSERT(keyCount > 0);
+				ASSERT(keyCount * 16 == outputSourceFloats.count);
+
+				Vector<Vector3> posTrack(keyCount);
+				Vector<Quaternion> rotTrack(keyCount);
+				Vector<Vector3> scaleTrack(keyCount);
+
+				for (int i = 0; i < outputSourceFloats.count; i += 16) {
+					Mat4x4 mat = *(Mat4x4*)&outputSourceFloats.data[i];
+
+					Vector3 pos, scale;
+					Quaternion rot;
+					DecomposeMatrixIntoLocRotScale(mat, &pos, &rot, &scale);
+
+					posTrack.PushBack(pos);
+					rotTrack.PushBack(rot);
+					scaleTrack.PushBack(scale);
+				}
+
+				// TODO: Needs to take others into account?
+				int animTIdx = animIndex * 3;
+				WriteAnimTrackChunkHelper(inputSourceFloats.data, (float*)posTrack.data, keyCount, ANT_Vec3, animTIdx, assetFileHandle);
+				WriteAnimTrackChunkHelper(inputSourceFloats.data, (float*)rotTrack.data, keyCount, ANT_Quaternion, animTIdx + 1, assetFileHandle);
+				WriteAnimTrackChunkHelper(inputSourceFloats.data, (float*)scaleTrack.data, keyCount, ANT_Vec3, animTIdx + 2, assetFileHandle);
+
+				animIndex++;
+				animElem = animLib->GetChild("animation", animIndex);
+			}
+		}
+
 		XMLElement* vDataElem = vertexWeightsElem->GetChild("v");
 		Vector<int> vData = ParseIntArray(vDataElem->plainText.start, vDataElem->plainText.length, vDataCount * 2);
 
@@ -1258,9 +1343,6 @@ void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& as
 			fwrite(chunkId, 1, 4, assetFileHandle);
 			fwrite(&armId, 1, 4, assetFileHandle);
 			fwrite(&id, 1, 4, assetFileHandle);
-
-			XMLElement* uvsFloatArray = meshElem->GetChildWithAttr("source", "id", uvId)->GetChild("float_array");
-			ASSERT(uvsFloatArray != nullptr);
 
 			fwrite(&boneNames.count, 1, sizeof(int), assetFileHandle);
 			for (int i = 0; i < boneNames.count; i++) {
@@ -1283,6 +1365,20 @@ void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& as
 				}
 
 				fwrite(&parentIndex, 1, sizeof(int), assetFileHandle);
+
+				int trackIndex = -1;
+				if (boneTrackMapping.LookUp(boneName, &trackIndex)) {
+					for (int j = 0; j < 3; j++) {
+						fwrite(&trackIndex, 1, sizeof(int), assetFileHandle);
+						trackIndex++;
+					}
+				}
+				else {
+					for (int j = 0; j < 3; j++) {
+						fwrite(&trackIndex, 1, sizeof(int), assetFileHandle);
+					}
+				}
+
 				fwrite(&boneData.pos,   1, sizeof(Vector3),    assetFileHandle);
 				fwrite(&boneData.rot,   1, sizeof(Quaternion), assetFileHandle);
 				fwrite(&boneData.scale, 1, sizeof(Vector3),    assetFileHandle);

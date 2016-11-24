@@ -23,6 +23,8 @@
 
 #include "../gui/GuiSystem.h"
 
+#include "../anim/Animations.h"
+
 #include "../script/ScriptSystem.h"
 
 #include "../../gen/Actions.h"
@@ -39,12 +41,10 @@ struct Scene {
 	Input input;
 
 	GameplayComponents gameplay;
-
 	PhysicsSystem phys;
-
 	ScriptSystem script;
-	
 	GuiSystem gui;
+	AnimationSystem anims;
 
 	Camera cam;
 

@@ -7,10 +7,20 @@
 
 struct Entity;
 
+enum ComponentFlags {
+	CF_None = 0,
+	CF_RuntimeOnly = (1 << 0)
+};
+
 struct Component : IDBase{
 	uint32 entity;
-	uint32 flags;
+	ComponentFlags flags;
 	int type;
+
+	Component() 
+		: IDBase() {
+		flags = CF_None;
+	}
 };
 
 #endif
