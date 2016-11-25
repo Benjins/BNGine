@@ -197,15 +197,6 @@ bool AppUpdate(int argc, char** argv) {
 	frameData.height = height;
 	frameData.data = (int*)imgBuffer;
 
-	bool success = true;
-	if (doCompare) {
-		success = CompareFrameBufferAndWriteFile(frameData, "frame_04.bmp");
-	}
-
-	if (!success) {
-		return false;
-	}
-
 	GlobalScene->LoadLevel("Test_Level.lvl");
 
 	for (int i = 0; i < 5; i++) {
@@ -213,6 +204,7 @@ bool AppUpdate(int argc, char** argv) {
 		GlobalScene->Render();
 	}
 
+	bool success = true;
 	if (doCompare) {
 		success = CompareFrameBufferAndWriteFile(frameData, "Test_Level.bmp");
 	}
