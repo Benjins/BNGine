@@ -66,6 +66,9 @@ TODO:
    - [ ] cube maps, sky boxes, static reflections
    - [X] armature, animations
    - [ ] particle systems
+ * Animation
+   - [ ] Animation states, split track by time
+   - [ ] Animation targets serialize
  * Networking
    - [ ] basic matchmaking server backend, just for testing?
    - [ ] Reliable and streaming packets, ACK's
@@ -83,6 +86,9 @@ TODO:
    - [X] Parse attributse
    - [ ] Parse enums
    - [X] Parse functions/methods
+   - [ ] Custom serialize/editor methods?
+   - [ ] Or, knowledge of disciminated unions and enums
+   - [ ] enums in editor
  * Misc
    - [X] Break out application entry point and platform entry point
    - [ ] Make XML unicode aware
