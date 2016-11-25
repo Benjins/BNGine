@@ -94,3 +94,4 @@ TODO:
    - [ ] Make XML unicode aware
    - [ ] Some kind of ref-counted unicode strings, like String/SubString
    - [ ] console menu with console commands
+   - [ ] Substrings from Substrings
