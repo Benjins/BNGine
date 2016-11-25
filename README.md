@@ -21,8 +21,11 @@ git submodule update --init --recursive
 
 Dependencies
 -------------
-On Ubuntu, run:
-```apt-get install ```
+Ubuntu: X11 and OpenGL development packages
+
+Windows: Uhhh...OpenGL32.lib? Windows dependencies confuse me.
+
+OS X: Ha ha, there's no Mac version. _yet_.
 
 Building
 -------------
