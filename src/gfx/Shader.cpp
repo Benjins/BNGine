@@ -20,7 +20,6 @@ void Shader::CompileShader(const char* shaderText, GLenum _shaderType){
 	if (!success) {
 		GLchar infoLog[1024];
 		glGetShaderInfoLog(shaderObj, sizeof(infoLog), NULL, infoLog);
-		OutputDebugStringA(StringStackBuffer<2048>("Error compiling shader type %d: '%s'\n", _shaderType, infoLog).buffer);
 		ASSERT_WARN("Error compiling shader type %d: '%s'\n", _shaderType, infoLog);
 	}
 }
