@@ -4,6 +4,11 @@ Or how I learned to stop worrying and love...something.
 
 An engine I'm writing in C++.  Makes use of other repos of mine: [3dbasics](https://github.com/Benjins/3dbasics) and [CppUtils](https://github.com/Benjins/CppUtils).  The CppUtils repo is added as a submodule.
 
+Build Status
+--------------
+
+Linux Build: [![Linux Build Status](https://travis-ci.org/Benjins/BNGine.svg?branch=master)](https://travis-ci.org/Benjins/BNGine)
+
 Installing
 --------------
 ```
@@ -13,6 +18,11 @@ Or run the following after a clone:
 ```
 git submodule update --init --recursive
 ```
+
+Dependencies
+-------------
+On Ubuntu, run:
+```apt-get install ```
 
 Building
 -------------
@@ -51,10 +61,10 @@ TODO:
  * Graphics
    - [ ] better shading model, specular, etc.
    - [ ] cube maps, sky boxes, static reflections
-   - [ ] armature, animations
+   - [X] armature, animations
    - [ ] particle systems
  * Networking
-   - [ ] basic matchmaking server backend, just for testing
+   - [ ] basic matchmaking server backend, just for testing?
    - [ ] Reliable and streaming packets, ACK's
    - [ ] Resolve id's between host/client
    - [ ] Player entity sync?
@@ -64,7 +74,7 @@ TODO:
    - [X] Gui button actions, collect into enum and discriminated union
  * Script integration
    - [ ] yield/wait for seconds command
-   - [ ] Hotloading
+   - [X] Hotloading
    - [X] Use metaGen system to generate script files
  * MetaGen
    - [X] Parse attributse
