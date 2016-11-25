@@ -124,8 +124,10 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 		WriteMeshChunk(objFiles.Get(i)->fullName, i, assetFile);
 	}
 
+	int animTrackCount = 0;
+
 	for (int i = 0; i < daeFiles.count; i++) {
-		WriteSkinnedMeshChunk(daeFiles.Get(i)->fullName, assetFileIds, objFiles.count + i, i, assetFile);
+		WriteSkinnedMeshChunk(daeFiles.Get(i)->fullName, assetFileIds, objFiles.count + i, i, &animTrackCount, assetFile);
 	}
 
 	for (int i = 0; i < vShaderFiles.count; i++) {
@@ -1045,7 +1047,7 @@ void WriteAnimTrackChunkHelper(float* times, float* data, int keyCount, Animatio
 	fwrite(&flippedChunkId, 1, 4, assetFileHandle);
 }
 
-void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& assetIds, int id, int armId, FILE* assetFileHandle) {
+void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& assetIds, int id, int armId, int* trackCount, FILE* assetFileHandle) {
 	XMLDoc doc;
 	XMLError err = ParseXMLStringFromFile(colladaFileName, &doc);
 	ASSERT(err == XMLE_NONE);
@@ -1325,10 +1327,12 @@ void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& as
 				}
 
 				// TODO: Needs to take others into account?
-				int animTIdx = animIndex * 3;
+				int animTIdx = *trackCount;
 				WriteAnimTrackChunkHelper(inputSourceFloats.data, (float*)posTrack.data, keyCount, ANT_Vec3, animTIdx, assetFileHandle);
 				WriteAnimTrackChunkHelper(inputSourceFloats.data, (float*)rotTrack.data, keyCount, ANT_Quaternion, animTIdx + 1, assetFileHandle);
 				WriteAnimTrackChunkHelper(inputSourceFloats.data, (float*)scaleTrack.data, keyCount, ANT_Vec3, animTIdx + 2, assetFileHandle);
+
+				*trackCount += 3;
 
 				animIndex++;
 				animElem = animLib->GetChild("animation", animIndex);
