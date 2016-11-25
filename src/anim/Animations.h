@@ -78,6 +78,8 @@ struct AnimationTarget {
 struct AnimationInstance : Component {
 	bool shouldLoop;
 	bool autoPlay;
+
+	/*[DoNotSerialize]*/
 	float currTime;
 
 	/*[DoNotSerialize]*/

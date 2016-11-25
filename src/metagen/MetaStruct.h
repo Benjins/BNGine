@@ -7,7 +7,8 @@
 
 enum FieldSerializeFlags {
 	FSF_None = 0,
-	FSF_SerializeFromId = (1 << 0)
+	FSF_SerializeFromId = (1 << 0),
+	FSF_DoNotSerialize = (1 << 1)
 };
 
 struct MetaAttribute {

@@ -233,7 +233,10 @@ void AppPreInit(int argc, char** argv){
 			for (int j = 0; j < allParseMetaStructs.data[i].fields.count; j++) {
 				ParseMetaField* mf = &allParseMetaStructs.data[i].fields.data[j];
 				ParseMetaAttribute attrib;
-				if (MetaFieldHasAttrib(mf, "SerializeFromId", &attrib)) {
+				if (MetaFieldHasAttrib(mf, "DoNotSerialize")) {
+					mf->flags = (FieldSerializeFlags)((int)mf->flags | FSF_DoNotSerialize);
+				}
+				else if (MetaFieldHasAttrib(mf, "SerializeFromId", &attrib)) {
 					mf->flags = (FieldSerializeFlags)((int)mf->flags | FSF_SerializeFromId);
 					mf->serializeFromId = attrib.args.data[0];
 					mf->serializeExt = attrib.args.data[1];

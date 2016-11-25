@@ -819,53 +819,54 @@ float Editor::EditComponentGui(Component* comp, MetaStruct* meta, float x, float
 	for (int i = 0; i < meta->fieldCount; i++) {
 		const MetaField* mf = &meta->fields[i];
 
-		char* fieldPtr = ((char*)comp) + mf->offset;
+		if ((((int)mf->flags) & FSF_DoNotSerialize) == 0) {
+			char* fieldPtr = ((char*)comp) + mf->offset;
 
-		if (mf->type >= MT_FundamentalBegin && mf->type < MT_FundamentalEnd) {
-			gui.DrawTextLabel(mf->name, 0, 12, x, currY);
+			if (mf->type >= MT_FundamentalBegin && mf->type < MT_FundamentalEnd) {
+				gui.DrawTextLabel(mf->name, 0, 12, x, currY);
+				currY -= 14;
+			}
+
+			float width = cam.widthPixels - x - 5;
+			if (((int)mf->flags) & FSF_SerializeFromId) {
+				int* fieldVal = (int*)fieldPtr;
+
+				String fileName = scene.res.FindFileNameByIdAndExtension(mf->serializeExt, *fieldVal);
+
+				fileName = gui.TextInput(fileName, 0, 12, x, currY, width);
+
+				int newVal;
+				if (scene.res.assetIdMap.LookUp(fileName, &newVal)) {
+					*fieldVal = newVal;
+				}
+			}
+			else if (mf->type == MT_Int) {
+				int* fieldVal = (int*)fieldPtr;
+				*fieldVal = IntField(*fieldVal, x, currY, width);
+			}
+			else if (mf->type == MT_Float) {
+				float* fieldVal = (float*)fieldPtr;
+				*fieldVal = FloatField(*fieldVal, x, currY, width);
+			}
+			else if (mf->type == MT_Bool) {
+				bool* fieldVal = (bool*)fieldPtr;
+				*fieldVal = BoolField(*fieldVal, x, currY, width);
+			}
+			else if (mf->type == MT_Vector2) {
+				Vector2* fieldVal = (Vector2*)fieldPtr;
+				*fieldVal = Vec2Field(*fieldVal, x, currY, width);
+			}
+			else if (mf->type == MT_Vector3) {
+				Vector3* fieldVal = (Vector3*)fieldPtr;
+				*fieldVal = Vec3Field(*fieldVal, x, currY, width);
+			}
+			else {
+				// Skip field, don't decrease y
+				currY += 14;
+			}
+
 			currY -= 14;
 		}
-
-		float width = cam.widthPixels - x - 5;
-
-		if (((int)mf->flags) & FSF_SerializeFromId) {
-			int* fieldVal = (int*)fieldPtr;
-
-			String fileName = scene.res.FindFileNameByIdAndExtension(mf->serializeExt, *fieldVal);
-
-			fileName = gui.TextInput(fileName, 0, 12, x, currY, width);
-
-			int newVal;
-			if (scene.res.assetIdMap.LookUp(fileName, &newVal)) {
-				*fieldVal = newVal;
-			}
-		}
-		else if (mf->type == MT_Int) {
-			int* fieldVal = (int*)fieldPtr;
-			*fieldVal = IntField(*fieldVal, x, currY, width);
-		}
-		else if (mf->type == MT_Float) {
-			float* fieldVal = (float*)fieldPtr;
-			*fieldVal = FloatField(*fieldVal, x, currY, width);
-		}
-		else if (mf->type == MT_Bool) {
-			bool* fieldVal = (bool*)fieldPtr;
-			*fieldVal = BoolField(*fieldVal, x, currY, width);
-		}
-		else if (mf->type == MT_Vector2) {
-			Vector2* fieldVal = (Vector2*)fieldPtr;
-			*fieldVal = Vec2Field(*fieldVal, x, currY, width);
-		}
-		else if (mf->type == MT_Vector3) {
-			Vector3* fieldVal = (Vector3*)fieldPtr;
-			*fieldVal = Vec3Field(*fieldVal, x, currY, width);
-		}
-		else {
-			// Skip field, don't decrease y
-			currY += 14;
-		}
-
-		currY -= 14;
 	}
 
 	return currY;
