@@ -8,7 +8,7 @@ int main(int argc, char** argv){
 
 	AppPreInit(argc, argv);
 
-	OSMesaContext ctx = OSMesaCreateContext(OSMESA_RGBA, NULL);
+	OSMesaContext ctx = OSMesaCreateContext(OSMESA_BGRA, NULL);
 	
 	imgBuffer = (unsigned char*)malloc(width*height*4);
 	
