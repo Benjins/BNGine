@@ -163,7 +163,7 @@ void Scene::LoadLevel(const char* name) {
 		Armature* arm = &res.armatures.vals[i];
 
 		for (int j = 0; j < res.drawCalls.currentCount; j++) {
-			if (res.drawCalls.vals[j].matId == arm->modelId) {
+			if (res.drawCalls.vals[j].meshId == arm->modelId) {
 
 				for (int k = 0; k < arm->boneCount; k++) {
 					int boneAnims[3];
