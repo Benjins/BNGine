@@ -727,6 +727,7 @@ void AppPreInit(int argc, char** argv){
 		fprintf(componentMetaFile, "}\n\n");
 
 		fprintf(componentMetaFile, "void %.*s_ResetComp(Component* comp){\n", ms->name.length, ms->name.start);
+		fprintf(componentMetaFile, "\t((%.*s*)comp)->~%.*s();\n", ms->name.length, ms->name.start, ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "\tmemset(comp, 0, sizeof(%.*s));\n", ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "\tnew (comp) %.*s();\n", ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "}\n\n");

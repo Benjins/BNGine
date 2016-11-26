@@ -23,16 +23,14 @@ int main(int argc, char** argv){
 	if (!success){
 		AppShutdown(argc, argv);
 		OSMesaDestroyContext(ctx);
-
 		free(imgBuffer);
+
 		return -1;
 	}
 	
 	
 	AppShutdown(argc, argv);
-
 	OSMesaDestroyContext(ctx);
-	
 	free(imgBuffer);
 	
 	return 0;
