@@ -3,7 +3,7 @@
 #include "../../ext/CppUtils/filesys.h"
 #include "../../ext/CppUtils/strings.h"
 
-Vector<ParseMetaAttribute> ParseMetaAttribsBackward(Vector<SubString> tokens, int index, const char* fileName) {
+Vector<ParseMetaAttribute> ParseMetaAttribsBackward(Vector<SubString>& tokens, int index, const char* fileName) {
 	Vector<ParseMetaAttribute> attrs;
 	for (int i = index; i >= 0; i--) {
 		if (tokens.Get(i) == "]*/") {
@@ -146,6 +146,52 @@ ParseMetaAttribute* FindMetaAttribByName(const Vector<ParseMetaAttribute>& attri
 }
 
 Vector<ParseMetaEnum> ParseEnumDefsFromFile(const char* fileName) {
-	return Vector<ParseMetaEnum>();
+	String fileContents = ReadStringFromFile(fileName);
+
+	Vector<SubString> tokens = LexString(fileContents);
+
+	Vector<ParseMetaEnum> parsedEnums;
+
+	for (int i = 0; i < tokens.count - 2; i++) {
+		if (tokens.Get(i) == "enum" && tokens.Get(i + 2) == "{") {
+			ParseMetaEnum enumDef;
+			enumDef.name = tokens.Get(i + 1);
+			enumDef.attrs = ParseMetaAttribsBackward(tokens, i - 1, fileName);
+
+			i += 3;
+			while (i < tokens.count && tokens.Get(i) != "}") {
+				if (tokens.Get(i) == "/*[") {
+					while (i < tokens.count && tokens.Get(i) != "]*/") {
+						i++;
+					}
+				}
+
+				ParseMetaEnumEntry entry;
+				entry.name = tokens.Get(i);
+				entry.attrs = ParseMetaAttribsBackward(tokens, i - 1, fileName);
+
+				i++;
+				if (tokens.Get(i) == "=") {
+					i++;
+					while (i < tokens.count && tokens.Get(i) != "," && tokens.Get(i) != "}") {
+						entry.value.PushBack(tokens.Get(i));
+						i++;
+					}
+				}
+				else {
+					entry.value.PushBack(entry.name);
+				}
+
+				enumDef.entries.PushBack(entry);
+				if (tokens.Get(i) == ",") {
+					i++;
+				}
+			}
+
+			parsedEnums.PushBack(enumDef);
+		}
+	}
+
+	return parsedEnums;
 }
 

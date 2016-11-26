@@ -26,6 +26,8 @@ struct ParseMetaField {
 	SubString serializeExt;
 	FieldSerializeFlags flags;
 
+	int enumType;
+
 	ParseMetaField() {
 		indirectionLevel = 0;
 		arrayCount = NOT_AN_ARRAY;
@@ -34,7 +36,8 @@ struct ParseMetaField {
 };
 
 struct ParseMetaEnumEntry {
-	SubString value;
+	SubString name;
+	Vector<SubString> value;
 	Vector<ParseMetaAttribute> attrs;
 };
 
@@ -62,6 +65,6 @@ Vector<ParseMetaEnum> ParseEnumDefsFromFile(const char* fileName);
 
 ParseMetaAttribute* FindMetaAttribByName(const Vector<ParseMetaAttribute>& attribs, const char* attribName);
 
-Vector<ParseMetaAttribute> ParseMetaAttribsBackward(Vector<SubString> tokens, int index, const char* fileName);
+Vector<ParseMetaAttribute> ParseMetaAttribsBackward(Vector<SubString>& tokens, int index, const char* fileName);
 
 #endif

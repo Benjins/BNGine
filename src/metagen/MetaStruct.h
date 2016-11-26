@@ -8,7 +8,8 @@
 enum FieldSerializeFlags {
 	FSF_None = 0,
 	FSF_SerializeFromId = (1 << 0),
-	FSF_DoNotSerialize = (1 << 1)
+	FSF_DoNotSerialize = (1 << 1),
+	FSF_SerializeAsEnum = (1 << 2)
 };
 
 struct MetaAttribute {
@@ -20,15 +21,16 @@ struct MetaAttribute {
 struct MetaField {
 	const char* name;
 	int offset;
-	MetaType type;
+	int type;
 
 	char* serializeExt;
 	FieldSerializeFlags flags;
 };
 
 struct MetaEnumEntry {
-	const char* value;
+	const char* name;
 	const char* serial;
+	int value;
 };
 
 struct MetaEnum {

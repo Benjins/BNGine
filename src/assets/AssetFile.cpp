@@ -596,10 +596,10 @@ void WriteEntitySubChunk(XMLElement* entElem, const StringMap<int>& assetIds, FI
 			customComponents.Write(metaDataIndex);
 
 			//TODO: We could re-use this buffer, or at least avoid freeing it every time
-			Component* buffer = (Component*)malloc(metaData->size);
+			Component* buffer = componentSerializeBuffer[metaDataIndex];
+			(componentResetFuncs[metaDataIndex])(buffer);
 			(componentXMLDeserializeFuncs[metaDataIndex])(buffer, childElem);
 			(componentMemSerializeFuncs[metaDataIndex])(buffer, &customComponents);
-			free(buffer);
 		}
 	}
 

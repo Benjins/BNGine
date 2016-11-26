@@ -31,7 +31,7 @@ void ParseFunctionHeadersFromFile(const char* fileName, Vector<ParseMetaFuncDef>
 	}
 }
 
-MetaType ParseType(const SubString& name, int indirectionLevel, int arrayCount) {
+MetaType ParseType(const SubString& name, int indirectionLevel, int arrayCount, const Vector<ParseMetaEnum>& enumDefs, SubString* outEnumName) {
 	if (arrayCount == NOT_AN_ARRAY) {
 		if (indirectionLevel == 0) {
 			if (name == "int") {
@@ -62,6 +62,12 @@ MetaType ParseType(const SubString& name, int indirectionLevel, int arrayCount) 
 				return MT_Quaternion;
 			}
 			else {
+				for (int i = 0; i < enumDefs.count; i++) {
+					if (enumDefs.data[i].name == name) {
+						*outEnumName = enumDefs.data[i].name;
+						return MT_CustomEnum;
+					}
+				}
 				return MT_Unknown;
 			}
 		}
@@ -183,6 +189,32 @@ bool FuncDefHasAttrib(ParseMetaFuncDef* def, const char* attr, ParseMetaAttribut
 	return false;
 }
 
+bool EnumHasAttrib(ParseMetaEnum* def, const char* attr, ParseMetaAttribute* outAttrib = nullptr) {
+	for (int i = 0; i < def->attrs.count; i++) {
+		if (def->attrs.data[i].name == attr) {
+			if (outAttrib != nullptr) {
+				*outAttrib = def->attrs.data[i];
+			}
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool EnumEntryHasAttrib(ParseMetaEnumEntry* entry, const char* attr, ParseMetaAttribute* outAttrib = nullptr) {
+	for (int i = 0; i < entry->attrs.count; i++) {
+		if (entry->attrs.data[i].name == attr) {
+			if (outAttrib != nullptr) {
+				*outAttrib = entry->attrs.data[i];
+			}
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void AppPostInit(int argc, char** argv) {}
 bool AppUpdate(int argc, char** argv) { return false; }
 void AppShutdown(int argc, char** argv) {}
@@ -200,9 +232,12 @@ void AppPreInit(int argc, char** argv){
 	srcFiles.FindFilesWithExt("h", &headerFiles);
 
 	Vector<ParseMetaStruct> allParseMetaStructs;
+	Vector<ParseMetaEnum> allParseMetaEnums;
 	Vector<ParseMetaFuncDef> allParseMetaFuncs;
 
 	StringMap<String> structToFileMap;
+
+	Vector<String> additionalIncludes;
 
 	for (int i = 0; i < headerFiles.count; i++) {
 		Vector<ParseMetaStruct> fileParseMetaStructs = ParseStructDefsFromFile(headerFiles.data[i]->fullName);
@@ -217,6 +252,13 @@ void AppPreInit(int argc, char** argv){
 		Vector<ParseMetaFuncDef> fileParseFuncDefs;
 		ParseFunctionHeadersFromFile(headerFiles.data[i]->fullName, &fileParseFuncDefs);
 		allParseMetaFuncs.InsertVector(allParseMetaFuncs.count, fileParseFuncDefs);
+
+		Vector<ParseMetaEnum> fileParseEnumDefs = ParseEnumDefsFromFile(headerFiles.data[i]->fullName);
+		allParseMetaEnums.InsertVector(allParseMetaEnums.count, fileParseEnumDefs);
+
+		if (fileParseEnumDefs.count > 0) {
+			additionalIncludes.PushBack(headerFiles.data[i]->fullName);
+		}
 	}
 
 	StringMap<int> typeIndices;
@@ -248,6 +290,14 @@ void AppPreInit(int argc, char** argv){
 
 					mf->serializeExt.start++;
 					mf->serializeExt.length -= 2;
+				}
+
+				for (int k = 0; k < allParseMetaEnums.count; k++) {
+					if (mf->type == allParseMetaEnums.data[k].name) {
+						mf->flags = (FieldSerializeFlags)((int)mf->flags | FSF_SerializeAsEnum);
+						mf->enumType = k;
+						break;
+					}
 				}
 			}
 		}
@@ -297,6 +347,14 @@ void AppPreInit(int argc, char** argv){
 		fprintf(componentTypeFile, "\tCCT_%.*s,\n", ms->name.length, ms->name.start);
 	}
 	fprintf(componentTypeFile, "\tCCT_Count\n");
+	fprintf(componentTypeFile, "};\n\n");
+
+	fprintf(componentTypeFile, "enum CustomDefinedEnum{\n");
+	for (int i = 0; i < allParseMetaEnums.count; i++) {
+		ParseMetaEnum* me = &allParseMetaEnums.data[i];
+		fprintf(componentTypeFile, "\tCDE_%.*s,\n", me->name.length, me->name.start);
+	}
+	fprintf(componentTypeFile, "\tCDE_Count\n");
 	fprintf(componentTypeFile, "};\n\n");
 
 	fprintf(componentTypeFile, "#endif");
@@ -468,6 +526,14 @@ void AppPreInit(int argc, char** argv){
 		fprintf(componentMetaFile, "#include \"../%s\"//%.*s\n", includefile.string, ms->name.length, ms->name.start);
 	}
 
+	fprintf(componentMetaFile, "\n");
+
+	for (int i = 0; i < additionalIncludes.count; i++) {
+		fprintf(componentMetaFile, "#include \"../%s\"\n", additionalIncludes.Get(i).string);
+	}
+
+	fprintf(componentMetaFile, "\n");
+
 	for (int i = 0; i < componentIndices.count; i++) {
 		int compIdx = componentIndices.data[i];
 		ParseMetaStruct* ms = &allParseMetaStructs.data[compIdx];
@@ -522,10 +588,21 @@ void AppPreInit(int argc, char** argv){
 		fprintf(componentMetaFile, "MetaField %.*s_metaFields[] = {\n", ms->name.length, ms->name.start);
 		for (int j = 0; j < ms->fields.count; j++) {
 			ParseMetaField mf = ms->fields.data[j];
-			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount);
-			if (fieldType != MT_Unknown) {
+			SubString enumName;
+			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount, allParseMetaEnums, &enumName);
+			if (fieldType == MT_CustomEnum) {
 				usedFieldCount++;
-				fprintf(componentMetaFile, "\t{\"%.*s\", (int)(size_t)(&((%.*s*)0)->%.*s), (MetaType)%d, \"%.*s\", (FieldSerializeFlags)%d},\n",
+				fprintf(componentMetaFile, "\t{\"%.*s\", (int)(size_t)(&((%.*s*)0)->%.*s), %d, \"%.*s\", (FieldSerializeFlags)%d},\n",
+					mf.name.length, mf.name.start,
+					ms->name.length, ms->name.start,
+					mf.name.length, mf.name.start,
+					mf.enumType,
+					mf.serializeExt.length, mf.serializeExt.start,
+					mf.flags);
+			}
+			else if (fieldType != MT_Unknown) {
+				usedFieldCount++;
+				fprintf(componentMetaFile, "\t{\"%.*s\", (int)(size_t)(&((%.*s*)0)->%.*s), %d, \"%.*s\", (FieldSerializeFlags)%d},\n",
 					mf.name.length, mf.name.start,
 					ms->name.length, ms->name.start,
 					mf.name.length, mf.name.start, 
@@ -570,9 +647,15 @@ void AppPreInit(int argc, char** argv){
 
 		for (int j = 0; j < ms->fields.count; j++) {
 			ParseMetaField mf = ms->fields.data[j];
-			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount);
+			SubString enumName;
+			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount, allParseMetaEnums, &enumName);
 
-			if (fieldType != MT_Unknown && FindMetaAttribByName(mf.attrs, "DoNotSerialize") == nullptr) {
+			if (fieldType == MT_CustomEnum) {
+				fprintf(componentMetaFile, "\tif(elem->attributes.LookUp(\"%.*s\", &temp)){\n", mf.name.length, mf.name.start);
+				fprintf(componentMetaFile, "\t\tcompCast->%.*s = (%.*s)ParseEnum(%d, temp.string);\n\t}\n",
+					mf.name.length, mf.name.start, mf.type.length, mf.type.start, mf.enumType);
+			}
+			else if (fieldType != MT_Unknown && FindMetaAttribByName(mf.attrs, "DoNotSerialize") == nullptr) {
 				if (mf.flags & FSF_SerializeFromId) {
 					fprintf(componentMetaFile, "\tif(elem->attributes.LookUp(\"%.*s\", &temp)){\n", mf.serializeFromId.length, mf.serializeFromId.start);
 					fprintf(componentMetaFile, "\t\tGlobalScene->res.assetIdMap.LookUp(temp.string, &compCast->%.*s);\n\t}\n", mf.name.length, mf.name.start);
@@ -591,9 +674,14 @@ void AppPreInit(int argc, char** argv){
 
 		for (int j = 0; j < ms->fields.count; j++) {
 			ParseMetaField mf = ms->fields.data[j];
-			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount);
+			SubString enumName;
+			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount, allParseMetaEnums, &enumName);
 
-			if (fieldType != MT_Unknown && FindMetaAttribByName(mf.attrs, "DoNotSerialize") == nullptr) {
+			if (fieldType == MT_CustomEnum) {
+				fprintf(componentMetaFile, "\telem->attributes.Insert(\"%.*s\", EncodeEnum(%d, compCast->%.*s));\n",
+					mf.name.length, mf.name.start, mf.enumType, mf.name.length, mf.name.start);
+			}
+			else if (fieldType != MT_Unknown && FindMetaAttribByName(mf.attrs, "DoNotSerialize") == nullptr) {
 				if (mf.flags & FSF_SerializeFromId) {
 					fprintf(componentMetaFile, "\tString id_%d = GlobalScene->res.FindFileNameByIdAndExtension(\"%.*s\", compCast->%.*s);\n",
 						j, mf.serializeExt.length, mf.serializeExt.start, mf.name.length, mf.name.start);
@@ -610,7 +698,8 @@ void AppPreInit(int argc, char** argv){
 		fprintf(componentMetaFile, "\tconst %.*s* compCast = static_cast<const %.*s*>(comp);\n", ms->name.length, ms->name.start, ms->name.length, ms->name.start);
 		for (int j = 0; j < ms->fields.count; j++) {
 			ParseMetaField mf = ms->fields.data[j];
-			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount);
+			SubString enumName;
+			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount, allParseMetaEnums, &enumName);
 
 			if (fieldType != MT_Unknown && FindMetaAttribByName(mf.attrs, "DoNotSerialize") == nullptr) {
 				fprintf(componentMetaFile, "\tstream->Write<%.*s>(compCast->%.*s);\n", mf.type.length, mf.type.start, mf.name.length, mf.name.start);
@@ -622,7 +711,8 @@ void AppPreInit(int argc, char** argv){
 		fprintf(componentMetaFile, "\t%.*s* compCast = static_cast<%.*s*>(comp);\n", ms->name.length, ms->name.start, ms->name.length, ms->name.start);
 		for (int j = 0; j < ms->fields.count; j++) {
 			ParseMetaField mf = ms->fields.data[j];
-			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount);
+			SubString enumName;
+			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount, allParseMetaEnums, &enumName);
 
 			if (fieldType != MT_Unknown && FindMetaAttribByName(mf.attrs, "DoNotSerialize") == nullptr) {
 				fprintf(componentMetaFile, "\tcompCast->%.*s = stream->Read<%.*s>();\n", mf.name.length, mf.name.start, mf.type.length, mf.type.start);
@@ -747,6 +837,38 @@ void AppPreInit(int argc, char** argv){
 	for (int i = 0; i < componentIndices.count; i++) {
 		SubString structName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
 		fprintf(componentMetaFile, "\t&%.*s_meta,\n", structName.length, structName.start);
+	}
+	fprintf(componentMetaFile, "};\n");
+
+	for (int i = 0; i < allParseMetaEnums.count; i++) {
+		ParseMetaEnum* me = &allParseMetaEnums.data[i];
+
+		fprintf(componentMetaFile, "MetaEnumEntry %.*s_entries[] = {\n", me->name.length, me->name.start);
+		int entryCount = 0;
+		for (int j = 0; j < me->entries.count; j++) {
+			ParseMetaEnumEntry* mee = &me->entries.data[j];
+			if (!EnumEntryHasAttrib(mee, "DoNotSerialize")) {
+				SubString name = mee->name;
+				fprintf(componentMetaFile, "\t{\"%.*s\", \"%.*s\", ", name.length, name.start, name.length, name.start);
+				for (int k = 0; k < mee->value.count; k++) {
+					fprintf(componentMetaFile, "%.*s", mee->value.data[k].length, mee->value.data[k].start);
+				}
+				fprintf(componentMetaFile, "},\n");
+				entryCount++;
+			}
+		}
+		fprintf(componentMetaFile, "};\n");
+
+		fprintf(componentMetaFile, "MetaEnum %.*s_meta = {\"%.*s\", %.*s_entries, %d};\n\n", 
+			me->name.length, me->name.start, 
+			me->name.length, me->name.start,
+			me->name.length, me->name.start,
+			entryCount);
+	}
+	
+	fprintf(componentMetaFile, "MetaEnum* enumMetaData[CDE_Count] = {\n");
+	for (int i = 0; i < allParseMetaEnums.count; i++) {
+		fprintf(componentMetaFile, "\t&%.*s_meta,\n", allParseMetaEnums.Get(i).name.length, allParseMetaEnums.Get(i).name.start);
 	}
 	fprintf(componentMetaFile, "};\n");
 

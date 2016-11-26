@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "MetaParse.h"
+
 #include "../../gen/ComponentType.h"
 #include "../core/Component.h"
 
@@ -50,6 +52,12 @@ extern Component* componentSerializeBuffer[CCT_Count];
 
 extern MetaStruct* componentMetaData[CCT_Count];
 
+extern MetaEnum* enumMetaData[CDE_Count];
+
 int FindStructByName(const char* name);
+int FindEnumByName(const char* name);
+
+const char* EncodeEnum(int type, int val);
+int ParseEnum(int type, const char* str);
 
 #endif
