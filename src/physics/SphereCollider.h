@@ -17,15 +17,6 @@ struct SphereCollider : Component {
 	SphereCollider() {
 		colFlags = CF_NONE;
 	}
-
-	SphereCollider(const SphereCollider& orig) {
-		colFlags = orig.colFlags;
-	}
-
-	SphereCollider& operator=(const SphereCollider& orig) {
-		colFlags = orig.colFlags;
-		return *this;
-	}
 };
 
 #endif

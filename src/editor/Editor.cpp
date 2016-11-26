@@ -828,7 +828,36 @@ float Editor::EditComponentGui(Component* comp, MetaStruct* meta, float x, float
 			}
 
 			float width = cam.widthPixels - x - 5;
-			if (((int)mf->flags) & FSF_SerializeFromId) {
+			if (((int)mf->flags) & FSF_SerializeAsEnum) {
+				int* fieldVal = (int*)fieldPtr;
+				const char* enumStr = EncodeEnum(mf->type, *fieldVal);
+
+				String newStr = gui.TextInput(enumStr, 0, 12, x, currY, width);
+
+				int newVal = ParseEnum(mf->type, newStr.string);
+
+				if (newVal != -1) {
+					*fieldPtr = newVal;
+				}
+
+				/*
+				int entryCount = enumMetaData[mf->type]->entryCount;
+				char** names = malloc(sizeof(char*) * entryCount);
+				for (int j = 0; j < entryCount; j++) {
+					names[j] = enumMetaData[mf->type]->entries[j].serial;
+				}
+
+				int chosenIndex = gui.StringPicker(names, entryCount, 0, 12.0f, x, currX, width, entryCount * 14);
+
+				if (chosenIndex)
+
+				currY += 14;
+				currY -= (entryCount * 14);
+
+				free(names);
+				*/
+			}
+			else if (((int)mf->flags) & FSF_SerializeFromId) {
 				int* fieldVal = (int*)fieldPtr;
 
 				String fileName = scene.res.FindFileNameByIdAndExtension(mf->serializeExt, *fieldVal);

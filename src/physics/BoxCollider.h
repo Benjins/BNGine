@@ -20,17 +20,6 @@ struct BoxCollider : Component {
 		colFlags = CF_NONE;
 	}
 
-	BoxCollider(const BoxCollider& orig) {
-		isTrigger = orig.isTrigger;
-		colFlags = orig.colFlags;
-	}
-
-	BoxCollider& operator=(const BoxCollider& orig) {
-		isTrigger = orig.isTrigger;
-		colFlags = orig.colFlags;
-		return *this;
-	}
-
 	void EditorGui();
 };
 
