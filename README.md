@@ -84,11 +84,11 @@ TODO:
    - [X] Use metaGen system to generate script files
  * MetaGen
    - [X] Parse attributse
-   - [ ] Parse enums
+   - [X] Parse enums
    - [X] Parse functions/methods
    - [ ] Custom serialize/editor methods?
    - [ ] Or, knowledge of disciminated unions and enums
-   - [ ] enums in editor
+   - [X] enums in editor
  * Misc
    - [X] Break out application entry point and platform entry point
    - [ ] Make XML unicode aware
