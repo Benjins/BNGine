@@ -56,7 +56,7 @@ TODO:
  * Gui
    - [X] Have non-imm buttons
    - [ ] sliders (either imm or not, I just want some)
-   - [ ] non-imm checkboxes
+   - [X] non-imm checkboxes
    - [ ] non-imm labels
    - [ ] non-imm string picker lists
    - [ ] non-imm frames/rects
@@ -69,6 +69,8 @@ TODO:
  * Animation
    - [ ] Animation states, split track by time
    - [ ] Animation targets serialize
+   - [ ] animation blending
+   - [ ] IK stuff
  * Networking
    - [ ] basic matchmaking server backend, just for testing?
    - [ ] Reliable and streaming packets, ACK's

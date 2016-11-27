@@ -131,4 +131,10 @@ void EditorShiftButton(Editor* ed, uint32 buttonId);
 /*[Action]*/
 void EditorResetButton(Editor* ed, uint32 buttonId);
 
+/*[Action]*/
+void EditorAddStringPicker(Editor* ed, int enumIndex, int buttonId, Vector2 pos, Vector2 size);
+
+/*[Action]*/
+void EditorPrintEnum(Editor* ed, int pickerId, int buttonId);
+
 #endif

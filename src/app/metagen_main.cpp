@@ -904,6 +904,7 @@ void AppPreInit(int argc, char** argv){
 
 	fprintf(actionHeaderFile, "\n");
 	fprintf(actionHeaderFile, "enum ActionType {\n");
+	fprintf(actionHeaderFile, "\tAT_None = -1,\n");
 	for (int i = 0; i < funcsWithActionAttrib.count; i++) {
 		ParseMetaFuncDef* def = &funcsWithActionAttrib.data[i];
 		fprintf(actionHeaderFile, "\tAT_%.*s,\n", def->name.length, def->name.start);
@@ -932,10 +933,29 @@ void AppPreInit(int argc, char** argv){
 
 	fprintf(actionHeaderFile, "\t};\n");
 
+	fprintf(actionHeaderFile, "\tAction(){\n");
+	fprintf(actionHeaderFile, "\t\ttype = AT_None;\n");
+	fprintf(actionHeaderFile, "\t}\n");
+
+	fprintf(actionHeaderFile, "\tAction(const Action& orig){\n");
+	fprintf(actionHeaderFile, "\t\ttype = orig.type;\n");
+	fprintf(actionHeaderFile, "\t\tswitch (type){\n");
+	fprintf(actionHeaderFile, "\t\tcase AT_None: {} break;\n");
+	for (int i = 0; i < funcsWithActionAttrib.count; i++) {
+		ParseMetaFuncDef* def = &funcsWithActionAttrib.data[i];
+		fprintf(actionHeaderFile, "\t\tcase AT_%.*s: {\n", def->name.length, def->name.start);
+		fprintf(actionHeaderFile, "\t\t\t%.*s_data = orig.%.*s_data;\n", def->name.length, def->name.start, def->name.length, def->name.start);
+		fprintf(actionHeaderFile, "\t\t} break;\n");
+	}
+	fprintf(actionHeaderFile, "\t\tdefault:{ASSERT_WARN(\"%%s\", \"Incorrect value for action!\");break;}\n");
+	fprintf(actionHeaderFile, "\t\t}\n");
+	fprintf(actionHeaderFile, "\t}\n");
+
 	fprintf(actionHeaderFile, "};\n\n");
 
 	fprintf(actionHeaderFile, "inline void ExecuteAction(const Action action){\n");
-	fprintf(actionHeaderFile, "switch (action.type){\n");
+	fprintf(actionHeaderFile, "\tswitch (action.type){\n");
+	fprintf(actionHeaderFile, "\tcase AT_None: {} break;\n");
 
 	for (int i = 0; i < funcsWithActionAttrib.count; i++) {
 		ParseMetaFuncDef* def = &funcsWithActionAttrib.data[i];

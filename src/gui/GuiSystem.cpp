@@ -206,6 +206,9 @@ Vector2 GetContentNaturalSize(const GuiContent& content) {
 	} break;
 
 	}
+
+	ASSERT_WARN("Calling '%s' on GuiContent with GCT_Count type.", __FUNCTION__);
+	return Vector2();
 }
 
 void GuiSystem::DrawContent(const GuiContent& content, GuiRect rect) {
@@ -539,7 +542,10 @@ void GuiSystem::Render() {
 	for (int i = 0; i < buttons.currentCount; i++) {
 		Vector2 natSize = GetContentNaturalSize(buttons.vals[i].content);
 
-		GuiRect finalRect = cachedRects.data[i];
+		GuiRect* rect = rects.GetById(buttons.vals[i].rect);
+		int rectIdx = rect - rects.vals;
+
+		GuiRect finalRect = cachedRects.data[rectIdx];
 		Vector2 centeredPos = finalRect.position + (finalRect.size - natSize) / 2;
 
 		GuiRect contentRect = {};
@@ -552,6 +558,35 @@ void GuiSystem::Render() {
 		colorBox.type = GCT_Color;
 		colorBox.color = Vector4(0.7f, 0.7f, 0.7f, (buttons.vals[i].state == GBS_Down ? 0.4f : 0.3f));
 		DrawContent(colorBox, finalRect);
+	}
+
+	for (int i = 0; i < checkboxes.currentCount; i++) {
+		GuiRect* rect = rects.GetById(checkboxes.vals[i].rect);
+		int rectIdx = rect - rects.vals;
+
+		GuiRect finalRect = cachedRects.data[rectIdx];
+
+		GuiContent colorBox;
+		colorBox.type = GCT_Color;
+		colorBox.color = Vector4(0.7f, 0.7f, 0.7f, 0.8f);
+		DrawContent(colorBox, finalRect);
+
+		if (checkboxes.vals[i].isChecked){
+			finalRect.position = finalRect.position + finalRect.size / 8;
+			finalRect.size = finalRect.size * 0.75f;
+			colorBox.color = Vector4(0.5f, 0.5f, 0.5f, 0.9f);
+			DrawContent(colorBox, finalRect);
+		}
+	}
+
+	for (int i = 0; i < stringPickers.currentCount; i++) {
+		GuiStringPicker* picker = &stringPickers.vals[i];
+		GuiRect* rect = rects.GetById(picker->rect);
+		int rectIdx = rect - rects.vals;
+
+		GuiRect finalRect = cachedRects.data[rectIdx];
+
+		picker->choice = StringPicker((const char**)picker->choices.data, picker->choices.count, 0, 12, finalRect.x, finalRect.y + finalRect.height, finalRect.width, finalRect.height);
 	}
 
 	for (int i = 0; i < guiDrawCalls.count; i++) {
@@ -614,13 +649,15 @@ int GuiSystem::StringPicker(const char** stringArr, int count, uint32 fontId, fl
 }
 
 void GuiSystem::EndFrame() {
+	Vector2 mousePos = Vector2(GlobalScene->input.cursorX, GlobalScene->cam.heightPixels - GlobalScene->input.cursorY);
+	bool mouseDown = GlobalScene->input.MouseButtonIsDown(MouseButton::PRIMARY);
+	bool mouseReleased = GlobalScene->input.MouseButtonIsReleased(MouseButton::PRIMARY);
+	bool mousePressed = GlobalScene->input.MouseButtonIsPressed(MouseButton::PRIMARY);
 	for (int i = 0; i < buttons.currentCount; i++) {
 		GuiRect* buttonRect = rects.GetById(buttons.vals[i].rect);
 		GuiRect finalRect = cachedRects.data[buttonRect - rects.vals];
 
-		Vector2 mousePos = Vector2(GlobalScene->input.cursorX, GlobalScene->cam.heightPixels - GlobalScene->input.cursorY);
 		bool insideButton = finalRect.ContainsPoint(mousePos);
-		bool mouseDown = GlobalScene->input.MouseButtonIsDown(MouseButton::PRIMARY);
 
 		switch (buttons.vals[i].state) {
 		case GBS_Off: {
@@ -638,6 +675,37 @@ void GuiSystem::EndFrame() {
 				buttons.vals[i].state = GBS_Off;
 			}
 		} break;
+		}
+	}
+
+	for (int i = 0; i < checkboxes.currentCount; i++) {
+		GuiRect* checkboxRect = rects.GetById(checkboxes.vals[i].rect);
+		GuiRect finalRect = cachedRects.data[checkboxRect - rects.vals];
+		bool insideCheckbox = finalRect.ContainsPoint(mousePos);
+
+		if (insideCheckbox && mouseReleased) {
+			checkboxes.vals[i].isChecked = !checkboxes.vals[i].isChecked;
+			ExecuteAction(checkboxes.vals[i].onChange);
+		}
+	}
+
+	for (int i = 0; i < stringPickers.currentCount; i++) {
+		GuiStringPicker* picker = &stringPickers.vals[i];
+		GuiRect* rect = rects.GetById(picker->rect);
+		int rectIdx = rect - rects.vals;
+
+		GuiRect finalRect = cachedRects.data[rectIdx];
+
+		bool insidePicker = finalRect.ContainsPoint(mousePos);
+		if (picker->witnessedMouseDown && !insidePicker && mouseReleased) {
+			stringPickers.RemoveById(picker->id);
+		}
+		else if (!insidePicker && mousePressed) {
+			picker->witnessedMouseDown = true;
+		}
+		else if (picker->choice >= 0 && picker->options == GSPO_SingleChoice) {
+			ExecuteAction(picker->onSelect);
+			stringPickers.RemoveById(picker->id);
 		}
 	}
 

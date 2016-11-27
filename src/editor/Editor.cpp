@@ -911,6 +911,28 @@ void EditorResetButton(Editor* ed, uint32 buttonId) {
 	button->content.asciiStr = "PUSH";
 }
 
+void EditorAddStringPicker(Editor* ed, int enumIndex, int buttonId, Vector2 pos, Vector2 size) {
+	Vector<String> strings;
+
+	MetaEnum* me = enumMetaData[enumIndex];
+	for (int i = 0; i < me->entryCount; i++) {
+		strings.PushBack(me->entries[i].serial);
+	}
+
+	GuiStringPicker* picker = ed->gui.AddStringPicker(pos, size);
+	picker->choices = strings;
+	picker->options = GSPO_SingleChoice;
+	picker->onSelect.type = AT_EditorPrintEnum;
+	picker->onSelect.EditorPrintEnum_data.buttonId = buttonId;
+	picker->onSelect.EditorPrintEnum_data.pickerId = picker->id;
+	picker->onSelect.EditorPrintEnum_data.ed = ed;
+}
+
+void EditorPrintEnum(Editor* ed, int pickerId, int buttonId) {
+	GuiStringPicker* picker = ed->gui.stringPickers.GetById(pickerId);
+	ed->gui.buttons.GetById(buttonId)->content.asciiStr = Itoa(picker->choice);
+}
+
 void Editor::StartUp() {
 	cam.fov = 80;
 	cam.nearClip = 0.001f;
@@ -937,25 +959,43 @@ void Editor::StartUp() {
 	scene.StartUp();
 	gui.Init();
 
-	GuiButton* button = gui.AddButton(Vector2(5, 5), Vector2(80, 30));
-	button->content.SetType(GCT_Ascii);
-	button->content.asciiStr = "PUSH";
-	button->content.bmpFontId = 0;
-	button->content.textScale = 12;
+	GuiCheckbox* cBox = gui.AddCheckbox(Vector2(200, 10), Vector2(30, 30));
 
-	button->onClick.type = AT_EditorShiftButton;
-	button->onClick.EditorShiftButton_data.ed = this;
-	button->onClick.EditorShiftButton_data.buttonId = button->id;
+	{
+		GuiButton* button = gui.AddButton(Vector2(50, 300), Vector2(80, 30));
+		button->content.SetType(GCT_Ascii);
+		button->content.asciiStr = "Enum";
+		button->content.bmpFontId = 0;
+		button->content.textScale = 12;
 
-	GuiButton* button2 = gui.AddButton(Vector2(100, 150), Vector2(80, 30));
-	button2->content.SetType(GCT_Ascii);
-	button2->content.asciiStr = "RESET";
-	button2->content.bmpFontId = 0;
-	button2->content.textScale = 12;
+		button->onClick.type = AT_EditorAddStringPicker;
+		button->onClick.EditorAddStringPicker_data.ed = this;
+		button->onClick.EditorAddStringPicker_data.enumIndex = FindEnumByName("EnemyState");
+		button->onClick.EditorAddStringPicker_data.pos = Vector2(50, 430);
+		button->onClick.EditorAddStringPicker_data.size = Vector2(50, 120);
+		button->onClick.EditorAddStringPicker_data.buttonId = button->id;
+		
+	}
 
-	button2->onClick.type = AT_EditorResetButton;
-	button2->onClick.EditorShiftButton_data.ed = this;
-	button2->onClick.EditorShiftButton_data.buttonId = button->id;
+	//GuiButton* button = gui.AddButton(Vector2(5, 5), Vector2(80, 30));
+	//button->content.SetType(GCT_Ascii);
+	//button->content.asciiStr = "PUSH";
+	//button->content.bmpFontId = 0;
+	//button->content.textScale = 12;
+	//
+	//button->onClick.type = AT_EditorShiftButton;
+	//button->onClick.EditorShiftButton_data.ed = this;
+	//button->onClick.EditorShiftButton_data.buttonId = button->id;
+	//
+	//GuiButton* button2 = gui.AddButton(Vector2(100, 150), Vector2(80, 30));
+	//button2->content.SetType(GCT_Ascii);
+	//button2->content.asciiStr = "RESET";
+	//button2->content.bmpFontId = 0;
+	//button2->content.textScale = 12;
+	//
+	//button2->onClick.type = AT_EditorResetButton;
+	//button2->onClick.EditorShiftButton_data.ed = this;
+	//button2->onClick.EditorShiftButton_data.buttonId = button->id;
 }
 
 int Editor::GetSelectedEntity(int pixelX, int pixelY) {

@@ -43,26 +43,26 @@ struct GuiContent {
 		type = GCT_None;
 	}
 
-	GuiContent(const GuiContent& orig) {
-		SetType(orig.type);
+	//GuiContent(const GuiContent& orig) {
+	//	SetType(orig.type);
 
-		if (type == GCT_Ascii) {
-			asciiStr = orig.asciiStr;
-			bmpFontId = orig.bmpFontId;
-			textScale = orig.textScale;
-		}
-		else if (type == GCT_Unicode) {
-			unicodeStr = orig.unicodeStr;
-			uniFontId = orig.uniFontId;
-			textScale = orig.textScale;
-		}
-		else if (type == GCT_Texture) {
-			texId = orig.texId;
-		}
-		else if (type == GCT_Color) {
-			color = orig.color;
-		}
-	}
+	//	if (type == GCT_Ascii) {
+	//		asciiStr = orig.asciiStr;
+	//		bmpFontId = orig.bmpFontId;
+	//		textScale = orig.textScale;
+	//	}
+	//	else if (type == GCT_Unicode) {
+	//		unicodeStr = orig.unicodeStr;
+	//		uniFontId = orig.uniFontId;
+	//		textScale = orig.textScale;
+	//	}
+	//	else if (type == GCT_Texture) {
+	//		texId = orig.texId;
+	//	}
+	//	else if (type == GCT_Color) {
+	//		color = orig.color;
+	//	}
+	//}
 
 	void Create() {
 		if (type == GCT_Ascii) {

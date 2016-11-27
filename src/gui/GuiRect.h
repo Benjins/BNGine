@@ -35,7 +35,7 @@ struct GuiRect : IDBase {
 		clipChildren = false;
 	}
 
-	GuiRect(const GuiRect& orig) {
+	GuiRect(const GuiRect& orig) : IDBase(orig) {
 		parent = orig.parent;
 		isDirty = orig.isDirty;
 		clipChildren = orig.clipChildren;

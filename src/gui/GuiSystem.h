@@ -4,6 +4,8 @@
 #pragma once
 
 #include "GuiButton.h"
+#include "GuiCheckbox.h"
+#include "GuiStringPicker.h"
 
 #include "../../ext/CppUtils/idbase.h"
 #include "../../ext/CppUtils/vector.h"
@@ -63,6 +65,8 @@ public:
 
 	IDTracker<GuiRect> rects;
 	IDTracker<GuiButton> buttons;
+	IDTracker<GuiCheckbox> checkboxes;
+	IDTracker<GuiStringPicker> stringPickers;
 
 	Vector<GuiRect> cachedRects;
 
@@ -74,6 +78,26 @@ public:
 		button->rect = rect->id;
 
 		return button;
+	}
+
+	GuiCheckbox* AddCheckbox(Vector2 pos, Vector2 size) {
+		GuiCheckbox* check = checkboxes.CreateAndAdd();
+		GuiRect* rect = rects.CreateAndAdd();
+		rect->position = pos;
+		rect->size = size;
+		check->rect = rect->id;
+
+		return check;
+	}
+
+	GuiStringPicker* AddStringPicker(Vector2 pos, Vector2 size) {
+		GuiStringPicker* picker = stringPickers.CreateAndAdd();
+		GuiRect* rect = rects.CreateAndAdd();
+		rect->position = pos;
+		rect->size = size;
+		picker->rect = rect->id;
+
+		return picker;
 	}
 	
 	GuiSystem(){
