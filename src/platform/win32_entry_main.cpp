@@ -127,6 +127,16 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		GlobalScene->input.MouseButtonReleased(MouseButton::PRIMARY);
 	}break;
 
+	case WM_RBUTTONDOWN:
+	{
+		GlobalScene->input.MouseButtonPressed(MouseButton::SECONDARY);
+	}break;
+
+	case WM_RBUTTONUP:
+	{
+		GlobalScene->input.MouseButtonReleased(MouseButton::SECONDARY);
+	}break;
+
 	case WM_SYSKEYDOWN:
 	case WM_SYSKEYUP:
 	case WM_KEYDOWN:
