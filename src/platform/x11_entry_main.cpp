@@ -81,12 +81,18 @@ int main(int argc, char** argv) {
 		while (XCheckIfEvent(dpy, &ev, evtPred, NULL)) {
 			if (ev.type == ButtonPress) {
 				if (ev.xbutton.button == 1) {
-					//mouseState = 2;
+					AppMouseDown(MouseButton::PRIMARY);
+				}
+				else if (ev.xbutton.button == 3) {
+					AppMouseDown(MouseButton::SECONDARY);
 				}
 			}
 			else if (ev.type == ButtonRelease) {
 				if (ev.xbutton.button == 1) {
-					//mouseState = 1;
+					AppMouseUp(MouseButton::PRIMARY);
+				}
+				else if (ev.xbutton.button == 3) {
+					AppMouseUp(MouseButton::SECONDARY);
 				}
 			}
 			else if (ev.type == MotionNotify) {
