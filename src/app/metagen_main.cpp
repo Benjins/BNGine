@@ -860,11 +860,14 @@ void AppPreInit(int argc, char** argv){
 		}
 		fprintf(componentMetaFile, "};\n");
 
-		fprintf(componentMetaFile, "MetaEnum %.*s_meta = {\"%.*s\", %.*s_entries, %d};\n\n", 
+		fprintf(componentMetaFile, "MetaEnum %.*s_meta = {\"%.*s\", %.*s_entries, %d, %d, %d, (MetaEnumFlags)%d};\n\n", 
 			me->name.length, me->name.start, 
 			me->name.length, me->name.start,
 			me->name.length, me->name.start,
-			entryCount);
+			entryCount,
+			me->allIdx,
+			me->noneIdex,
+			me->flags);
 	}
 	
 	fprintf(componentMetaFile, "MetaEnum* enumMetaData[CDE_Count] = {\n");

@@ -920,15 +920,15 @@ void EditorAddStringPicker(Editor* ed, int enumIndex, int buttonId, Vector2 pos,
 	}
 
 	GuiStringPicker* picker = ed->gui.AddStringPicker(pos, size);
-	picker->choice = 0;
+	picker->choice = (me->flags & MEF_EnumIsFlag) ? 0 : -1;
 	picker->choices = strings;
-	picker->options = GSPO_MultipleChoice;
+	picker->options = (me->flags & MEF_EnumIsFlag) ? GSPO_MultipleChoice : GSPO_SingleChoice;
 	picker->onSelect.type = AT_EditorPrintEnum;
 	picker->onSelect.EditorPrintEnum_data.buttonId = buttonId;
 	picker->onSelect.EditorPrintEnum_data.pickerId = picker->id;
 	picker->onSelect.EditorPrintEnum_data.ed = ed;
-	picker->allIndex = 3;
-	picker->clearIndex = 0;
+	picker->allIndex = me->allIdx;
+	picker->clearIndex = me->noneIdex;
 }
 
 void EditorPrintEnum(Editor* ed, int pickerId, int buttonId) {
@@ -964,10 +964,11 @@ void Editor::StartUp() {
 
 	GuiCheckbox* cBox = gui.AddCheckbox(Vector2(200, 10), Vector2(30, 30));
 
+	/*
 	{
 		GuiButton* button = gui.AddButton(Vector2(50, 300), Vector2(80, 30));
 		button->content.SetType(GCT_Ascii);
-		button->content.asciiStr = "Enum";
+		button->content.asciiStr = "Enum1";
 		button->content.bmpFontId = 0;
 		button->content.textScale = 12;
 
@@ -977,7 +978,23 @@ void Editor::StartUp() {
 		button->onClick.EditorAddStringPicker_data.pos = Vector2(50, 430);
 		button->onClick.EditorAddStringPicker_data.size = Vector2(100, 120);
 		button->onClick.EditorAddStringPicker_data.buttonId = button->id;
-		
+	}
+	*/
+
+	{
+		GuiButton* button = gui.AddButton(Vector2(50, 250), Vector2(80, 30));
+		button->content.SetType(GCT_Ascii);
+		button->content.asciiStr = "Enum2";
+		button->content.bmpFontId = 0;
+		button->content.textScale = 12;
+
+		button->onClick.type = AT_EditorAddStringPicker;
+		button->onClick.EditorAddStringPicker_data.ed = this;
+		button->onClick.EditorAddStringPicker_data.enumIndex = FindEnumByName("EnemyState");
+		button->onClick.EditorAddStringPicker_data.pos = Vector2(160, 430);
+		button->onClick.EditorAddStringPicker_data.size = Vector2(100, 120);
+		button->onClick.EditorAddStringPicker_data.buttonId = button->id;
+
 	}
 
 	//GuiButton* button = gui.AddButton(Vector2(5, 5), Vector2(80, 30));

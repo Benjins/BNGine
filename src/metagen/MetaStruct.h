@@ -33,10 +33,19 @@ struct MetaEnumEntry {
 	int value;
 };
 
+enum MetaEnumFlags {
+	MEF_None = 0,
+	MEF_EnumIsFlag = (1 << 0)
+};
+
 struct MetaEnum {
 	const char* name;
 	MetaEnumEntry* entries;
 	int entryCount;
+
+	int allIdx;
+	int noneIdex;
+	MetaEnumFlags flags;
 };
 
 struct MetaStruct {

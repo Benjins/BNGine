@@ -45,6 +45,16 @@ struct ParseMetaEnum {
 	SubString name;
 	Vector<ParseMetaEnumEntry> entries;
 	Vector<ParseMetaAttribute> attrs;
+
+	int allIdx;
+	int noneIdex;
+	MetaEnumFlags flags;
+
+	ParseMetaEnum() {
+		allIdx = -1;
+		noneIdex = -1;
+		flags = MEF_None;
+	}
 };
 
 struct ParseMetaFunction {

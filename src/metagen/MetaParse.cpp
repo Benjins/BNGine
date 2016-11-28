@@ -46,6 +46,32 @@ Vector<ParseMetaAttribute> ParseMetaAttribsBackward(Vector<SubString>& tokens, i
 	return attrs;
 }
 
+bool MetaEnumHasAttrib(ParseMetaEnum* me, const char* attr, ParseMetaAttribute* outAttrib = nullptr) {
+	for (int i = 0; i < me->attrs.count; i++) {
+		if (me->attrs.data[i].name == attr) {
+			if (outAttrib != nullptr) {
+				*outAttrib = me->attrs.data[i];
+			}
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool MetaEnumEntryHasAttrib(ParseMetaEnumEntry* mee, const char* attr, ParseMetaAttribute* outAttrib = nullptr) {
+	for (int i = 0; i < mee->attrs.count; i++) {
+		if (mee->attrs.data[i].name == attr) {
+			if (outAttrib != nullptr) {
+				*outAttrib = mee->attrs.data[i];
+			}
+			return true;
+		}
+	}
+
+	return false;
+}
+
 Vector<ParseMetaStruct> ParseStructDefsFromFile(const char* fileName) {
 	String fileContents = ReadStringFromFile(fileName);
 
@@ -186,6 +212,20 @@ Vector<ParseMetaEnum> ParseEnumDefsFromFile(const char* fileName) {
 				enumDef.entries.PushBack(entry);
 				if (tokens.Get(i) == ",") {
 					i++;
+				}
+			}
+
+			if (MetaEnumHasAttrib(&enumDef, "Flags")) {
+				enumDef.flags = (MetaEnumFlags)(((int)enumDef.flags) | MEF_EnumIsFlag);
+
+				for (int j = 0; j < enumDef.entries.count; j++) {
+					if (MetaEnumEntryHasAttrib(&enumDef.entries.data[j], "NoneFlag")) {
+						enumDef.noneIdex = j;
+					}
+					else if (MetaEnumEntryHasAttrib(&enumDef.entries.data[j], "AllFlag")) {
+						enumDef.allIdx = j;
+					}
+
 				}
 			}
 
