@@ -1,13 +1,3 @@
-
-#if defined(BNS_DEBUG)
-#include <io.h>
-#include <fcntl.h>
-#endif
-
-#include <Windows.h>
-#include <Windowsx.h>
-#include <gl/GL.h>
-
 #include "../editor/Editor.h"
 #define EXT_EXTERN extern
 #include "../gfx/GLExtInit.h"
