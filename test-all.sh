@@ -28,3 +28,6 @@ echo "Built test"
 
 ./BNgine_test.out --compare
 valgrind --suppressions=valgrind-suppressions.txt --num-callers=15 --leak-check=full --error-exitcode=12 ./BNgine_test.out
+
+./build.sh runtime
+./build.sh editor
