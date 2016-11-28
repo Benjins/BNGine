@@ -701,8 +701,7 @@ void Editor::SidePanelGui() {
 
 			y -= 30;
 
-			switch (pickerType) {
-			case APT_ComponentType: {
+			if (pickerType == APT_ComponentType) {
 				const char* compNames[CCT_Count] = {};
 				for (int i = 0; i < CCT_Count; i++) {
 					compNames[i] = componentMetaData[i]->name;
@@ -717,20 +716,6 @@ void Editor::SidePanelGui() {
 
 					pickerType = APT_None;
 				}
-			} break;
-
-			case APT_Mesh: {
-				//Vector<String> fileNames;
-				//scene.res.FindFileNamesByExtension("obj", &fileNames);
-			} break;
-
-			case APT_Material: {
-
-			} break;
-
-			case APT_None: {
-
-			} break;
 			}
 		}
 	}
@@ -963,6 +948,7 @@ void Editor::StartUp() {
 	gui.Init();
 
 	GuiCheckbox* cBox = gui.AddCheckbox(Vector2(200, 10), Vector2(30, 30));
+	(void)cBox;
 
 	/*
 	{
