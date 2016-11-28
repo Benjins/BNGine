@@ -58,6 +58,8 @@ void AppPreInit(int argc, char** argv) {
 }
 
 void AppSetWindowSize(int w, int h) {
-	GlobalEd->cam.widthPixels = w;
-	GlobalEd->cam.heightPixels = h;
+	if (GlobalEd) {
+		GlobalEd->cam.widthPixels = w;
+		GlobalEd->cam.heightPixels = h;
+	}
 }

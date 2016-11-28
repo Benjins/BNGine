@@ -51,8 +51,10 @@ void AppPreInit(int argc, char** argv) {
 	
 }
 
-void AppSetWindowSize(int w, int h) {
-	GlobalScene->cam.widthPixels = w;
-	GlobalScene->cam.heightPixels = h;
+void AppSetWindowSize(int w, int h){
+	if (GlobalScene){
+		GlobalScene->cam.widthPixels = w;
+		GlobalScene->cam.heightPixels = h;
+	}
 }
 

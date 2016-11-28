@@ -114,27 +114,27 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		int mouseX = GET_X_LPARAM(lParam);
 		int mouseY = GET_Y_LPARAM(lParam);
 
-		GlobalScene->input.SetCursorPos(mouseX, mouseY);
+		AppMouseMove(mouseX, mouseY);
 	}break;
 
 	case WM_LBUTTONDOWN:
 	{
-		GlobalScene->input.MouseButtonPressed(MouseButton::PRIMARY);
+		AppMouseDown(MouseButton::PRIMARY);
 	}break;
 
 	case WM_LBUTTONUP:
 	{
-		GlobalScene->input.MouseButtonReleased(MouseButton::PRIMARY);
+		AppMouseUp(MouseButton::PRIMARY);
 	}break;
 
 	case WM_RBUTTONDOWN:
 	{
-		GlobalScene->input.MouseButtonPressed(MouseButton::SECONDARY);
+		AppMouseDown(MouseButton::SECONDARY);
 	}break;
 
 	case WM_RBUTTONUP:
 	{
-		GlobalScene->input.MouseButtonReleased(MouseButton::SECONDARY);
+		AppMouseUp(MouseButton::SECONDARY);
 	}break;
 
 	case WM_SYSKEYDOWN:
@@ -157,10 +157,10 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 
 		if (keyCode >= 0 && keyCode < 256) {
 			if (wasDown && !isDown) {
-				GlobalScene->input.KeyReleased(keyCode);
+				AppKeyUp(keyCode);
 			}
 			else if (isDown && !wasDown) {
-				GlobalScene->input.KeyPressed(keyCode);
+				AppKeyDown(keyCode);
 			}
 		}
 	}break;
@@ -169,12 +169,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		int width = LOWORD(lParam);
 		int height = HIWORD(lParam);
 
-		//When we first create the window, we don't actually have a scene pointer
-		//because we have no GL context
-		if (GlobalScene) {
-			GlobalScene->cam.widthPixels = width;
-			GlobalScene->cam.heightPixels = height;
-		}
+		AppSetWindowSize(width, height);
 	} break;
 
 	case WM_MOUSEWHEEL: {
