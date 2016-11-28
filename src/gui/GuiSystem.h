@@ -130,7 +130,10 @@ public:
 	String TextInput(const String& textIn, uint32 fontId, float scale, float x, float y, float w);
 	
 	bool SimpleButton(float x, float y, float w, float h);
-	bool TextButton(const char* text, uint32 fontId, float scale, float x, float y, float w, float h);
+	bool TextButton(const char* text, uint32 fontId, float scale, float x, float y, float w, float h, 
+					Vector4 backCol = Vector4(0.3f, 0.3f, 0.3f, 0.3f),
+					Vector4 hoverCol = Vector4(0.4f, 0.4f, 0.4f, 0.4f),
+					Vector4 pressedCol = Vector4(0.5f, 0.5f, 0.5f, 0.5f));
 
 	int StringPicker(const char** stringArr, int count, uint32 fontId, float scale, float x, float y, float w, float h);
 

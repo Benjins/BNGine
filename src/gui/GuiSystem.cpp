@@ -586,7 +586,48 @@ void GuiSystem::Render() {
 
 		GuiRect finalRect = cachedRects.data[rectIdx];
 
-		picker->choice = StringPicker((const char**)picker->choices.data, picker->choices.count, 0, 12, finalRect.x, finalRect.y + finalRect.height, finalRect.width, finalRect.height);
+		if (picker->options == GSPO_SingleChoice) {
+			picker->choice = StringPicker(
+				(const char**)picker->choices.data, 
+				picker->choices.count, 0, 12, 
+				finalRect.x, finalRect.y + finalRect.height, 
+				finalRect.width, finalRect.height);
+		}
+		else {
+			ColoredBox(finalRect.x, finalRect.y, finalRect.width, finalRect.height, Vector4(0.7f, 0.7f, 0.7f, 0.7f));
+
+			bool changed = false;
+			float scale = 12;
+			float currY = finalRect.y + finalRect.height - scale / 2 + 1;
+			for (int i = 0; i < picker->choices.count; i++) {
+				Vector4 backCol = (picker->choice & (1 << i)) ? Vector4(0.5f, 0.8f, 0.8f, 0.5f) : Vector4(0.3f, 0.3f, 0.3f, 0.3f);
+				Vector4 hoverCol = (picker->choice & (1 << i)) ? Vector4(0.5f, 0.7f, 0.7f, 0.4f) : Vector4(0.4f, 0.4f, 0.4f, 0.4f);
+				if (i == picker->clearIndex || i == picker->allIndex) {
+					backCol = Vector4(0.3f, 0.3f, 0.3f, 0.3f);
+					hoverCol = Vector4(0.4f, 0.4f, 0.4f, 0.4f);
+				}
+
+				if (TextButton(picker->choices.data[i].string, 0, scale, finalRect.x + 2, currY, finalRect.width - 4, scale + 2, backCol, hoverCol)) {
+					if (i == picker->clearIndex) {
+						changed = (picker->choice != 0);
+						picker->choice = 0;
+					}
+					else if (i == picker->allIndex) {
+						changed = (picker->choice != 0xFFFFFFFF);
+						picker->choice = 0xFFFFFFFF;
+					}
+					else {
+						picker->choice ^= (1 << i);
+						changed = true;
+					}
+				}
+				currY -= (scale + 4);
+			}
+
+			if (changed) {
+				ExecuteAction(picker->onSelect);
+			}
+		}
 	}
 
 	for (int i = 0; i < guiDrawCalls.count; i++) {
@@ -608,19 +649,22 @@ bool GuiSystem::SimpleButton(float x, float y, float w, float h) {
 	return false;
 }
 
-bool GuiSystem::TextButton(const char* text, uint32 fontId, float scale, float x, float y, float w, float h) {
+bool GuiSystem::TextButton(const char* text, uint32 fontId, float scale, float x, float y, float w, float h,
+	Vector4 backCol /*= Vector4(0.4f, 0.4f, 0.4f, 0.4f)*/, 
+	Vector4 hoverCol /*= Vector4(0.4f, 0.4f, 0.4f, 0.4f)*/,
+	Vector4 pressedCol /*= Vector4(0.4f, 0.4f, 0.4f, 0.4f)*/) {
 	float cursorX = GlobalScene->input.cursorX;
 	float cursorY = GlobalScene->cam.heightPixels - GlobalScene->input.cursorY;
 	bool isCursorIn =  cursorX >= x && cursorX <= x + w
 					&& cursorY >= y - h/2 && cursorY <= y + h/2;
 
-	Vector4 col = Vector4(0.3f, 0.3f, 0.3f, 0.4f);
+	Vector4 col = backCol;
 	if (isCursorIn) {
 		if (GlobalScene->input.MouseButtonIsDown(PRIMARY)) {
-			col = Vector4(0.5f, 0.5f, 0.5f, 0.4f);
+			col = pressedCol;
 		}
 		else {
-			col = Vector4(0.4f, 0.4f, 0.4f, 0.4f);
+			col = hoverCol;
 		}
 	}
 

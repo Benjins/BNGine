@@ -164,6 +164,7 @@ Vector<ParseMetaEnum> ParseEnumDefsFromFile(const char* fileName) {
 					while (i < tokens.count && tokens.Get(i) != "]*/") {
 						i++;
 					}
+					i++;
 				}
 
 				ParseMetaEnumEntry entry;

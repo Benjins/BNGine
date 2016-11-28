@@ -920,12 +920,15 @@ void EditorAddStringPicker(Editor* ed, int enumIndex, int buttonId, Vector2 pos,
 	}
 
 	GuiStringPicker* picker = ed->gui.AddStringPicker(pos, size);
+	picker->choice = 0;
 	picker->choices = strings;
-	picker->options = GSPO_SingleChoice;
+	picker->options = GSPO_MultipleChoice;
 	picker->onSelect.type = AT_EditorPrintEnum;
 	picker->onSelect.EditorPrintEnum_data.buttonId = buttonId;
 	picker->onSelect.EditorPrintEnum_data.pickerId = picker->id;
 	picker->onSelect.EditorPrintEnum_data.ed = ed;
+	picker->allIndex = 3;
+	picker->clearIndex = 0;
 }
 
 void EditorPrintEnum(Editor* ed, int pickerId, int buttonId) {
@@ -970,9 +973,9 @@ void Editor::StartUp() {
 
 		button->onClick.type = AT_EditorAddStringPicker;
 		button->onClick.EditorAddStringPicker_data.ed = this;
-		button->onClick.EditorAddStringPicker_data.enumIndex = FindEnumByName("EnemyState");
+		button->onClick.EditorAddStringPicker_data.enumIndex = FindEnumByName("ColliderFlags");
 		button->onClick.EditorAddStringPicker_data.pos = Vector2(50, 430);
-		button->onClick.EditorAddStringPicker_data.size = Vector2(50, 120);
+		button->onClick.EditorAddStringPicker_data.size = Vector2(100, 120);
 		button->onClick.EditorAddStringPicker_data.buttonId = button->id;
 		
 	}

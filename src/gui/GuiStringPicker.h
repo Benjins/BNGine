@@ -23,6 +23,10 @@ struct GuiStringPicker : IDBase {
 
 	bool witnessedMouseDown;
 
+	// Only for multiple choice selection
+	int clearIndex;
+	int allIndex;
+
 	Action onSelect;
 
 	GuiStringPicker() {
