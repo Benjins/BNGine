@@ -642,8 +642,9 @@ void AppPreInit(int argc, char** argv){
 		fprintf(componentMetaFile, "void %.*s_XMLDeserialize(Component* comp, const XMLElement* elem){\n", ms->name.length, ms->name.start);
 
 		fprintf(componentMetaFile, "\t%.*s* compCast = static_cast<%.*s*>(comp);\n", ms->name.length, ms->name.start, ms->name.length, ms->name.start);
-
+		fprintf(componentMetaFile, "\t(void)compCast;\n");
 		fprintf(componentMetaFile, "\tString temp;\n");
+		fprintf(componentMetaFile, "\t(void)temp;\n");
 
 		for (int j = 0; j < ms->fields.count; j++) {
 			ParseMetaField mf = ms->fields.data[j];
@@ -670,6 +671,7 @@ void AppPreInit(int argc, char** argv){
 		fprintf(componentMetaFile, "}\n\n");
 		fprintf(componentMetaFile, "void %.*s_XMLSerialize(const Component* comp, XMLElement* elem){\n", ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "\tconst %.*s* compCast = static_cast<const %.*s*>(comp);\n", ms->name.length, ms->name.start, ms->name.length, ms->name.start);
+		fprintf(componentMetaFile, "\t(void)compCast;\n");
 		fprintf(componentMetaFile, "\telem->name = STATIC_TO_SUBSTRING(\"%.*s\");\n", ms->name.length, ms->name.start);
 
 		for (int j = 0; j < ms->fields.count; j++) {
@@ -696,6 +698,7 @@ void AppPreInit(int argc, char** argv){
 		fprintf(componentMetaFile, "}\n\n");
 		fprintf(componentMetaFile, "void %.*s_MemSerialize(const Component* comp, MemStream* stream){\n", ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "\tconst %.*s* compCast = static_cast<const %.*s*>(comp);\n", ms->name.length, ms->name.start, ms->name.length, ms->name.start);
+		fprintf(componentMetaFile, "\t(void)compCast;\n");
 		for (int j = 0; j < ms->fields.count; j++) {
 			ParseMetaField mf = ms->fields.data[j];
 			SubString enumName;
@@ -709,6 +712,7 @@ void AppPreInit(int argc, char** argv){
 
 		fprintf(componentMetaFile, "void %.*s_MemDeserialize(Component* comp, MemStream* stream){\n", ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "\t%.*s* compCast = static_cast<%.*s*>(comp);\n", ms->name.length, ms->name.start, ms->name.length, ms->name.start);
+		fprintf(componentMetaFile, "\t(void)compCast;\n");
 		for (int j = 0; j < ms->fields.count; j++) {
 			ParseMetaField mf = ms->fields.data[j];
 			SubString enumName;

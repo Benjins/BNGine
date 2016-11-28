@@ -613,8 +613,8 @@ void GuiSystem::Render() {
 						picker->choice = 0;
 					}
 					else if (i == picker->allIndex) {
-						changed = (picker->choice != 0xFFFFFFFF);
-						picker->choice = 0xFFFFFFFF;
+						changed = (picker->choice != -1);
+						picker->choice = -1;
 					}
 					else {
 						picker->choice ^= (1 << i);

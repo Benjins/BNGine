@@ -23,7 +23,7 @@ struct MetaField {
 	int offset;
 	int type;
 
-	char* serializeExt;
+	const char* serializeExt;
 	FieldSerializeFlags flags;
 };
 

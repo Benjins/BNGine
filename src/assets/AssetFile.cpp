@@ -591,8 +591,6 @@ void WriteEntitySubChunk(XMLElement* entElem, const StringMap<int>& assetIds, FI
 		if (metaDataIndex != -1) {
 			customComponentCount++;
 
-			MetaStruct* metaData = componentMetaData[metaDataIndex];
-
 			customComponents.Write(metaDataIndex);
 
 			//TODO: We could re-use this buffer, or at least avoid freeing it every time
@@ -1209,10 +1207,8 @@ void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& as
 		int vWeightCount = Atoi(vertexWeightsElem->GetExistingAttrValue("count").string);
 
 		char* jointId = nullptr;
-		int jointOffset = 0;
 
 		char* weightId = nullptr;
-		int weightOffset = 0;
 
 		// TODO: Maybe move the upper parsing into a naked scope, so shadowing isn't a conern?
 		maxOffset = 0;
@@ -1226,11 +1222,9 @@ void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& as
 
 			if (semantic == "JOINT") {
 				jointId = source;
-				jointOffset = offset;
 			}
 			else if (semantic == "WEIGHT") {
 				weightId = source;
-				weightOffset = offset;
 			}
 
 			maxOffset = BNS_MAX(maxOffset, offset);
@@ -1443,6 +1437,4 @@ void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& as
 			fwrite(&chunkIdFlipped, 1, 4, assetFileHandle);
 		}
 	}
-
-	int xy = 0;
 }

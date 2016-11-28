@@ -543,7 +543,7 @@ void ResourceManager::SavePrefabToFile(Prefab* prefab, const char* fileName) {
 	// It may have re-allocated.  Maybe I didn't think this through...
 	doc.elements.GetById(rootId)->childrenIds.PushBack(transElem->id);
 
-	if (prefab->matId != -1) {
+	if (prefab->matId != 0xFFFFFFFF) {
 		if (Material* mat = GlobalScene->res.materials.GetById(prefab->matId)) {
 			XMLElement* matElem = doc.AddElement();
 			matElem->name = STATIC_TO_SUBSTRING("Material");
@@ -552,7 +552,7 @@ void ResourceManager::SavePrefabToFile(Prefab* prefab, const char* fileName) {
 		}
 	}
 
-	if (prefab->meshId != -1) {
+	if (prefab->meshId != 0xFFFFFFFF) {
 		if (Mesh* mesh = GlobalScene->res.meshes.GetById(prefab->meshId)) {
 			XMLElement* meshElem = doc.AddElement();
 			meshElem->name = STATIC_TO_SUBSTRING("Mesh");
