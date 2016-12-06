@@ -3,9 +3,7 @@
 
 #include "../metagen/ComponentMeta.h"
 
-Entity* Prefab::Instantiate(Vector3 position, Quaternion rotation /*= QUAT_IDENTITY*/) {
-	Entity* toAdd = GlobalScene->AddVisibleEntity(matId, meshId);
-
+void Prefab::InstantiateIntoEntityPtr(Entity* toAdd, Vector3 position, Quaternion rotation) {
 	Transform* trans = GlobalScene->transforms.GetById(toAdd->transform);
 	trans->scale = transform.scale;
 	trans->position = position;
@@ -23,6 +21,20 @@ Entity* Prefab::Instantiate(Vector3 position, Quaternion rotation /*= QUAT_IDENT
 	}
 
 	customComponents.readHead = customComponentsOldReadHead;
+}
+
+Entity* Prefab::Instantiate(Vector3 position, Quaternion rotation /*= QUAT_IDENTITY*/) {
+	Entity* toAdd = GlobalScene->AddVisibleEntity(matId, meshId);
+
+	InstantiateIntoEntityPtr(toAdd, position, rotation);
+
+	return toAdd;
+}
+
+Entity* Prefab::InstantiateWithId(uint32 id, Vector3 position, Quaternion rotation /*= QUAT_IDENTITY*/) {
+	Entity* toAdd = GlobalScene->AddVisibleEntityWithId(id, matId, meshId);
+
+	InstantiateIntoEntityPtr(toAdd, position, rotation);
 
 	return toAdd;
 }

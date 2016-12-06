@@ -398,32 +398,53 @@ void ResourceManager::LoadLevelFromChunk(MemStream& stream, Level* outLevel) {
 	for (int i = 0; i < entCount; i++) {
 		char enttChunkId[4];
 		stream.ReadArray<char>(enttChunkId, 4);
-		ASSERT(memcmp(enttChunkId, "ENTT", 4) == 0);
+		if (memcmp(enttChunkId, "ENTT", 4) == 0) {
 
-		Entity ent;
-		ent.id = stream.Read<int>();
+			Entity ent;
+			ent.id = stream.Read<int>();
 
-		Transform entTrans;
-		LoadTransform(stream, &entTrans);
-		entTrans.entity = ent.id;
+			Transform entTrans;
+			LoadTransform(stream, &entTrans);
+			entTrans.entity = ent.id;
 
-		outLevel->transforms.PushBack(entTrans);
+			outLevel->transforms.PushBack(entTrans);
 
-		ent.transform = entTrans.id;
+			ent.transform = entTrans.id;
 
-		outLevel->entities.PushBack(ent);
+			outLevel->entities.PushBack(ent);
 
-		outLevel->meshIds.PushBack(stream.Read<int>());
-		outLevel->matIds.PushBack(stream.Read<int>());
+			outLevel->meshIds.PushBack(stream.Read<int>());
+			outLevel->matIds.PushBack(stream.Read<int>());
 
-		int customComponentCount = stream.Read<int>();
-		for (int j = 0; j < customComponentCount; j++) {
-			int id = stream.Read<int>();
-			ASSERT(id >= 0 && id < CCT_Count);
-			Component* toAdd = (addComponentToLevelFuncs[id])(outLevel);
-			toAdd->id = (getComponentLevelCountFuncs[id])(outLevel) - 1;
-			(componentMemDeserializeFuncs[id])(toAdd, &stream);
-			toAdd->entity = ent.id;
+			int customComponentCount = stream.Read<int>();
+			for (int j = 0; j < customComponentCount; j++) {
+				int id = stream.Read<int>();
+				ASSERT(id >= 0 && id < CCT_Count);
+				Component* toAdd = (addComponentToLevelFuncs[id])(outLevel);
+				toAdd->id = (getComponentLevelCountFuncs[id])(outLevel) - 1;
+				(componentMemDeserializeFuncs[id])(toAdd, &stream);
+				toAdd->entity = ent.id;
+			}
+		}
+		else if (memcmp(enttChunkId, "ENPI", 4) == 0) {
+			int entId = stream.Read<int>();
+
+			Transform entTrans;
+			LoadTransform(stream, &entTrans);
+
+			int prefabId = stream.Read<int>();
+
+			PrefabInstance inst;
+			inst.pos = entTrans.position;
+			inst.parentTransform = entTrans.parent;
+			inst.rot = entTrans.rotation;
+			inst.prefabId = prefabId;
+			inst.instanceId = entId;
+
+			outLevel->prefabInsts.PushBack(inst);
+		}
+		else {
+			ASSERT_WARN("Unknown subchunk id: '%.*s'", 4, enttChunkId)
 		}
 
 		int endId = stream.Read<int>();

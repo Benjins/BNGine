@@ -1,0 +1,6 @@
+<Prefab id='0'>
+	<Transform pos='0.000000,0.000000,0.000000' id='0' scale='1.100000,1.100000,1.100000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+	<Material src='water.mat'/>
+	<Mesh src='test_2.obj'/>
+	<BoxCollider isTrigger='F' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
+</Prefab>

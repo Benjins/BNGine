@@ -21,10 +21,19 @@ struct LadderComponent;
 struct ScriptInstance;
 struct AnimationInstance;
 
+struct PrefabInstance {
+	Quaternion rot;
+	Vector3 pos;
+	int parentTransform;
+	uint32 prefabId;
+	uint32 instanceId;
+};
+
 struct Level : IDBase{
 	Camera cam;
 	Vector<Transform> transforms;
 	Vector<Entity> entities;
+	Vector<PrefabInstance> prefabInsts;
 
 	Vector<int> meshIds;
 	Vector<int> matIds;

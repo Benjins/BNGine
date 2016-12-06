@@ -16,8 +16,7 @@ Scene::Scene() : entities(100), transforms(120), res()	 {
 	frameRateIsLocked = false;
 }
 
-Entity* Scene::AddVisibleEntity(uint32 matId, uint32 meshId) {
-	Entity* newEnt = entities.CreateAndAdd();
+void Scene::AddVisibleEntityByEntityPtr(Entity* newEnt, uint32 matId, uint32 meshId) {
 	Transform* newTrans = transforms.CreateAndAdd();
 	newEnt->transform = newTrans->id;
 	newTrans->entity = newEnt->id;
@@ -29,6 +28,18 @@ Entity* Scene::AddVisibleEntity(uint32 matId, uint32 meshId) {
 	newDc->entId = newEnt->id;
 	newDc->matId = matId;
 	newDc->meshId = meshId;
+}
+
+Entity* Scene::AddVisibleEntity(uint32 matId, uint32 meshId) {
+	Entity* newEnt = entities.CreateAndAdd();
+	AddVisibleEntityByEntityPtr(newEnt, matId, meshId);
+
+	return newEnt;
+}
+
+Entity* Scene::AddVisibleEntityWithId(uint32 entId, uint32 matId, uint32 meshId) {
+	Entity* newEnt = entities.AddWithId(entId);
+	AddVisibleEntityByEntityPtr(newEnt, matId, meshId);
 
 	return newEnt;
 }
@@ -155,6 +166,14 @@ void Scene::LoadLevel(const char* name) {
 	LoadVectorToIDTracker(level->transforms, transforms);
 
 	LoadCustomComponentsFromLevel(level);
+
+	for (int i = 0; i < level->prefabInsts.count; i++) {
+		PrefabInstance* inst = &level->prefabInsts.data[i];
+		Prefab* prefab = res.prefabs.GetById(inst->prefabId);
+
+		Entity* ent = prefab->InstantiateWithId(inst->instanceId, inst->pos, inst->rot);
+		transforms.GetById(ent->transform)->parent = inst->parentTransform;
+	}
 
 	// TODO: Less hacky way of this
 	script.Start();

@@ -18,6 +18,8 @@ struct Prefab : IDBase{
 	MemStream customComponents;
 
 	Entity* Instantiate(Vector3 position, Quaternion rotation = QUAT_IDENTITY);
+	Entity* InstantiateWithId(uint32 id, Vector3 position, Quaternion rotation = QUAT_IDENTITY);
+	void InstantiateIntoEntityPtr(Entity* toAdd, Vector3 position, Quaternion rotation);
 };
 
 

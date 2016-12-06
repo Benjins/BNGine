@@ -610,6 +610,29 @@ void WriteEntitySubChunk(XMLElement* entElem, const StringMap<int>& assetIds, FI
 	fwrite(&subChunkIdFlipped, 1, sizeof(int), assetFileHandle);
 }
 
+void WritePrefabInstanceSubChunk(XMLElement* instElem, const StringMap<int>& assetIds, FILE* assetFileHandle) {
+	char subChunkId[] = "ENPI";
+	fwrite(subChunkId, 1, 4, assetFileHandle);
+
+	XMLElement* transElem = instElem->GetChild("Transform");
+	ASSERT(transElem != nullptr);
+
+	int id;
+	XML_PARSE_SERIAL_ATTR(instElem, id, "id", Atoi);
+	fwrite(&id, 1, sizeof(int), assetFileHandle);
+
+	WriteTransformData(transElem, assetFileHandle);
+
+	int prefabId = -1;
+	assetIds.LookUp(instElem->GetExistingAttrValue("prefabId"), &prefabId);
+	ASSERT(prefabId != -1);
+
+	fwrite(&prefabId, 1, sizeof(int), assetFileHandle);
+
+	int subChunkIdFlipped = ~*(int*)subChunkId;
+	fwrite(&subChunkIdFlipped, 1, sizeof(int), assetFileHandle);
+}
+
 void WriteLevelChunk(const char* levelFileName, const StringMap<int>& assetIds, int id, FILE* assetFileHandle){
 	XMLDoc lvlDoc;
 	XMLError err = ParseXMLStringFromFile(levelFileName, &lvlDoc);
@@ -629,7 +652,7 @@ void WriteLevelChunk(const char* levelFileName, const StringMap<int>& assetIds, 
 
 	for (int i = 0; i < rootElem->childrenIds.count; i++) {
 		XMLElement* childElem = lvlDoc.elements.GetById(rootElem->childrenIds.Get(i));
-		if (childElem->name == "Entity") {
+		if (childElem->name == "Entity" || childElem->name == "PrefabInstance") {
 			entCount++;
 		}
 	}
@@ -640,6 +663,9 @@ void WriteLevelChunk(const char* levelFileName, const StringMap<int>& assetIds, 
 		XMLElement* childElem = lvlDoc.elements.GetById(rootElem->childrenIds.Get(i));
 		if (childElem->name == "Entity") {
 			WriteEntitySubChunk(childElem, assetIds, assetFileHandle);
+		}
+		if (childElem->name == "PrefabInstance") {
+			WritePrefabInstanceSubChunk(childElem, assetIds, assetFileHandle);
 		}
 	}
 

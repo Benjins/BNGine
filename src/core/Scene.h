@@ -90,6 +90,8 @@ struct Scene {
 	void SaveCustomComponentsToLevel(Level* level);
 
 	Entity* AddVisibleEntity(uint32 matId, uint32 meshId);
+	Entity* AddVisibleEntityWithId(uint32 entId, uint32 matId, uint32 meshId);
+	void AddVisibleEntityByEntityPtr(Entity* newEnt, uint32 matId, uint32 meshId);
 	DrawCall* GetDrawCallForEntity(uint32 entityId);
 	Entity* CloneEntity(Entity* ent);
 

@@ -145,4 +145,7 @@
 		<Material src='floor.mat'/>
 		<Mesh src='floor.obj'/>
 	</Entity>
+	<PrefabInstance id='23' prefabId='bullet_like.bnp'>
+		<Transform pos='9.712412,1,-5' id='23' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+	</PrefabInstance>
 </Scene>
