@@ -17,10 +17,11 @@ struct Vector2;
 struct Vector4;
 
 struct Texture;
+struct Program;
 
 struct Material : IDBase {
-	int texIds[MAX_TEXTURES_PER_MATERIAL];
-	uint32 programId;
+	IDHandle<Texture> texIds[MAX_TEXTURES_PER_MATERIAL];
+	IDHandle<Program> programId;
 	int texCount;
 
 	StringMap<GLint> uniformCache;
@@ -31,7 +32,7 @@ struct Material : IDBase {
 		texCount = 0;
 	}
 
-	void AddTexture(int texId) {
+	void AddTexture(IDHandle<Texture> texId) {
 		texIds[texCount] = texId;
 		texCount++;
 	}

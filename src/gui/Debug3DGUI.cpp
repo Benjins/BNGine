@@ -38,7 +38,7 @@ void DebugDrawWireCube(Vector3 pos, Vector3 size, const Transform* transform /*=
 	int colMatId = -1;
 	GlobalScene->res.assetIdMap.LookUp("debugCol.mat", &colMatId);
 	ASSERT(colMatId != -1);
-	Material* colMat = GlobalScene->res.materials.GetById(colMatId);
+	Material* colMat = GlobalScene->res.materials.GetByIdNum(colMatId);
 	ASSERT(colMat != nullptr);
 
 	if (colMat != nullptr) {
@@ -48,7 +48,8 @@ void DebugDrawWireCube(Vector3 pos, Vector3 size, const Transform* transform /*=
 		}
 		colMat->SetMatrix4Uniform("_objMatrix", matrix);
 
-		glUseProgram(colMat->programId);
+		Program* prog = GlobalScene->res.programs.GetById(colMat->programId);
+		glUseProgram(prog->programObj);
 		colMat->SetVector4Uniform("_col", Vector4(1, 1, 1, 1));
 		colMat->UpdateUniforms();
 

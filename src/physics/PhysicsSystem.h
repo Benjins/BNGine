@@ -18,6 +18,7 @@ struct RaycastHit {
 	Vector2 texCoords;
 	float depth;
 	uint32 colId;
+	ColliderType type;
 	bool wasHit;
 };
 

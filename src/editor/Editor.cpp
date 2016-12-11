@@ -8,6 +8,7 @@
 
 #include "../../ext/3dbasics/Vector4.h"
 #include "../../ext/CppUtils/filesys.h"
+#include "../../ext/CppUtils/idbase.h"
 
 #include <float.h>
 
@@ -64,7 +65,7 @@ void Editor::Update() {
 			}
 			else if (scene.input.KeyIsReleased('V')) {
 				if (copyPasteData.type == CPT_Entity && copyPasteData.entityId != -1) {
-					Entity* srcEnt = scene.entities.GetById(copyPasteData.entityId);
+					Entity* srcEnt = scene.entities.GetByIdNum(copyPasteData.entityId);
 					if (srcEnt != nullptr) {
 						Entity* newEnt = scene.CloneEntity(srcEnt);
 						selectedEntity = newEnt->id;
@@ -105,7 +106,7 @@ void Editor::Update() {
 			if (scene.input.cursorX > leftBarWidth && scene.input.cursorX < cam.widthPixels - rightBarWidth
 				&& scene.input.cursorY > topBarHeight) {
 				if (selectedEntity != -1) {
-					Entity* selected = scene.entities.GetById(selectedEntity);
+					Entity* selected = scene.entities.GetByIdNum(selectedEntity);
 
 					HandleGizmoDrag(selected);
 				}
@@ -134,7 +135,7 @@ void Editor::HandleGizmoClick() {
 	Vector3 cameraPos = editorCamTrans.GetGlobalPosition();
 	Vector3 ray = ScreenSpaceCoordsToRay(scene.input.cursorX, scene.input.cursorY);
 
-	Entity* selected = scene.entities.GetById(selectedEntity);
+	Entity* selected = scene.entities.GetByIdNum(selectedEntity);
 	Transform* selectedTrans = scene.transforms.GetById(selected->transform);
 	Vector3 objectPos = selectedTrans->GetGlobalPosition();
 
@@ -275,7 +276,7 @@ void Editor::RenderPrefab() {
 		return;
 	}
 
-	Prefab* pf = scene.res.prefabs.GetById(selectedPrefab);
+	Prefab* pf = scene.res.prefabs.GetByIdNum(selectedPrefab);
 	ASSERT(pf != nullptr);
 
 	Mat4x4 camera = scene.cam.GetCameraMatrix();
@@ -364,7 +365,7 @@ void Editor::Render() {
 	{
 		int colMatId = -1;
 		scene.res.assetIdMap.LookUp("color.mat", &colMatId);
-		Material* mat = scene.res.materials.GetById(colMatId);
+		Material* mat = scene.res.materials.GetByIdNum(colMatId);
 		ASSERT(mat != nullptr);
 
 		mat->SetMatrix4Uniform("_camMatrix", camera);
@@ -387,7 +388,7 @@ void Editor::Render() {
 	{
 		int debugColMatId = -1;
 		scene.res.assetIdMap.LookUp("debugCol.mat", &debugColMatId);
-		Material* mat = scene.res.materials.GetById(debugColMatId);
+		Material* mat = scene.res.materials.GetByIdNum(debugColMatId);
 		ASSERT(mat != nullptr);
 
 		mat->SetMatrix4Uniform("_camMatrix", camera);
@@ -395,7 +396,7 @@ void Editor::Render() {
 	}
 
 	if (selectedEntity != -1) {
-		scene.CustomComponentEditorGuiForEntity(selectedEntity);
+		scene.CustomComponentEditorGuiForEntity(IDHandle<Entity>(selectedEntity));
 	}
 
 	scene.cam.xOffset = 0;
@@ -469,7 +470,7 @@ void Editor::TopPanelGui() {
 			int floorMesh, floorMat;
 			scene.res.assetIdMap.LookUp("floor.obj", &floorMesh);
 			scene.res.assetIdMap.LookUp("floor.mat", &floorMat);
-			scene.AddVisibleEntity(floorMat, floorMesh);
+			scene.AddVisibleEntity(IDHandle<Material>(floorMat), IDHandle<Mesh>(floorMesh));
 		}
 
 		x += 100;
@@ -507,7 +508,7 @@ void Editor::TopPanelGui() {
 				scene.res.assetIdMap.LookUp(chosenPrefabFileName, &chosenPrefabId);
 				ASSERT(chosenPrefabId >= 0);
 
-				Prefab* chosenPrefab = scene.res.prefabs.GetById(chosenPrefabId);
+				Prefab* chosenPrefab = scene.res.prefabs.GetByIdNum(chosenPrefabId);
 				ASSERT(chosenPrefab != nullptr);
 
 				Vector3 instantiatePos =
@@ -550,7 +551,7 @@ void Editor::TopPanelGui() {
 
 void Editor::SaveScene() {
 	if (currentView == EV_Scene) {
-		Level* currLevel = scene.res.levels.GetById(scene.currentLevel);
+		Level* currLevel = scene.res.levels.GetByIdNum(scene.currentLevel);
 		scene.SaveLevel(currLevel);
 		String levelFileName = scene.res.FindFileNameByIdAndExtension("lvl", currLevel->id);
 
@@ -573,7 +574,7 @@ void Editor::SaveScene() {
 
 void Editor::SavePrefab() {
 	if (currentView == EV_Prefab) {
-		Prefab* prefab = scene.res.prefabs.GetById(selectedPrefab);
+		Prefab* prefab = scene.res.prefabs.GetByIdNum(selectedPrefab);
 		String prefabFileName = scene.res.FindFileNameByIdAndExtension("bnp", prefab->id);
 
 		File assets;
@@ -599,39 +600,39 @@ void Editor::SidePanelGui() {
 
 	if (currentView == EV_Scene) {
 		if (selectedEntity != -1) {
-			Entity* ent = scene.entities.GetById(selectedEntity);
-			gui.DrawTextLabel(StringStackBuffer<64>("Id: %d", ent->id).buffer, 0, 12, x, y);
+			Entity* ent = scene.entities.GetByIdNum(selectedEntity);
+			gui.DrawTextLabel(StringStackBuffer<64>("Id: %d", ent->id).buffer, IDHandle<BitmapFont>(0), 12, x, y);
 			y -= 14;
 
 			Transform* entTrans = scene.transforms.GetById(ent->transform);
 
-			gui.DrawTextLabel("Position: ", 0, 12, x, y);
+			gui.DrawTextLabel("Position: ", IDHandle<BitmapFont>(0), 12, x, y);
 			y -= 14;
 			entTrans->position = Vec3Field(entTrans->position, x, y, rightBarWidth - 5);
 			y -= 14;
 
-			gui.DrawTextLabel("Scale: ", 0, 12, x, y);
+			gui.DrawTextLabel("Scale: ", IDHandle<BitmapFont>(0), 12, x, y);
 			y -= 14;
 			entTrans->scale = Vec3Field(entTrans->scale, x, y, rightBarWidth - 5);
 			y -= 14;
 
 			String meshName;
 			String matName;
-			DrawCall* dc = scene.GetDrawCallForEntity(ent->id);
+			DrawCall* dc = scene.GetDrawCallForEntity(IDHandle<Entity>(ent->id));
 			if (dc != nullptr) {
-				uint32 meshId = dc->meshId;
-				uint32 matId = dc->matId;
+				IDHandle<Mesh> meshId = dc->meshId;
+				IDHandle<Material> matId = dc->matId;
 
-				meshName = scene.res.FindFileNameByIdAndExtension("obj", meshId);
+				meshName = scene.res.FindFileNameByIdAndExtension("obj", meshId.id);
 				if (meshName == "") {
-					meshName = scene.res.FindFileNameByIdAndExtension("dae", meshId);
+					meshName = scene.res.FindFileNameByIdAndExtension("dae", meshId.id);
 				}
-				matName = scene.res.FindFileNameByIdAndExtension("mat", matId);
+				matName = scene.res.FindFileNameByIdAndExtension("mat", matId.id);
 			}
 
 			if (meshName.string != nullptr) {
 				float currX = x;
-				currX += gui.DrawTextLabel("Mesh: ", 0, 12, currX, y);
+				currX += gui.DrawTextLabel("Mesh: ", IDHandle<BitmapFont>(0), 12, currX, y);
 				String newMeshName = gui.TextInput(meshName, 0, 12, currX, y, cam.widthPixels - currX - 5);
 				y -= 14;
 
@@ -641,8 +642,8 @@ void Editor::SidePanelGui() {
 
 					if (isValidMesh) {
 						for (int i = 0; i < scene.res.drawCalls.currentCount; i++) {
-							if (scene.res.drawCalls.vals[i].entId == ent->id) {
-								scene.res.drawCalls.vals[i].meshId = newMeshId;
+							if (scene.res.drawCalls.vals[i].entId.id == ent->id) {
+								scene.res.drawCalls.vals[i].meshId = IDHandle<Mesh>(newMeshId);
 							}
 						}
 					}
@@ -651,7 +652,7 @@ void Editor::SidePanelGui() {
 
 			if (matName.string != nullptr) {
 				float currX = x;
-				currX += gui.DrawTextLabel("Material: ", 0, 12, currX, y);
+				currX += gui.DrawTextLabel("Material: ", IDHandle<BitmapFont>(0), 12, currX, y);
 				String newMatName = gui.TextInput(matName, 0, 12, currX, y, cam.widthPixels - currX - 5);
 				y -= 14;
 
@@ -661,8 +662,8 @@ void Editor::SidePanelGui() {
 
 					if (isValidMesh) {
 						for (int i = 0; i < scene.res.drawCalls.currentCount; i++) {
-							if (scene.res.drawCalls.vals[i].entId == ent->id) {
-								scene.res.drawCalls.vals[i].matId = newMatId;
+							if (scene.res.drawCalls.vals[i].entId.id == ent->id) {
+								scene.res.drawCalls.vals[i].matId = IDHandle<Material>(newMatId);
 							}
 						}
 					}
@@ -677,7 +678,7 @@ void Editor::SidePanelGui() {
 				MetaStruct* ms = componentMetaData[i];
 				for (int j = 0; j < compCount; j++) {
 
-					if ((int)compCursor->entity == selectedEntity) {
+					if (compCursor->entity.id == selectedEntity) {
 						bool toRemove = false;
 						y = EditComponentGui(compCursor, ms, x, y, &toRemove);
 
@@ -712,7 +713,7 @@ void Editor::SidePanelGui() {
 				if (pickedIndex > -1) {
 					//Add component.
 					Component* comp = addComponentFuncs[pickedIndex]();
-					comp->entity = selectedEntity;
+					comp->entity.id = selectedEntity;
 
 					pickerType = APT_None;
 				}
@@ -721,18 +722,18 @@ void Editor::SidePanelGui() {
 	}
 	else if (currentView == EV_Prefab){
 		if (selectedPrefab != -1) {
-			Prefab* prefab = GlobalScene->res.prefabs.GetById(selectedPrefab);
+			Prefab* prefab = GlobalScene->res.prefabs.GetByIdNum(selectedPrefab);
 			ASSERT(prefab != nullptr);
 
-			uint32 meshId = prefab->meshId;
-			uint32 matId = prefab->matId;
+			IDHandle<Mesh> meshId = prefab->meshId;
+			IDHandle<Material> matId = prefab->matId;
 
-			String meshName = scene.res.FindFileNameByIdAndExtension("obj", meshId);
-			String matName = scene.res.FindFileNameByIdAndExtension("mat", matId);
+			String meshName = scene.res.FindFileNameByIdAndExtension("obj", meshId.id);
+			String matName = scene.res.FindFileNameByIdAndExtension("mat", matId.id);
 
 			if (meshName.string != nullptr) {
 				float currX = x;
-				currX += gui.DrawTextLabel("Mesh: ", 0, 12, currX, y);
+				currX += gui.DrawTextLabel("Mesh: ", IDHandle<BitmapFont>(0), 12, currX, y);
 				String newMeshName = gui.TextInput(meshName, 0, 12, currX, y, cam.widthPixels - currX - 5);
 				y -= 14;
 
@@ -741,14 +742,14 @@ void Editor::SidePanelGui() {
 					bool isValidMesh = scene.res.assetIdMap.LookUp(newMeshName, &newMeshId);
 
 					if (isValidMesh) {
-						prefab->meshId = newMeshId;
+						prefab->meshId.id = newMeshId;
 					}
 				}
 			}
 
 			if (matName.string != nullptr) {
 				float currX = x;
-				currX += gui.DrawTextLabel("Material: ", 0, 12, currX, y);
+				currX += gui.DrawTextLabel("Material: ", IDHandle<BitmapFont>(0), 12, currX, y);
 				String newMatName = gui.TextInput(matName, 0, 12, currX, y, cam.widthPixels - currX - 5);
 				y -= 14;
 
@@ -757,7 +758,7 @@ void Editor::SidePanelGui() {
 					bool isValidMesh = scene.res.assetIdMap.LookUp(newMatName, &newMatId);
 
 					if (isValidMesh) {
-						prefab->matId = newMatId;
+						prefab->matId.id = newMatId;
 					}
 				}
 			}
@@ -790,9 +791,9 @@ void Editor::SidePanelGui() {
 
 float Editor::EditComponentGui(Component* comp, MetaStruct* meta, float x, float y, bool* outRemove) {
 	float currY = y;
-	gui.DrawTextLabel(meta->name, 0, 12, x, currY);
+	gui.DrawTextLabel(meta->name, IDHandle<BitmapFont>(0), 12, x, currY);
 
-	BitmapFont* font = scene.res.fonts.GetById(0);
+	BitmapFont* font = scene.res.fonts.GetByIdNum(0);
 	float removeWidth = font->GetCursorPos("Remove", StrLen("Remove"));
 
 	if (gui.TextButton("Remove", 0, 12, cam.widthPixels - removeWidth - 6, currY + 6, removeWidth + 4, 12)) {
@@ -808,7 +809,7 @@ float Editor::EditComponentGui(Component* comp, MetaStruct* meta, float x, float
 			char* fieldPtr = ((char*)comp) + mf->offset;
 
 			if (mf->type >= MT_FundamentalBegin && mf->type < MT_FundamentalEnd) {
-				gui.DrawTextLabel(mf->name, 0, 12, x, currY);
+				gui.DrawTextLabel(mf->name, IDHandle<BitmapFont>(0), 12, x, currY);
 				currY -= 14;
 			}
 
@@ -887,12 +888,12 @@ float Editor::EditComponentGui(Component* comp, MetaStruct* meta, float x, float
 }
 
 void EditorShiftButton(Editor* ed, uint32 buttonId) {
-	GuiButton* button = ed->gui.buttons.GetById(buttonId);
+	GuiButton* button = ed->gui.buttons.GetByIdNum(buttonId);
 	button->content.asciiStr = button->content.asciiStr.Insert('#', 0);
 }
 
 void EditorResetButton(Editor* ed, uint32 buttonId) {
-	GuiButton* button = ed->gui.buttons.GetById(buttonId);
+	GuiButton* button = ed->gui.buttons.GetByIdNum(buttonId);
 	button->content.asciiStr = "PUSH";
 }
 
@@ -917,8 +918,8 @@ void EditorAddStringPicker(Editor* ed, int enumIndex, int buttonId, Vector2 pos,
 }
 
 void EditorPrintEnum(Editor* ed, int pickerId, int buttonId) {
-	GuiStringPicker* picker = ed->gui.stringPickers.GetById(pickerId);
-	ed->gui.buttons.GetById(buttonId)->content.asciiStr = Itoa(picker->choice);
+	GuiStringPicker* picker = ed->gui.stringPickers.GetByIdNum(pickerId);
+	ed->gui.buttons.GetByIdNum(buttonId)->content.asciiStr = Itoa(picker->choice);
 }
 
 void Editor::StartUp() {
@@ -971,7 +972,7 @@ void Editor::StartUp() {
 		GuiButton* button = gui.AddButton(Vector2(50, 250), Vector2(80, 30));
 		button->content.SetType(GCT_Ascii);
 		button->content.asciiStr = "Enum2";
-		button->content.bmpFontId = 0;
+		button->content.bmpFontId = IDHandle<BitmapFont>(0);
 		button->content.textScale = 12;
 
 		button->onClick.type = AT_EditorAddStringPicker;
@@ -1010,21 +1011,21 @@ int Editor::GetSelectedEntity(int pixelX, int pixelY) {
 	for (int i = 0; i < scene.entities.currentCount; i++) {
 		Entity* ent = &scene.entities.vals[i];
 
-		int meshId = -1;
+		IDHandle<Mesh> meshId;
 		for (int j = 0; j < scene.res.drawCalls.currentCount; j++) {
 			DrawCall* dc = &scene.res.drawCalls.vals[j];
-			if (dc->entId == ent->id) {
+			if (dc->entId.id == ent->id) {
 				meshId = dc->meshId;
 				break;
 			}
 		}
 
 		BoxCollider* boxCol = sys.boxCols.CreateAndAdd();
-		boxCol->entity = ent->id;
+		boxCol->entity.id = ent->id;
 
-		if (meshId == -1) {
+		if (meshId.id == -1) {
 			boxCol->position = Vector3(0, 0, 0);
-			boxCol->size = Vector3(1, 1, 1);
+			boxCol->size = Vector3(0.5f, 0.5f, 0.5f);
 		}
 		else {
 			Mesh* mesh = scene.res.meshes.GetById(meshId);
@@ -1052,7 +1053,7 @@ int Editor::GetSelectedEntity(int pixelX, int pixelY) {
 	if (hit.wasHit) {
 		//Transform* trans = scene.transforms.GetById(scene.entities.vals[0].transform);
 		//trans->position = hit.globalPos;
-		return sys.boxCols.GetById(hit.colId)->entity;
+		return sys.boxCols.GetByIdNum(hit.colId)->entity.id;
 	}
 	else {
 		return -1;
@@ -1065,7 +1066,7 @@ Vector3 Editor::ScreenSpaceCoordsToRay(float pixelX, float pixelY) {
 	screenspaceY *= -1;
 
 	// Don't know why, but this makes the editor selection much better.
-	screenspaceX *= 0.5f;
+	screenspaceX *= 0.25f;
 	screenspaceY *= 0.5f;
 
 	Mat4x4 camMat = editorCamTrans.GetLocalToGlobalMatrix();
@@ -1145,7 +1146,7 @@ float Editor::FloatField(float val, float x, float y, float w) {
 }
 
 Vector2 Editor::Vec2Field(Vector2 val, float x, float y, float w) {
-	BitmapFont* fnt = scene.res.fonts.GetById(0);
+	BitmapFont* fnt = scene.res.fonts.GetByIdNum(0);
 	float usedWidth = fnt->GetCursorPos("X: ", 2) + fnt->GetCursorPos("Y: ", 2);
 
 	ASSERT(usedWidth < w);
@@ -1155,11 +1156,11 @@ Vector2 Editor::Vec2Field(Vector2 val, float x, float y, float w) {
 	Vector2 retVal = val;
 
 	float currX = x;
-	currX += gui.DrawTextLabel("X: ", 0, 12, currX, y);
+	currX += gui.DrawTextLabel("X: ", IDHandle<BitmapFont>(0), 12, currX, y);
 	retVal.x = FloatField(val.x, currX, y, inputWidth);
 	currX += inputWidth;
 
-	currX += gui.DrawTextLabel("Y: ", 0, 12, currX, y);
+	currX += gui.DrawTextLabel("Y: ", IDHandle<BitmapFont>(0), 12, currX, y);
 	retVal.y = FloatField(val.y, currX, y, inputWidth);
 	currX += inputWidth;
 
@@ -1167,7 +1168,7 @@ Vector2 Editor::Vec2Field(Vector2 val, float x, float y, float w) {
 }
 
 Vector3 Editor::Vec3Field(Vector3 val, float x, float y, float w) {
-	BitmapFont* fnt = scene.res.fonts.GetById(0);
+	BitmapFont* fnt = scene.res.fonts.GetByIdNum(0);
 	float usedWidth = fnt->GetCursorPos("X: ", 3) + fnt->GetCursorPos("Y: ", 3) + fnt->GetCursorPos("Z: ", 3);
 
 	ASSERT(usedWidth < w);
@@ -1185,7 +1186,7 @@ Vector3 Editor::Vec3Field(Vector3 val, float x, float y, float w) {
 	};
 
 	for (int i = 0; i < 3; i++) {
-		currX += gui.DrawTextLabel(labels[i], 0, 12, currX, y);
+		currX += gui.DrawTextLabel(labels[i], IDHandle<BitmapFont>(0), 12, currX, y);
 		retVal[i] = FloatField(val[i], currX, y, inputWidth);
 		currX += inputWidth;
 	}

@@ -32,6 +32,8 @@ struct BoneAnimTracks {
 	int scaleTrack;
 };
 
+struct Mesh;
+
 struct Armature : IDBase {
 	Mat4x4 inverseBindPoses[MAX_BONE_COUNT];
 	BoneTransform bones[MAX_BONE_COUNT];
@@ -41,7 +43,7 @@ struct Armature : IDBase {
 	Vector<float> boneWeights;
 	Vector<float> boneIndices;
 
-	int modelId;
+	IDHandle<Mesh> modelId;
 
 	GLuint boneWeightsVbo;
 	GLuint boneIndicesVbo;

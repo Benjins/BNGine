@@ -16,6 +16,8 @@ struct Face {
 	int uvIndices[3];
 };
 
+struct Armature;
+
 struct Mesh : IDBase {
 	Vector<Vector3> positions;
 	Vector<Vector2> uvs;
@@ -25,7 +27,7 @@ struct Mesh : IDBase {
 	GLuint uvVbo;
 	GLuint normalVbo;
 
-	int armatureId;
+	IDHandle<Armature> armatureId;
 
 	Mesh();
 

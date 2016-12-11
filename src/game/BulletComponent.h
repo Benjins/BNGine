@@ -15,7 +15,7 @@ struct BulletComponent : Component {
 	float currentTime;
 
 	/*[DoNotSerialize]*/
-	int ownerId;
+	IDHandle<Entity> ownerId;
 
 	/*[DoNotSerialize]*/
 	bool hasDealtDamage;
@@ -25,7 +25,6 @@ struct BulletComponent : Component {
 		killTime = 2;
 		speed = 1;
 		currentTime = 0;
-		ownerId = -1;
 	}
 
 	void Update();

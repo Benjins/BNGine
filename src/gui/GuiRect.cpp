@@ -3,7 +3,7 @@
 #include "../core/Scene.h"
 
 GuiRect GuiRect::GetFinalRect(){
-	if (parent == -1) {
+	if (parent.id == 0xFFFFFFFF) {
 		return *this;
 	}
 	else {

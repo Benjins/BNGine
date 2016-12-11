@@ -8,8 +8,8 @@
 #include "../../ext/CppUtils/idbase.h"
 
 struct Program : IDBase {
-	uint32 vertShader;
-	uint32 fragShader;
+	IDHandle<Shader> vertShader;
+	IDHandle<Shader> fragShader;
 
 	GLuint programObj;
 

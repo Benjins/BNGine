@@ -26,7 +26,7 @@ struct EnemyComponent : Component {
 	float timer;
 
 	/*[DoNotSerialize]*/
-	int playerId;
+	IDHandle<Entity> playerId;
 
 	/*[DoNotSerialize]*/
 	int patrolIndex;
@@ -43,7 +43,6 @@ struct EnemyComponent : Component {
 		currentState = ES_Paused;
 		pauseTime = 0.3f;
 		timer = 0;
-		playerId = -1;
 		patrolIndex = 0;
 		speed = 2.0f;
 		damageThisFrame = false;
@@ -52,11 +51,6 @@ struct EnemyComponent : Component {
 		patrolPoints.PushBack(Vector3(2,  0, -2));
 		patrolPoints.PushBack(Vector3(-2, 0,  2));
 		patrolPoints.PushBack(Vector3(-2, 0, -2));
-	}
-
-	~EnemyComponent() {
-		int xc = 0;
-		BNS_UNUSED(xc);
 	}
 
 	void Update();

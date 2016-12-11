@@ -64,7 +64,7 @@ void GuiDrawCall::ExecuteDraw() {
 	glBindBuffer(GL_ARRAY_BUFFER, uvVbo);
 	glBufferData(GL_ARRAY_BUFFER, uvs.GetLength(), (float*)uvs.readHead, GL_DYNAMIC_DRAW);
 
-	if ((int)texId != -1) {
+	if (texId.id != 0xFFFFFFFF) {
 		Texture* tex = GlobalScene->res.textures.GetById(texId);
 		tex->Bind(GL_TEXTURE0);
 	}
@@ -104,16 +104,16 @@ void GuiSystem::Init(){
 		guiTextFShader->CompileShader(guiTextFShaderText, GL_FRAGMENT_SHADER);
 
 		Program* prog = GlobalScene->res.programs.CreateAndAdd();
-		prog->vertShader = guiTextVShader->id;
-		prog->fragShader = guiTextFShader->id;
+		prog->vertShader = IDHandle<Shader>(guiTextVShader->id);
+		prog->fragShader = IDHandle<Shader>(guiTextFShader->id);
 		prog->CompileProgram();
 
 		Material* guiTextMat = GlobalScene->res.materials.CreateAndAdd();
-		guiTextMat->programId = prog->id;
+		guiTextMat->programId = IDHandle<Program>(prog->id);
 
 		guiTextMat->SetIntUniform("_mainTex", 0);
 
-		guiTextMatId = guiTextMat->id;
+		guiTextMatId = IDHandle<Material>(guiTextMat->id);
 	}
 
 	{
@@ -124,14 +124,14 @@ void GuiSystem::Init(){
 		guiColFShader->CompileShader(guiColFShaderText, GL_FRAGMENT_SHADER);
 
 		Program* prog = GlobalScene->res.programs.CreateAndAdd();
-		prog->vertShader = guiColVShader->id;
-		prog->fragShader = guiColFShader->id;
+		prog->vertShader = IDHandle<Shader>(guiColVShader->id);
+		prog->fragShader = IDHandle<Shader>(guiColFShader->id);
 		prog->CompileProgram();
 
 		Material* guiColMat = GlobalScene->res.materials.CreateAndAdd();
-		guiColMat->programId = prog->id;
+		guiColMat->programId = IDHandle<Program>(prog->id);
 
-		guiColMatId = guiColMat->id;
+		guiColMatId = IDHandle<Material>(guiColMat->id);
 	}
 }
 
@@ -242,7 +242,7 @@ void GuiSystem::DrawContent(const GuiContent& content, GuiRect rect) {
 	}
 }
 
-float GuiSystem::DrawTextLabel(const char* text, uint32 fontId, float scale, float x, float y, float w /*= 10000*/, float h /*= 10000*/){
+float GuiSystem::DrawTextLabel(const char* text, IDHandle<BitmapFont> fontId, float scale, float x, float y, float w /*= 10000*/, float h /*= 10000*/){
 	BitmapFont* font = GlobalScene->res.fonts.GetById(fontId);
 	
 	int textLen = StrLen(text);
@@ -259,7 +259,7 @@ float GuiSystem::DrawTextLabel(const char* text, uint32 fontId, float scale, flo
 
 	int dcIndex = -1;
 	for (int i = 0; i < guiDrawCalls.count; i++) {
-		if ((int)guiDrawCalls.Get(i).matId == guiTextMatId) {
+		if (guiDrawCalls.Get(i).matId == guiTextMatId) {
 			dcIndex = i;
 			break;
 		}
@@ -282,7 +282,7 @@ float GuiSystem::DrawTextLabel(const char* text, uint32 fontId, float scale, flo
 	return width;
 }
 
-float GuiSystem::DrawUnicodeLabel(U32String text, uint32 fontId, float scale, float x, float y, float w /*= 10000*/, float h /*= 10000*/) {
+float GuiSystem::DrawUnicodeLabel(U32String text, IDHandle<UniFont> fontId, float scale, float x, float y, float w /*= 10000*/, float h /*= 10000*/) {
 	UniFont* font = GlobalScene->res.uniFonts.GetById(fontId);
 	font->CacheGlyphs(text.start, text.length);
 
@@ -301,7 +301,7 @@ float GuiSystem::DrawUnicodeLabel(U32String text, uint32 fontId, float scale, fl
 
 	int dcIndex = -1;
 	for (int i = 0; i < guiDrawCalls.count; i++) {
-		if ((int)guiDrawCalls.Get(i).matId == guiTextMatId && (int)guiDrawCalls.Get(i).texId == font->textureId) {
+		if (guiDrawCalls.Get(i).matId == guiTextMatId && guiDrawCalls.Get(i).texId == font->textureId) {
 			dcIndex = i;
 			break;
 		}
@@ -343,6 +343,7 @@ void GuiSystem::ColoredBox(float x, float y, float w, float h, const Vector4 col
 	glEnd();
 }
 
+// TODO: make this an IDHandle<BitmapFont> ?
 String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, float x, float y, float w) {
 	ColoredBox(x, y, w, scale, Vector4(0.4f, 0.4f, 0.4f, 0.85f));
 
@@ -350,7 +351,7 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 	const char* textRenderStart = textInputState.prevEntry.string;
 	if (textInputState.count == textInputState.activeIndex) {
 		textRenderStart = &textInputState.prevEntry.string[textInputState.textOffset];
-		BitmapFont* font = GlobalScene->res.fonts.GetById(fontId);
+		BitmapFont* font = GlobalScene->res.fonts.GetByIdNum(fontId);
 		float cursorX = font->GetCursorPos(textRenderStart, textInputState.cursorPos - textInputState.textOffset);
 
 		if (cursorX > w) {
@@ -377,10 +378,10 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 	}
 
 	if (textInputState.count == textInputState.activeIndex) {
-		DrawTextLabel(textToDraw, fontId, scale, x + textOffset, y, w, scale);
+		DrawTextLabel(textToDraw, IDHandle<BitmapFont>(fontId), scale, x + textOffset, y, w, scale);
 	}
 	else {
-		DrawTextLabel(textToDraw, fontId, scale, x + textOffset, y, w, scale);
+		DrawTextLabel(textToDraw, IDHandle<BitmapFont>(fontId), scale, x + textOffset, y, w, scale);
 	}
 
 	textInputState.count++;
@@ -413,7 +414,7 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 	if (textInputState.count == textInputState.activeIndex + 1) {
 		static const int cursorWidth = 6;
 
-		BitmapFont* font = GlobalScene->res.fonts.GetById(fontId);
+		BitmapFont* font = GlobalScene->res.fonts.GetByIdNum(fontId);
 		float cursorOffset = font->GetCursorPos(textRenderStart, textInputState.cursorPos - textInputState.textOffset);
 		float curX = x + cursorOffset + textOffset;
 
@@ -670,9 +671,9 @@ bool GuiSystem::TextButton(const char* text, uint32 fontId, float scale, float x
 
 	ColoredBox(x, y - h/2, w, h, col);
 
-	BitmapFont* font = GlobalScene->res.fonts.GetById(fontId);
+	BitmapFont* font = GlobalScene->res.fonts.GetByIdNum(fontId);
 	float textWidth = font->GetCursorPos(text, StrLen(text));
-	DrawTextLabel(text, fontId, scale, x + w/2 - textWidth/2, y - scale/2);
+	DrawTextLabel(text, IDHandle<BitmapFont>(fontId), scale, x + w/2 - textWidth/2, y - scale/2);
 
 	return isCursorIn && GlobalScene->input.MouseButtonIsReleased(PRIMARY);
 }
@@ -742,14 +743,14 @@ void GuiSystem::EndFrame() {
 
 		bool insidePicker = finalRect.ContainsPoint(mousePos);
 		if (picker->witnessedMouseDown && !insidePicker && mouseReleased) {
-			stringPickers.RemoveById(picker->id);
+			stringPickers.RemoveByIdNum(picker->id);
 		}
 		else if (!insidePicker && mousePressed) {
 			picker->witnessedMouseDown = true;
 		}
 		else if (picker->choice >= 0 && picker->options == GSPO_SingleChoice) {
 			ExecuteAction(picker->onSelect);
-			stringPickers.RemoveById(picker->id);
+			stringPickers.RemoveByIdNum(picker->id);
 		}
 	}
 

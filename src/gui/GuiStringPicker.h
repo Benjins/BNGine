@@ -14,7 +14,7 @@ enum GuiSringPickerOptions {
 };
 
 struct GuiStringPicker : IDBase {
-	int rect;
+	IDHandle<GuiRect> rect;
 
 	Vector<String> choices;
 	GuiSringPickerOptions options;
@@ -31,7 +31,6 @@ struct GuiStringPicker : IDBase {
 
 	GuiStringPicker() {
 		options = GSPO_MultipleChoice;
-		rect = -1;
 		choice = -1;
 		witnessedMouseDown = false;
 	}

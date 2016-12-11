@@ -5,8 +5,10 @@
 
 #include "../../ext/CppUtils/idbase.h"
 
+struct Transform;
+
 struct Entity : IDBase{
-	uint32 transform;
+	IDHandle<Transform> transform;
 };
 
 

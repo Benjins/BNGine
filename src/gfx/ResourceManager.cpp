@@ -144,7 +144,7 @@ void ResourceManager::LoadAssetFile(const char* fileName) {
 
 void ResourceManager::LoadMeshFromChunk(MemStream& stream, Mesh* outMesh) {
 	int flags = stream.Read<int>();
-	outMesh->armatureId = stream.Read<int>();
+	outMesh->armatureId = IDHandle<Armature>(stream.Read<int>());
 
 	int posCount = stream.Read<int>();
 
@@ -190,7 +190,7 @@ void ResourceManager::LoadArmatureFromChunk(MemStream& stream, Armature* outArma
 	int meshId = stream.Read<int>();
 	int boneCount = stream.Read<int>();
 
-	outArmature->modelId = meshId;
+	outArmature->modelId = IDHandle<Mesh>(meshId);
 
 	for (int i = 0; i < boneCount; i++) {
 		BoneTransform* bt = outArmature->AddBone();
@@ -236,7 +236,7 @@ void ResourceManager::LoadArmatureFromChunk(MemStream& stream, Armature* outArma
 	ASSERT(boneIndices.count == vertCount * MAX_BONES_PER_VERTEX);
 	ASSERT(boneWeights.count == vertCount * MAX_BONES_PER_VERTEX);
 
-	Mesh* mesh = meshes.GetById(meshId);
+	Mesh* mesh = meshes.GetByIdNum(meshId);
 	outArmature->boneIndices.EnsureCapacity(mesh->faces.count * 3 * MAX_BONES_PER_VERTEX);
 	outArmature->boneWeights.EnsureCapacity(mesh->faces.count * 3 * MAX_BONES_PER_VERTEX);
 	for (int i = 0; i < mesh->faces.count; i++) {
@@ -297,7 +297,7 @@ void ResourceManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat)
 
 	Program* prog = nullptr;
 	for (int i = 0; i < programs.currentCount; i++) {
-		if (programs.vals[i].vertShader == vShaderId && programs.vals[i].fragShader == fShaderId) {
+		if (programs.vals[i].vertShader.id == vShaderId && programs.vals[i].fragShader.id == fShaderId) {
 			prog = &programs.vals[i];
 			break;
 		}
@@ -305,12 +305,12 @@ void ResourceManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat)
 
 	if (prog == nullptr) {
 		prog = programs.CreateAndAdd();
-		prog->vertShader = vShaderId;
-		prog->fragShader = fShaderId;
+		prog->vertShader = IDHandle<Shader>(vShaderId);
+		prog->fragShader = IDHandle<Shader>(fShaderId);
 		prog->CompileProgram();
 	}
 
-	outMat->programId = prog->id;
+	outMat->programId = IDHandle<Program>(prog->id);
 
 	//-------------------------
 	// GL Program Binary debug code
@@ -345,8 +345,8 @@ void ResourceManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat)
 
 		UniformType uniformType = stream.Read<UniformType>();
 		if (uniformType == UT_TEXTURE2D) {
-			int texId = stream.Read<uint32>();
-			outMat->AddTexture(texId);
+			uint32 texId = stream.Read<uint32>();
+			outMat->AddTexture(IDHandle<Texture>(texId));
 
 			outMat->SetIntUniform(uniformName, outMat->texCount - 1);
 		}
@@ -367,7 +367,7 @@ void ResourceManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat)
 
 void ResourceManager::LoadTransform(MemStream& stream, Transform* outTrans) {
 	outTrans->id = stream.Read<int>();
-	outTrans->parent= stream.Read<int>();
+	outTrans->parent= IDHandle<Transform>(stream.Read<int>());
 	outTrans->position = stream.Read<Vector3>();
 	outTrans->rotation = stream.Read<Quaternion>();
 	outTrans->scale	= stream.Read<Vector3>();
@@ -387,7 +387,7 @@ void ResourceManager::LoadLevelFromChunk(MemStream& stream, Level* outLevel) {
 		LoadTransform(stream, &trans);
 		outLevel->transforms.PushBack(trans);
 
-		outLevel->cam.transform = trans.id;
+		outLevel->cam.transform = IDHandle<Transform>(trans.id);
 
 		int endId = stream.Read<int>();
 		ASSERT(endId == ~*(int*)camChunkId);
@@ -405,11 +405,11 @@ void ResourceManager::LoadLevelFromChunk(MemStream& stream, Level* outLevel) {
 
 			Transform entTrans;
 			LoadTransform(stream, &entTrans);
-			entTrans.entity = ent.id;
+			entTrans.entity = IDHandle<Entity>(ent.id);
 
 			outLevel->transforms.PushBack(entTrans);
 
-			ent.transform = entTrans.id;
+			ent.transform = IDHandle<Transform>(entTrans.id);
 
 			outLevel->entities.PushBack(ent);
 
@@ -423,7 +423,7 @@ void ResourceManager::LoadLevelFromChunk(MemStream& stream, Level* outLevel) {
 				Component* toAdd = (addComponentToLevelFuncs[id])(outLevel);
 				toAdd->id = (getComponentLevelCountFuncs[id])(outLevel) - 1;
 				(componentMemDeserializeFuncs[id])(toAdd, &stream);
-				toAdd->entity = ent.id;
+				toAdd->entity = IDHandle<Entity>(ent.id);
 			}
 		}
 		else if (memcmp(enttChunkId, "ENPI", 4) == 0) {
@@ -436,9 +436,9 @@ void ResourceManager::LoadLevelFromChunk(MemStream& stream, Level* outLevel) {
 
 			PrefabInstance inst;
 			inst.pos = entTrans.position;
-			inst.parentTransform = entTrans.parent;
+			inst.parentTransform = entTrans.parent.id;
 			inst.rot = entTrans.rotation;
-			inst.prefabId = prefabId;
+			inst.prefabId = IDHandle<Prefab>(prefabId);
 			inst.instanceId = entId;
 
 			outLevel->prefabInsts.PushBack(inst);
@@ -469,7 +469,7 @@ void ResourceManager::LoadBitmapFontFromChunk(MemStream& stream, BitmapFont* out
 	fontTex->externalColourFormat = GL_RED;
 	fontTex->UploadToGraphicsDevice();
 	
-	outFont->textureId = fontTex->id;
+	outFont->textureId = IDHandle<Texture>(fontTex->id);
 	
 	int codepointCount = stream.Read<int>();
 	
@@ -501,7 +501,7 @@ void ResourceManager::LoadUniFontFromChunk(MemStream& stream, UniFont* outFont) 
 	tex->internalColourFormat = GL_RED;
 	tex->externalColourFormat = GL_RED;
 
-	outFont->textureId = tex->id;
+	outFont->textureId = IDHandle<Texture>(tex->id);
 }
 
 void ResourceManager::LoadScriptObjectFromChunk(MemStream& stream, ScriptObject* outScript) {
@@ -519,8 +519,8 @@ void ResourceManager::LoadPrefabFromChunk(MemStream& stream, Prefab* outPrefab) 
 
 	LoadTransform(stream, &outPrefab->transform);
 
-	outPrefab->meshId = stream.Read<int>();
-	outPrefab->matId = stream.Read<int>();
+	outPrefab->meshId = IDHandle<Mesh>(stream.Read<int>());
+	outPrefab->matId  = IDHandle<Material>(stream.Read<int>());
 
 	int customComponentCount = stream.Read<int>();
 	for (int j = 0; j < customComponentCount; j++) {
@@ -548,7 +548,7 @@ void XMLSerializeTransform(XMLElement* elem, const Transform* trans) {
 	elem->attributes.Insert("pos", EncodeVector3(trans->position));
 	elem->attributes.Insert("rotation", EncodeQuaternion(trans->rotation));
 	elem->attributes.Insert("scale", EncodeVector3(trans->scale));
-	elem->attributes.Insert("parent", Itoa(trans->parent));
+	elem->attributes.Insert("parent", Itoa(trans->parent.id));
 }
 
 void ResourceManager::SavePrefabToFile(Prefab* prefab, const char* fileName) {
@@ -556,24 +556,25 @@ void ResourceManager::SavePrefabToFile(Prefab* prefab, const char* fileName) {
 	XMLElement* rootElem = doc.AddElement();
 	rootElem->name = STATIC_TO_SUBSTRING("Prefab");
 	rootElem->attributes.Insert("id", Itoa(prefab->id));
-	uint32 rootId = rootElem->id;
+	IDHandle<XMLElement> rootId = IDHandle<XMLElement>(rootElem->id);
 
 	XMLElement* transElem = doc.AddElement();
 	XMLSerializeTransform(transElem, &prefab->transform);
 
 	// It may have re-allocated.  Maybe I didn't think this through...
-	doc.elements.GetById(rootId)->childrenIds.PushBack(transElem->id);
+	doc.elements.GetById(rootId)->childrenIds.PushBack(IDHandle<XMLElement>(transElem->id));
 
-	if (prefab->matId != 0xFFFFFFFF) {
+	if (prefab->matId.id != 0xFFFFFFFF) {
 		if (Material* mat = GlobalScene->res.materials.GetById(prefab->matId)) {
 			XMLElement* matElem = doc.AddElement();
 			matElem->name = STATIC_TO_SUBSTRING("Material");
 			matElem->attributes.Insert("src", FindFileNameByIdAndExtension("mat", mat->id));
-			doc.elements.GetById(rootId)->childrenIds.PushBack(matElem->id);
+			// TODO: Easier way to add children elements
+			doc.elements.GetById(rootId)->childrenIds.PushBack(IDHandle<XMLElement>(matElem->id));
 		}
 	}
 
-	if (prefab->meshId != 0xFFFFFFFF) {
+	if (prefab->meshId.id != 0xFFFFFFFF) {
 		if (Mesh* mesh = GlobalScene->res.meshes.GetById(prefab->meshId)) {
 			XMLElement* meshElem = doc.AddElement();
 			meshElem->name = STATIC_TO_SUBSTRING("Mesh");
@@ -582,7 +583,7 @@ void ResourceManager::SavePrefabToFile(Prefab* prefab, const char* fileName) {
 				meshName = FindFileNameByIdAndExtension("dae", mesh->id);
 			}
 			meshElem->attributes.Insert("src", meshName);
-			doc.elements.GetById(rootId)->childrenIds.PushBack(meshElem->id);
+			doc.elements.GetById(rootId)->childrenIds.PushBack(IDHandle<XMLElement>(meshElem->id));
 		}
 	}
 
@@ -594,7 +595,7 @@ void ResourceManager::SavePrefabToFile(Prefab* prefab, const char* fileName) {
 		
 		XMLElement* compElem = doc.AddElement();
 		componentXMLSerializeFuncs[ct](buffer, compElem);
-		doc.elements.GetById(rootId)->childrenIds.PushBack(compElem->id);
+		doc.elements.GetById(rootId)->childrenIds.PushBack(IDHandle<XMLElement>(compElem->id));
 	}
 
 	prefab->customComponents.readHead = prefab->customComponents.base;
@@ -606,16 +607,16 @@ void ResourceManager::SaveLevelToFile(const Level* lvl, const char* fileName) {
 	XMLDoc doc;
 	XMLElement* rootElem = doc.AddElement();
 	rootElem->name = STATIC_TO_SUBSTRING("Scene");
-	uint32 rootId = rootElem->id;
+	IDHandle<XMLElement> rootId = IDHandle<XMLElement>(rootElem->id);
 
 	XMLElement* cameraElem = doc.AddElement();
-	uint32 camElemId = cameraElem->id;
+	IDHandle<XMLElement> camElemId = IDHandle<XMLElement>(cameraElem->id);
 	cameraElem->name = STATIC_TO_SUBSTRING("Camera");
 	cameraElem->attributes.Insert("fov", Itoa(lvl->cam.fov));
 	cameraElem->attributes.Insert("nearClip", Ftoa(lvl->cam.nearClip));
 	cameraElem->attributes.Insert("farClip", Ftoa(lvl->cam.farClip));
 
-	doc.elements.GetById(rootId)->childrenIds.PushBack(cameraElem->id);
+	doc.elements.GetById(rootId)->childrenIds.PushBack(IDHandle<XMLElement>(cameraElem->id));
 
 	Transform* camTrans = GlobalScene->transforms.GetById(lvl->cam.transform);
 	ASSERT(camTrans != nullptr);
@@ -624,25 +625,25 @@ void ResourceManager::SaveLevelToFile(const Level* lvl, const char* fileName) {
 	XMLSerializeTransform(camTransElem, camTrans);
 
 	// It may have re-allocated.  Maybe I didn't think this through...
-	doc.elements.GetById(camElemId)->childrenIds.PushBack(camTransElem->id);
+	doc.elements.GetById(camElemId)->childrenIds.PushBack(IDHandle<XMLElement>(camTransElem->id));
 
 	for (int i = 0; i < lvl->entities.count; i++) {
 		Entity* ent = &lvl->entities.data[i];
 
 		XMLElement* entElem = doc.AddElement();
-		uint32 entElemId = entElem->id;
+		IDHandle<XMLElement> entElemId = IDHandle<XMLElement>(entElem->id);
 
 		entElem->name = STATIC_TO_SUBSTRING("Entity");
 		entElem->attributes.Insert("id", Itoa(ent->id));
 
-		doc.elements.GetById(rootId)->childrenIds.PushBack(entElem->id);
+		doc.elements.GetById(rootId)->childrenIds.PushBack(IDHandle<XMLElement>(entElem->id));
 
 		Transform* entTrans = GlobalScene->transforms.GetById(ent->transform);
 
 		XMLElement* entTransElem = doc.AddElement();
 		XMLSerializeTransform(entTransElem, entTrans);
 
-		doc.elements.GetById(entElemId)->childrenIds.PushBack(entTransElem->id);
+		doc.elements.GetById(entElemId)->childrenIds.PushBack(IDHandle<XMLElement>(entTransElem->id));
 
 		for (int ct = 0; ct < CCT_Count; ct++) {
 			MetaStruct* ms = componentMetaData[ct];
@@ -655,25 +656,25 @@ void ResourceManager::SaveLevelToFile(const Level* lvl, const char* fileName) {
 			for (int j = 0; j < compCount; j++) {
 				Component* currComp = (Component*)compCursor;
 
-				if (!(currComp->flags & CF_RuntimeOnly) && currComp->entity == ent->id) {
+				if (!(currComp->flags & CF_RuntimeOnly) && currComp->entity.id == ent->id) {
 					XMLElement* compElem = doc.AddElement();
 					componentXMLSerializeFuncs[ct](currComp, compElem);
 
-					doc.elements.GetById(entElemId)->childrenIds.PushBack(compElem->id);
+					doc.elements.GetById(entElemId)->childrenIds.PushBack(IDHandle<XMLElement>(compElem->id));
 				}
 
 				compCursor += ms->size;
 			}
 		}
 
-		if (Material* mat = GlobalScene->res.materials.GetById(lvl->matIds.Get(i))) {
+		if (Material* mat = GlobalScene->res.materials.GetByIdNum(lvl->matIds.Get(i))) {
 			XMLElement* matElem = doc.AddElement();
 			matElem->name = STATIC_TO_SUBSTRING("Material");
 			matElem->attributes.Insert("src", FindFileNameByIdAndExtension("mat", mat->id));
-			doc.elements.GetById(entElemId)->childrenIds.PushBack(matElem->id);
+			doc.elements.GetById(entElemId)->childrenIds.PushBack(IDHandle<XMLElement>(matElem->id));
 		}
 
-		if (Mesh* mesh = GlobalScene->res.meshes.GetById(lvl->meshIds.Get(i))) {
+		if (Mesh* mesh = GlobalScene->res.meshes.GetByIdNum(lvl->meshIds.Get(i))) {
 			XMLElement* meshElem = doc.AddElement();
 			meshElem->name = STATIC_TO_SUBSTRING("Mesh");
 			String meshName = FindFileNameByIdAndExtension("obj", mesh->id);
@@ -681,7 +682,7 @@ void ResourceManager::SaveLevelToFile(const Level* lvl, const char* fileName) {
 				meshName = FindFileNameByIdAndExtension("dae", mesh->id);
 			}
 			meshElem->attributes.Insert("src", meshName);
-			doc.elements.GetById(entElemId)->childrenIds.PushBack(meshElem->id);
+			doc.elements.GetById(entElemId)->childrenIds.PushBack(IDHandle<XMLElement>(meshElem->id));
 		}
 	}
 

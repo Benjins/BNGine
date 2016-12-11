@@ -12,8 +12,8 @@ struct Entity;
 
 struct Prefab : IDBase{
 	Transform transform;
-	uint32 matId;
-	uint32 meshId;
+	IDHandle<Material> matId;
+	IDHandle<Mesh> meshId;
 
 	MemStream customComponents;
 

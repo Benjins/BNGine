@@ -13,7 +13,7 @@ enum ComponentFlags {
 };
 
 struct Component : IDBase{
-	uint32 entity;
+	IDHandle<Entity> entity;
 	ComponentFlags flags;
 	int type;
 

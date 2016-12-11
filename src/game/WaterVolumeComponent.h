@@ -6,14 +6,11 @@
 #include "../core/Component.h"
 
 struct Vector3;
+struct BoxCollider;
 
 struct WaterVolumeComponent : Component {
 	/*[DoNotSerialize]*/
-	int collider;
-
-	WaterVolumeComponent() {
-		collider = -1;
-	}
+	IDHandle<BoxCollider> collider;
 
 	void Update();
 

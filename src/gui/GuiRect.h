@@ -25,12 +25,11 @@ struct GuiRect : IDBase {
 		Vector2 size;
 	};
 
-	int parent;
+	IDHandle<GuiRect> parent;
 	bool isDirty;
 	bool clipChildren;
 
 	GuiRect() {
-		parent = -1;
 		isDirty = true;
 		clipChildren = false;
 	}

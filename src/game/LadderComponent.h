@@ -9,11 +9,7 @@ struct Vector3;
 
 struct LadderComponent : Component {
 	/*[DoNotSerialize]*/
-	int collider;
-
-	LadderComponent() {
-		collider = -1;
-	}
+	IDHandle<BoxCollider> collider;
 
 	void Update();
 

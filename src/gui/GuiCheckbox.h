@@ -7,13 +7,12 @@
 #include "../../gen/Actions.h"
 
 struct GuiCheckbox : IDBase {
-	uint32 rect;
+	IDHandle<GuiRect> rect;
 
 	bool isChecked;
 	Action onChange;
 
 	GuiCheckbox() {
-		rect = -1;
 		isChecked = false;
 	}
 

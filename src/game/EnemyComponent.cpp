@@ -2,7 +2,7 @@
 #include "../core/Scene.h"
 
 void EnemyComponent::Update() {
-	if (playerId == -1) {
+	if (playerId.id == 0xFFFFFFFF) {
 		playerId = GlobalScene->gameplay.players.vals[0].entity;
 	}
 

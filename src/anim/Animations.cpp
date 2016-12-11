@@ -109,7 +109,7 @@ int AnimationTrack::Calculate(float evalTime, float* outVal) {
 	return 0;
 }
 
-void AnimationTarget::Resolve(const float* data, int size) {
+void ResolveAnimationTarget(const AnimationTarget* target, const float* data, int size) {
 	#define TARGET_3D_CHECK(target3d) \
 		do { \
 			if ((target3d) == A3DT_Position){ \
@@ -125,50 +125,53 @@ void AnimationTarget::Resolve(const float* data, int size) {
 		} while(0)
 
 	
-	switch (targetType) {
+	switch (target->type) {
 
-	case ATT_Transform: {
-		Transform* transform = GlobalScene->transforms.GetById(trans.transformId);
-		TARGET_3D_CHECK(trans.target3d);
+	case AnimationTarget::UE_AnimationTransformTarget: {
+		AnimationTransformTarget* trans = (AnimationTransformTarget*)&target->AnimationTransformTarget_data;
+		Transform* transform = GlobalScene->transforms.GetById(trans->transformId);
+		TARGET_3D_CHECK(trans->target3d);
 
-		     if (trans.target3d == A3DT_Position) { transform->position = *(Vector3*)data; }
-		else if (trans.target3d == A3DT_Rotation) { transform->rotation = *(Quaternion*)data; }
-		else if (trans.target3d == A3DT_Scale)    { transform->scale    = *(Vector3*)data; }
+		     if (trans->target3d == A3DT_Position) { transform->position = *(Vector3*)data; }
+		else if (trans->target3d == A3DT_Rotation) { transform->rotation = *(Quaternion*)data; }
+		else if (trans->target3d == A3DT_Scale)    { transform->scale    = *(Vector3*)data; }
 	} break;
 
-	case ATT_BoneTransform: {
-		Armature* arm = GlobalScene->res.armatures.GetById(bone.armId);
-		ASSERT(bone.boneIndex >= 0 && bone.boneIndex < arm->boneCount);
+	case AnimationTarget::UE_AnimationBoneTarget: {
+		AnimationBoneTarget* bone = (AnimationBoneTarget*)&target->AnimationBoneTarget_data;
+		Armature* arm = GlobalScene->res.armatures.GetById(bone->armId);
+		ASSERT(bone->boneIndex >= 0 && bone->boneIndex < arm->boneCount);
 
-		TARGET_3D_CHECK(bone.target3d);
+		TARGET_3D_CHECK(bone->target3d);
 
-		BoneTransform* bt = &arm->bones[bone.boneIndex];
+		BoneTransform* bt = &arm->bones[bone->boneIndex];
 
-		     if (bone.target3d == A3DT_Position) { bt->pos   = *(Vector3*)data; }
-		else if (bone.target3d == A3DT_Rotation) { bt->rot   = *(Quaternion*)data; }
-		else if (bone.target3d == A3DT_Scale)    { bt->scale = *(Vector3*)data; }
+		     if (bone->target3d == A3DT_Position) { bt->pos   = *(Vector3*)data; }
+		else if (bone->target3d == A3DT_Rotation) { bt->rot   = *(Quaternion*)data; }
+		else if (bone->target3d == A3DT_Scale)    { bt->scale = *(Vector3*)data; }
 
 	} break;
 
-	case ATT_Uniform: {
-		Material* mat = GlobalScene->res.materials.GetById(uniform.matId);
+	case AnimationTarget::UE_AnimationUniformTarget: {
+		AnimationUniformTarget* uniform = (AnimationUniformTarget*)&target->AnimationUniformTarget_data;
+		Material* mat = GlobalScene->res.materials.GetById(uniform->matId);
 
-		switch (uniform.uniformType) {
+		switch (uniform->uniformType) {
 		case UT_FLOAT: {
 			ASSERT(size == sizeof(float));
-			mat->SetFloatUniform(uniform.uniformName, *(float*)data);
+			mat->SetFloatUniform(uniform->uniformName, *(float*)data);
 		} break;
 		case UT_VEC2: {
 			ASSERT(size == sizeof(Vector2));
-			mat->SetVector2Uniform(uniform.uniformName, *(Vector2*)data);
+			mat->SetVector2Uniform(uniform->uniformName, *(Vector2*)data);
 		} break;
 		case UT_VEC3: {
 			ASSERT(size == sizeof(Vector3));
-			mat->SetVector3Uniform(uniform.uniformName, *(Vector3*)data);
+			mat->SetVector3Uniform(uniform->uniformName, *(Vector3*)data);
 		} break;
 		case UT_VEC4: {
 			ASSERT(size == sizeof(Vector4));
-			mat->SetVector4Uniform(uniform.uniformName, *(Vector4*)data);
+			mat->SetVector4Uniform(uniform->uniformName, *(Vector4*)data);
 		} break;
 		default: {
 			ASSERT_WARN("%s", "Incorrect uniform type.")
@@ -177,9 +180,10 @@ void AnimationTarget::Resolve(const float* data, int size) {
 
 	} break;
 
-	case ATT_ComponentField: {
-		Component* comp = getComponentFuncs[component.compType](component.compId);
-		char* fieldPtr = ((char*)comp) + component.fieldOffset;
+	case AnimationTarget::UE_AnimationCustomFieldTarget: {
+		AnimationCustomFieldTarget* component = (AnimationCustomFieldTarget*)&target->AnimationCustomFieldTarget_data;
+		Component* comp = getComponentFuncs[component->compType](component->compId);
+		char* fieldPtr = ((char*)comp) + component->fieldOffset;
 		BNS_MEMCPY(fieldPtr, data, size);
 	} break;
 
@@ -196,15 +200,16 @@ void AnimationInstance::Start() {
 }
 
 void AnimationInstance::Update() {
-	if (animId == -1) {
+	if (animId.id == 0xFFFFFFFF) {
 		return;
 	}
 	if (isPlaying) {
+		// The max number of channels we care about is 4
 		float data[4];
 		AnimationTrack* anim = GlobalScene->res.anims.GetById(animId);
 		int dataSize = anim->Calculate(currTime, data);
 
-		target.Resolve(data, dataSize);
+		ResolveAnimationTarget(&target, data, dataSize);
 
 		currTime += GlobalScene->GetDeltaTime();
 

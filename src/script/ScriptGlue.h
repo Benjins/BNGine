@@ -6,14 +6,14 @@
 
 /*[ScriptFunc]*/
 void SetLocalPosition(int entId, Vector3 pos) {
-	Entity* ent = GlobalScene->entities.GetById(entId);
+	Entity* ent = GlobalScene->entities.GetByIdNum(entId);
 	Transform* trans = GlobalScene->transforms.GetById(ent->transform);
 	trans->position = pos;
 }
 
 /*[ScriptFunc]*/
 Vector3 GetLocalPosition(int entId) {
-	Entity* ent = GlobalScene->entities.GetById(entId);
+	Entity* ent = GlobalScene->entities.GetByIdNum(entId);
 	Transform* trans = GlobalScene->transforms.GetById(ent->transform);
 	return trans->position;
 }

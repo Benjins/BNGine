@@ -76,7 +76,7 @@ struct Scene {
 	void Update();
 	void UpdateCustomComponents();
 	void CustomComponentEditorGui();
-	void CustomComponentEditorGuiForEntity(uint32 entId);
+	void CustomComponentEditorGuiForEntity(IDHandle<Entity> entId);
 
 	void Render();
 
@@ -89,20 +89,19 @@ struct Scene {
 	void SaveLevel(Level* level);
 	void SaveCustomComponentsToLevel(Level* level);
 
-	Entity* AddVisibleEntity(uint32 matId, uint32 meshId);
-	Entity* AddVisibleEntityWithId(uint32 entId, uint32 matId, uint32 meshId);
-	void AddVisibleEntityByEntityPtr(Entity* newEnt, uint32 matId, uint32 meshId);
-	DrawCall* GetDrawCallForEntity(uint32 entityId);
+	Entity* AddVisibleEntity(IDHandle<Material> matId, IDHandle<Mesh> meshId);
+	Entity* AddVisibleEntityWithId(uint32 entId, IDHandle<Material> matId, IDHandle<Mesh> meshId);
+	void AddVisibleEntityByEntityPtr(Entity* newEnt, IDHandle<Material> matId, IDHandle<Mesh> meshId);
+	DrawCall* GetDrawCallForEntity(IDHandle<Entity> entityId);
 	Entity* CloneEntity(Entity* ent);
 
-	void DestroyEntity(uint32 entId);
-	//void DestroyEntityImmediate(uint32 entId);
-	void DestroyCustomComponentsByEntity(uint32 entId);
+	void DestroyEntity(IDHandle<Entity> entId);
+	void DestroyCustomComponentsByEntity(IDHandle<Entity> entId);
 
-	void SendCollisionToCustomComponents(uint32 entity, Collision col);
+	void SendCollisionToCustomComponents(IDHandle<Entity> entity, Collision col);
 
 	template<typename T>
-	T* FindComponentByEntity(CustomComponentType type, uint32 entityId) {
+	T* FindComponentByEntity(CustomComponentType type, IDHandle<Entity> entityId) {
 		Component* comp = nullptr;
 		Component* compCursor = getComponentArrayFuncs[type]();
 		int compCount = getComponentCountFuncs[type]();

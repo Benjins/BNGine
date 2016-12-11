@@ -20,12 +20,13 @@ struct WaterVolumeComponent;
 struct LadderComponent;
 struct ScriptInstance;
 struct AnimationInstance;
+struct Prefab;
 
 struct PrefabInstance {
 	Quaternion rot;
 	Vector3 pos;
 	int parentTransform;
-	uint32 prefabId;
+	IDHandle<Prefab> prefabId;
 	uint32 instanceId;
 };
 

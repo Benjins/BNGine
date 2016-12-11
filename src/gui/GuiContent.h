@@ -27,15 +27,16 @@ struct GuiContent {
 	// But it seems C++ is wary of unions containing non-POD data, so for now we don't.
 
 	U32String unicodeStr;
-	uint32 uniFontId;
+	IDHandle<UniFont> uniFontId;
 
 	String asciiStr;
-	uint32 bmpFontId;
+	IDHandle<BitmapFont> bmpFontId;
 
 	float textScale;
 
 	Vector4 color;
-	uint32 texId;
+
+	IDHandle<Texture> texId;
 
 	//-----------------
 

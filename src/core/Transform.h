@@ -13,7 +13,7 @@ struct Transform : Component{
 	Quaternion rotation;
 	Vector3 scale;
 
-	int parent;
+	IDHandle<Transform> parent;
 
 	Transform();
 	

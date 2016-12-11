@@ -43,7 +43,7 @@ void PhysicsSystem::StepFrame(float dt) {
 				Collision col = BoxBoxCollision(boxCols.vals[i], boxCols.vals[j]);
 				if (col.isColliding) {
 					collisions.PushBack(col);
-					uint32 entity1 = boxCols.GetById(col.colId1)->entity;
+					IDHandle<Entity> entity1 = boxCols.GetByIdNum(col.colId1)->entity;
 					GlobalScene->SendCollisionToCustomComponents(entity1, col);
 
 					Collision col2 = col;
@@ -52,7 +52,7 @@ void PhysicsSystem::StepFrame(float dt) {
 					col2.colType1 = col.colType2;
 					col2.colType2 = col.colType1;
 
-					uint32 entity2 = boxCols.GetById(col2.colId1)->entity;
+					IDHandle<Entity> entity2 = boxCols.GetByIdNum(col2.colId1)->entity;
 					GlobalScene->SendCollisionToCustomComponents(entity2, col2);
 				}
 			}
@@ -68,7 +68,7 @@ void PhysicsSystem::EndFrame() {
 RaycastHit RaycastBox(Vector3 origin, Vector3 direction, BoxCollider* boxCol) {
 	Entity* ent = GlobalScene->entities.GetById(boxCol->entity);
 	ASSERT(ent != nullptr);
-	uint32 transId = ent->transform;
+	IDHandle<Transform> transId = ent->transform;
 	Transform* trans = GlobalScene->transforms.GetById(transId);
 	ASSERT(trans != nullptr);
 

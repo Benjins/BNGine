@@ -17,8 +17,9 @@ enum MetaType {
 	MT_Vector4,
 	MT_Quaternion,
 	MT_FundamentalEnd,
-	MT_FundamentalCount = MT_FundamentalEnd,
-	MT_CustomEnum = MT_FundamentalEnd
+	MT_FundamentalCount = MT_FundamentalEnd - MT_FundamentalBegin,
+	MT_CustomEnum = MT_FundamentalEnd,
+	MT_Handle
 };
 
 #endif

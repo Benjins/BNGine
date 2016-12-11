@@ -17,7 +17,7 @@ struct CodepointInfo{
 };
 
 struct BitmapFont : IDBase {
-	int textureId;
+	IDHandle<Texture> textureId;
 
 	Vector<CodepointInfo> codepointListing;
 

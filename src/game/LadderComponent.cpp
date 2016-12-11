@@ -5,20 +5,14 @@
 #include "../core/Scene.h"
 
 void LadderComponent::Update() {
-	if (collider == -1) {
-		for (int i = 0; i < GlobalScene->phys.boxCols.currentCount; i++) {
-			BoxCollider* boxCol = &GlobalScene->phys.boxCols.vals[i];
-			if (boxCol->entity == entity
-			 && boxCol->isTrigger) {
-				collider = boxCol->id;
-				break;
-			}
-		}
+	if (collider.id == 0xFFFFFFFF) {
+		BoxCollider* col = FIND_COMPONENT_BY_ENTITY(BoxCollider, entity);
+		collider = IDHandle<BoxCollider>(col->id);
 	}
 }
 
 bool LadderComponent::IsInside(Vector3 pos) {
-	if (collider == -1) {
+	if (collider.id == 0xFFFFFFFF) {
 		return false;
 	}
 	else {

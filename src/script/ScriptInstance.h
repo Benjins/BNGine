@@ -11,7 +11,7 @@ struct ScriptInstance : Component {
 	BNVMInstance inst;
 
 	/*[SerializeFromId("src", "bnv")]*/
-	int vmId;
+	IDHandle<ScriptObject> vmId;
 
 	void OnLoad();
 

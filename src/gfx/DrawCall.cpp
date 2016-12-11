@@ -27,7 +27,7 @@ void ExecuteDrawCalls(DrawCall* calls, int count) {
 		Transform* trans = GlobalScene->transforms.GetById(ent->transform);
 
 		Armature* arm = nullptr;
-		if (mesh->armatureId != -1) {
+		if (mesh->armatureId.id != 0xFFFFFFFF) {
 			arm = GlobalScene->res.armatures.GetById(mesh->armatureId);
 			ASSERT(arm != nullptr);
 

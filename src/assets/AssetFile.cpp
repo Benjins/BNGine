@@ -400,7 +400,7 @@ void WriteMaterialChunk(const char* materialFileName, const StringMap<int>& asse
 	XMLError err = ParseXMLStringFromFile(materialFileName, &matDoc);
 	ASSERT_MSG(err == XMLE_NONE, "Error %d when parsing material file: '%s'", (int)err, materialFileName);
 
-	XMLElement* rootElem = matDoc.elements.GetById(0);
+	XMLElement* rootElem = matDoc.elements.GetByIdNum(0);
 	ASSERT(rootElem != nullptr);
 	ASSERT(rootElem->name == "Material");
 
@@ -638,7 +638,7 @@ void WriteLevelChunk(const char* levelFileName, const StringMap<int>& assetIds, 
 	XMLError err = ParseXMLStringFromFile(levelFileName, &lvlDoc);
 	ASSERT_MSG(err == XMLE_NONE, "Error %d when parsing level file: '%s'", (int)err, levelFileName);
 
-	XMLElement* rootElem = lvlDoc.elements.GetById(0);
+	XMLElement* rootElem = lvlDoc.elements.GetByIdNum(0);
 	ASSERT(rootElem != nullptr);
 	ASSERT(rootElem->name == "Scene");
 	char chunkId[] = "BNLV";
@@ -798,7 +798,7 @@ void WritePrefabChunk(const char* prefabFileName, const StringMap<int>& assetIds
 	XMLError err = ParseXMLStringFromFile(prefabFileName, &prefabDoc);
 	ASSERT_MSG(err == XMLE_NONE, "Error %d when parsing prefab file: '%s'", (int)err, prefabFileName);
 
-	XMLElement* rootElem = prefabDoc.elements.GetById(0);
+	XMLElement* rootElem = prefabDoc.elements.GetByIdNum(0);
 	ASSERT(rootElem != nullptr);
 	ASSERT(rootElem->name == "Prefab");
 	char chunkId[] = "BNPF";

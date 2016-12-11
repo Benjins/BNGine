@@ -15,7 +15,7 @@ struct Camera {
 	float xOffset;
 	float yOffset;
 
-	int transform;
+	IDHandle<Transform> transform;
 
 	Camera();
 

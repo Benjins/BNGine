@@ -5,7 +5,6 @@
 #include "Scene.h"
 
 Transform::Transform() {
-	parent = -1;
 	rotation = QUAT_IDENTITY;
 	scale = Vector3(1, 1, 1);
 }
@@ -25,7 +24,7 @@ Vector3 Transform::Up(){
 Mat4x4 Transform::GetLocalToGlobalMatrix() const {
 	Mat4x4 matrix = LocRotScaleToMat(position, rotation, scale);
 	
-	if (parent < 0) {
+	if (parent.id == 0xFFFFFFFF) {
 		return matrix;
 	}
 	else {
@@ -49,7 +48,7 @@ Mat4x4 Transform::GetGlobaltoLocalMatrix() const {
 
 	Mat4x4 transMat = linMat * affMat;
 
-	if (parent < 0) {
+	if (parent.id == 0xFFFFFFFF) {
 		return transMat;
 	}
 	else {

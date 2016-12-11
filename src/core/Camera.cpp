@@ -36,7 +36,7 @@ Mat4x4 Camera::GetCameraMatrix() const {
 
 	transMat = linMat * affMat;
 
-	if (camTrans->parent != -1) {
+	if (camTrans->parent.id != 0xFFFFFFFF) {
 		Transform* parent = GlobalScene->transforms.GetById(camTrans->parent);
 		transMat = transMat * parent->GetGlobaltoLocalMatrix();
 	}

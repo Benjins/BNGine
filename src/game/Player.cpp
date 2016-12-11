@@ -40,7 +40,7 @@ void PlayerComponent::Update() {
 		int prefId = -1;
 		GlobalScene->res.assetIdMap.LookUp("bullet.bnp", &prefId);
 
-		Prefab* pref = GlobalScene->res.prefabs.GetById(prefId);
+		Prefab* pref = GlobalScene->res.prefabs.GetByIdNum(prefId);
 		ASSERT(pref != nullptr);
 
 		Vector3 bulletSpawnPosition = entTrans->GetGlobalPosition() + entTrans->Forward() * 0.21f;

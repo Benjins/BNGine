@@ -5,10 +5,14 @@
 
 #include "../../ext/CppUtils/idbase.h"
 
+struct Material;
+struct Mesh;
+struct Entity;
+
 struct DrawCall : IDBase {
-	uint32 meshId;
-	uint32 matId;
-	uint32 entId;
+	IDHandle<Mesh> meshId;
+	IDHandle<Material> matId;
+	IDHandle<Entity> entId;
 };
 
 void ExecuteDrawCalls(DrawCall* calls, int count);

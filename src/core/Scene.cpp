@@ -16,35 +16,35 @@ Scene::Scene() : entities(100), transforms(120), res()	 {
 	frameRateIsLocked = false;
 }
 
-void Scene::AddVisibleEntityByEntityPtr(Entity* newEnt, uint32 matId, uint32 meshId) {
+void Scene::AddVisibleEntityByEntityPtr(Entity* newEnt, IDHandle<Material> matId, IDHandle<Mesh> meshId) {
 	Transform* newTrans = transforms.CreateAndAdd();
-	newEnt->transform = newTrans->id;
-	newTrans->entity = newEnt->id;
+	newEnt->transform = IDHandle<Transform>(newTrans->id);
+	newTrans->entity = IDHandle<Entity>(newEnt->id);
 
 	ASSERT(res.materials.GetById(matId) != nullptr);
 	ASSERT(res.meshes.GetById(meshId) != nullptr);
 
 	DrawCall* newDc = res.drawCalls.CreateAndAdd();
-	newDc->entId = newEnt->id;
+	newDc->entId = IDHandle<Entity>(newEnt->id);
 	newDc->matId = matId;
 	newDc->meshId = meshId;
 }
 
-Entity* Scene::AddVisibleEntity(uint32 matId, uint32 meshId) {
+Entity* Scene::AddVisibleEntity(IDHandle<Material> matId, IDHandle<Mesh> meshId) {
 	Entity* newEnt = entities.CreateAndAdd();
 	AddVisibleEntityByEntityPtr(newEnt, matId, meshId);
 
 	return newEnt;
 }
 
-Entity* Scene::AddVisibleEntityWithId(uint32 entId, uint32 matId, uint32 meshId) {
+Entity* Scene::AddVisibleEntityWithId(uint32 entId, IDHandle<Material> matId, IDHandle<Mesh> meshId) {
 	Entity* newEnt = entities.AddWithId(entId);
 	AddVisibleEntityByEntityPtr(newEnt, matId, meshId);
 
 	return newEnt;
 }
 
-DrawCall* Scene::GetDrawCallForEntity(uint32 entityId) {
+DrawCall* Scene::GetDrawCallForEntity(IDHandle<Entity> entityId) {
 	for (int i = 0; i < res.drawCalls.currentCount; i++) {
 		if (entityId == res.drawCalls.vals[i].entId) {
 			return &res.drawCalls.vals[i];
@@ -60,7 +60,7 @@ Entity* Scene::CloneEntity(Entity* srcEnt) {
 		Transform* srcTrans = transforms.GetById(srcEnt->transform);
 		ASSERT(srcTrans != nullptr);
 		if (srcTrans != nullptr) {
-			DrawCall* dc = GetDrawCallForEntity(srcEnt->id);
+			DrawCall* dc = GetDrawCallForEntity(IDHandle<Entity>(srcEnt->id));
 			Entity* newEnt = AddVisibleEntity(dc->matId, dc->meshId);
 			Transform* newTrans = transforms.GetById(newEnt->transform);
 			newTrans->position = srcTrans->position;
@@ -68,10 +68,10 @@ Entity* Scene::CloneEntity(Entity* srcEnt) {
 			newTrans->scale = srcTrans->scale;
 
 			for (int i = 0; i < CCT_Count; i++) {
-				Component* comp = FindComponentByEntity<Component>((CustomComponentType)i, srcEnt->id);
+				Component* comp = FindComponentByEntity<Component>((CustomComponentType)i, IDHandle<Entity>(srcEnt->id));
 				if (comp != nullptr) {
 					Component* newComp = addComponentFuncs[i]();
-					newComp->entity = newEnt->id;
+					newComp->entity = IDHandle<Entity>(newEnt->id);
 
 					MemStream memStr;
 					componentMemSerializeFuncs[i](comp, &memStr);
@@ -143,7 +143,7 @@ void Scene::LoadLevel(const char* name) {
 	ASSERT_MSG(exists, "Could not load scene '%s'", name);
 
 	currentLevel = levelId;
-	Level* level = res.levels.GetById(currentLevel);
+	Level* level = res.levels.GetByIdNum(currentLevel);
 
 	Reset();
 
@@ -157,9 +157,9 @@ void Scene::LoadLevel(const char* name) {
 	for (int i = 0; i < entities.currentCount; i++) {
 		if (level->meshIds.Get(i) >= 0 && level->matIds.Get(i) >= 0) {
 			DrawCall* dc = res.drawCalls.CreateAndAdd();
-			dc->entId = entities.vals[i].id;
-			dc->matId = level->matIds.Get(i);
-			dc->meshId = level->meshIds.Get(i);
+			dc->entId = IDHandle<Entity>(entities.vals[i].id);
+			dc->matId = IDHandle<Material>(level->matIds.Get(i));
+			dc->meshId = IDHandle<Mesh>(level->meshIds.Get(i));
 		}
 	}
 
@@ -172,7 +172,7 @@ void Scene::LoadLevel(const char* name) {
 		Prefab* prefab = res.prefabs.GetById(inst->prefabId);
 
 		Entity* ent = prefab->InstantiateWithId(inst->instanceId, inst->pos, inst->rot);
-		transforms.GetById(ent->transform)->parent = inst->parentTransform;
+		transforms.GetById(ent->transform)->parent = IDHandle<Transform>(inst->parentTransform);
 	}
 
 	// TODO: Less hacky way of this
@@ -182,10 +182,21 @@ void Scene::LoadLevel(const char* name) {
 		Armature* arm = &res.armatures.vals[i];
 
 		for (int j = 0; j < res.drawCalls.currentCount; j++) {
-			if ((int)res.drawCalls.vals[j].meshId == arm->modelId) {
+			if (res.drawCalls.vals[j].meshId == arm->modelId) {
 
 				for (int k = 0; k < arm->boneCount; k++) {
-					int boneAnims[3];
+					int trackIds[] = {
+						arm->boneTrackData[k].posTrack,
+						arm->boneTrackData[k].rotTrack,
+						arm->boneTrackData[k].scaleTrack
+					};
+
+					Animation3DTarget targetTypes[] = {
+						A3DT_Position,
+						A3DT_Rotation,
+						A3DT_Scale
+					};
+
 					for (int c = 0; c < 3; c++) {
 						Component* comp = addComponentFuncs[CCT_AnimationInstance]();
 						AnimationInstance* inst = (AnimationInstance*)comp;
@@ -196,20 +207,15 @@ void Scene::LoadLevel(const char* name) {
 						inst->autoPlay = true;
 						inst->isPlaying = true;
 						inst->shouldLoop = true;
-						inst->target.targetType = ATT_BoneTransform;
-						inst->target.bone.armId = arm->id;
-						inst->target.bone.boneIndex = k;
 
-						boneAnims[c] = inst->id;
+						AnimationBoneTarget bone;
+						bone.armId = IDHandle<Armature>(arm->id);
+						bone.boneIndex = k;
+						bone.target3d = targetTypes[c];
+
+						inst->target = bone;
+						inst->animId = IDHandle<AnimationTrack>(trackIds[c]);
 					}
-
-					anims.animInsts.GetById(boneAnims[0])->animId = arm->boneTrackData[k].posTrack;
-					anims.animInsts.GetById(boneAnims[1])->animId = arm->boneTrackData[k].rotTrack;
-					anims.animInsts.GetById(boneAnims[2])->animId = arm->boneTrackData[k].scaleTrack;
-
-					anims.animInsts.GetById(boneAnims[0])->target.bone.target3d = A3DT_Position;
-					anims.animInsts.GetById(boneAnims[1])->target.bone.target3d = A3DT_Rotation;
-					anims.animInsts.GetById(boneAnims[2])->target.bone.target3d = A3DT_Scale;
 				}
 			}
 		}
@@ -232,9 +238,9 @@ void Scene::SaveLevel(Level* level) {
 
 		for (int j = 0; j < res.drawCalls.currentCount; j++) {
 			DrawCall dc = res.drawCalls.vals[j];
-			if (dc.entId == entities.vals[i].id) {
-				level->matIds.data[i] = dc.matId;
-				level->meshIds.data[i] = dc.meshId;
+			if (dc.entId.id == entities.vals[i].id) {
+				level->matIds.data[i] = dc.matId.id;
+				level->meshIds.data[i] = dc.meshId.id;
 
 				foundDC = true;
 				break;
@@ -250,29 +256,29 @@ void Scene::SaveLevel(Level* level) {
 	SaveCustomComponentsToLevel(level);
 }
 
-void Scene::DestroyEntity(uint32 entId) {
+void Scene::DestroyEntity(IDHandle<Entity> entId) {
 	Action& act = deferredActions.EmplaceBack();
 	act.type = AT_DestroyEntityImmediate;
-	act.DestroyEntityImmediate_data.entId = entId;
+	act.DestroyEntityImmediate_data.entId = entId.id;
 }
 
 // TODO: Parent-child destruction?
 void DestroyEntityImmediate(uint32 entId) {
-	Entity* ent = GlobalScene->entities.GetById(entId);
+	Entity* ent = GlobalScene->entities.GetByIdNum(entId);
 	if (ent != nullptr) {
-		uint32 transformId = ent->transform;
-		GlobalScene->entities.RemoveById(entId);
+		IDHandle<Transform> transformId = ent->transform;
+		GlobalScene->entities.RemoveByIdNum(entId);
 		GlobalScene->transforms.RemoveById(transformId);
 
 		for (int i = 0; i < GlobalScene->res.drawCalls.currentCount; i++) {
-			if (GlobalScene->res.drawCalls.vals[i].entId == entId) {
+			if (GlobalScene->res.drawCalls.vals[i].entId.id == entId) {
 				uint32 dcId = GlobalScene->res.drawCalls.vals[i].id;
-				GlobalScene->res.drawCalls.RemoveById(dcId);
+				GlobalScene->res.drawCalls.RemoveByIdNum(dcId);
 				break;
 			}
 		}
 
-		GlobalScene->DestroyCustomComponentsByEntity(entId);
+		GlobalScene->DestroyCustomComponentsByEntity(IDHandle<Entity>(entId));
 	}
 }
 
@@ -319,7 +325,7 @@ void Scene::Render() {
 	}
 	firstPass = false;
 
-	gui.DrawUnicodeLabel(unicodeText, 0, 18, 30, 30);
+	gui.DrawUnicodeLabel(unicodeText, IDHandle<UniFont>(0), 18, 30, 30);
 
 	gui.Render();
 

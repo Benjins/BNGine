@@ -16,8 +16,8 @@
 #include "../../ext/3dbasics/Mat4.h"
 
 struct GuiDrawCall{
-	uint32 matId;
-	uint32 texId;
+	IDHandle<Material> matId;
+	IDHandle<Texture> texId;
 	
 	MemStream uvs;
 	MemStream pos;
@@ -47,14 +47,14 @@ struct GuiTextInputState {
 };
 
 struct GuiSystem{
-	int guiImgMatId;
-	int guiColMatId;
-	int guiTextMatId;
+	IDHandle<Material> guiImgMatId;
+	IDHandle<Material> guiColMatId;
+	IDHandle<Material> guiTextMatId;
 	
 	GuiTextInputState textInputState;
 
 	Vector<GuiDrawCall> guiDrawCalls;
-	
+
 	Vector<Mat4x4> matrixStack;
 protected:
 	GuiAlignment currAlign;
@@ -75,7 +75,7 @@ public:
 		GuiRect* rect = rects.CreateAndAdd();
 		rect->position = pos;
 		rect->size = size;
-		button->rect = rect->id;
+		button->rect = IDHandle<GuiRect>(rect->id);
 
 		return button;
 	}
@@ -85,7 +85,7 @@ public:
 		GuiRect* rect = rects.CreateAndAdd();
 		rect->position = pos;
 		rect->size = size;
-		check->rect = rect->id;
+		check->rect = IDHandle<GuiRect>(rect->id);
 
 		return check;
 	}
@@ -95,7 +95,7 @@ public:
 		GuiRect* rect = rects.CreateAndAdd();
 		rect->position = pos;
 		rect->size = size;
-		picker->rect = rect->id;
+		picker->rect = IDHandle<GuiRect>(rect->id);
 
 		return picker;
 	}
@@ -121,9 +121,9 @@ public:
 
 	void DrawImage(int textureId, float x, float y, float w, float h);
 	// Returns width of drawn text
-	float DrawTextLabel(const char* text, uint32 fontId, float scale, float x, float y, float w = 10000, float h = 10000);
+	float DrawTextLabel(const char* text, IDHandle<BitmapFont> fontId, float scale, float x, float y, float w = 10000, float h = 10000);
 	
-	float DrawUnicodeLabel(U32String text, uint32 fontId, float scale, float x, float y, float w = 10000, float h = 10000);
+	float DrawUnicodeLabel(U32String text, IDHandle<UniFont> fontId, float scale, float x, float y, float w = 10000, float h = 10000);
 
 	void DrawContent(const GuiContent& content, GuiRect rect);
 

@@ -61,6 +61,9 @@ MetaType ParseType(const SubString& name, int indirectionLevel, int arrayCount, 
 			else if (name == "Quaternion") {
 				return MT_Quaternion;
 			}
+			else if (name == "IDHandle") {
+				return MT_Handle;
+			}
 			else {
 				for (int i = 0; i < enumDefs.count; i++) {
 					if (enumDefs.data[i].name == name) {
@@ -93,7 +96,7 @@ void DefineCustomComponentFunction(
 	const char* methodName,
 	bool singleEntity = false)
 {
-	fprintf(componentMetaFile, "\nvoid %s(%s){\n", functionName, (singleEntity ? "uint32 entId" : ""));
+	fprintf(componentMetaFile, "\nvoid %s(%s){\n", functionName, (singleEntity ? "IDHandle<Entity> entId" : ""));
 	for (int i = 0; i < componentIndices->count; i++) {
 		int compIdx = componentIndices->data[i];
 		ParseMetaStruct* ms = &allParseMetaStructs->data[compIdx];
@@ -314,7 +317,7 @@ void AppPreInit(int argc, char** argv){
 		"ParseVector2",
 		"ParseVector3",
 		"ParseVector4",
-		"ParseQuaternion"
+		"ParseQuaternion",
 	};
 
 	static const char* encodeFuncs[MT_FundamentalCount] =
@@ -459,22 +462,20 @@ void AppPreInit(int argc, char** argv){
 	}
 	fprintf(componentResetFile, "}\n");
 
-	fprintf(componentResetFile, "void Scene::DestroyCustomComponentsByEntity(uint32 entId){\n");
+	fprintf(componentResetFile, "void Scene::DestroyCustomComponentsByEntity(IDHandle<Entity> entId){\n");
 	for (int i = 0; i < getComponentPathList.count; i++) {
 		SubString compTypeName = allParseMetaStructs.Get(componentIndices.Get(i)).name;
 		fprintf(componentResetFile, "\tfor (int i = 0; i < %s.currentCount; i++){\n", getComponentPathList.data[i].string);
 		fprintf(componentResetFile, "\t\tComponent* comp = &%s.vals[i];\n", getComponentPathList.data[i].string);
 		fprintf(componentResetFile, "\t\tif (comp->entity == entId){\n");
-		fprintf(componentResetFile, "\t\t\t%s.RemoveById(comp->id);\n", getComponentPathList.data[i].string);
+		fprintf(componentResetFile, "\t\t\t%s.RemoveByIdNum(comp->id);\n", getComponentPathList.data[i].string);
 		fprintf(componentResetFile, "\t\t\tbreak;\n");
 		fprintf(componentResetFile, "\t\t}\n");
 		fprintf(componentResetFile, "\t}\n");
 	}
 	fprintf(componentResetFile, "}\n");
 
-	//void SendCollisionToCustomComponents(uint32 entity, Collision col);
-
-	fprintf(componentResetFile, "\nvoid Scene::SendCollisionToCustomComponents(uint32 entityId, Collision col){\n");
+	fprintf(componentResetFile, "\nvoid Scene::SendCollisionToCustomComponents(IDHandle<Entity> entityId, Collision col){\n");
 	for (int i = 0; i < componentIndices.count; i++) {
 		int compIdx = componentIndices.data[i];
 		ParseMetaStruct* ms = &allParseMetaStructs.data[compIdx];
@@ -547,7 +548,7 @@ void AppPreInit(int argc, char** argv){
 		fprintf(componentMetaFile, "}\n\n");
 
 		fprintf(componentMetaFile, "Component* %.*s_getComponentById(uint32 id){\n", ms->name.length, ms->name.start);
-		fprintf(componentMetaFile, "\treturn %s.GetById(id);\n", getComponentPathList.data[i].string);
+		fprintf(componentMetaFile, "\treturn %s.GetByIdNum(id);\n", getComponentPathList.data[i].string);
 		fprintf(componentMetaFile, "}\n\n");
 
 		fprintf(componentMetaFile, "Component* %.*s_createAndAdd(){\n", ms->name.length, ms->name.start);
@@ -558,7 +559,7 @@ void AppPreInit(int argc, char** argv){
 		fprintf(componentMetaFile, "}\n\n");
 
 		fprintf(componentMetaFile, "void %.*s_Remove(uint32 id){\n", ms->name.length, ms->name.start);
-		fprintf(componentMetaFile, "\t%s.RemoveById(id);\n", getComponentPathList.data[i].string);
+		fprintf(componentMetaFile, "\t%s.RemoveByIdNum(id);\n", getComponentPathList.data[i].string);
 		fprintf(componentMetaFile, "}\n\n");
 
 		fprintf(componentMetaFile, "Component* %.*s_getLevelArray(const Level* lvl){\n", ms->name.length, ms->name.start);
@@ -583,35 +584,43 @@ void AppPreInit(int argc, char** argv){
 		int compIdx = componentIndices.data[i];
 		ParseMetaStruct* ms = &allParseMetaStructs.data[compIdx];
 
-		int usedFieldCount = 0;
-
-		fprintf(componentMetaFile, "MetaField %.*s_metaFields[] = {\n", ms->name.length, ms->name.start);
+		int fieldCount = 0;
 		for (int j = 0; j < ms->fields.count; j++) {
 			ParseMetaField mf = ms->fields.data[j];
 			SubString enumName;
 			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount, allParseMetaEnums, &enumName);
-			if (fieldType == MT_CustomEnum) {
-				usedFieldCount++;
-				fprintf(componentMetaFile, "\t{\"%.*s\", (int)(size_t)(&((%.*s*)0)->%.*s), %d, \"%.*s\", (FieldSerializeFlags)%d},\n",
-					mf.name.length, mf.name.start,
-					ms->name.length, ms->name.start,
-					mf.name.length, mf.name.start,
-					mf.enumType,
-					mf.serializeExt.length, mf.serializeExt.start,
-					mf.flags);
-			}
-			else if (fieldType != MT_Unknown) {
-				usedFieldCount++;
-				fprintf(componentMetaFile, "\t{\"%.*s\", (int)(size_t)(&((%.*s*)0)->%.*s), %d, \"%.*s\", (FieldSerializeFlags)%d},\n",
-					mf.name.length, mf.name.start,
-					ms->name.length, ms->name.start,
-					mf.name.length, mf.name.start, 
-					(int)fieldType,
-					mf.serializeExt.length, mf.serializeExt.start,
-					mf.flags);
+			if (fieldType != MT_Unknown) {
+				fieldCount++;
 			}
 		}
-		fprintf(componentMetaFile, "};\n\n");
+
+		if (fieldCount > 0) {
+			fprintf(componentMetaFile, "MetaField %.*s_metaFields[] = {\n", ms->name.length, ms->name.start);
+			for (int j = 0; j < ms->fields.count; j++) {
+				ParseMetaField mf = ms->fields.data[j];
+				SubString enumName;
+				MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount, allParseMetaEnums, &enumName);
+				if (fieldType == MT_CustomEnum) {
+					fprintf(componentMetaFile, "\t{\"%.*s\", (int)(size_t)(&((%.*s*)0)->%.*s), %d, \"%.*s\", (FieldSerializeFlags)%d},\n",
+						mf.name.length, mf.name.start,
+						ms->name.length, ms->name.start,
+						mf.name.length, mf.name.start,
+						mf.enumType,
+						mf.serializeExt.length, mf.serializeExt.start,
+						mf.flags);
+				}
+				else if (fieldType != MT_Unknown) {
+					fprintf(componentMetaFile, "\t{\"%.*s\", (int)(size_t)(&((%.*s*)0)->%.*s), %d, \"%.*s\", (FieldSerializeFlags)%d},\n",
+						mf.name.length, mf.name.start,
+						ms->name.length, ms->name.start,
+						mf.name.length, mf.name.start,
+						(int)fieldType,
+						mf.serializeExt.length, mf.serializeExt.start,
+						mf.flags);
+				}
+			}
+			fprintf(componentMetaFile, "};\n\n");
+		}
 
 		fprintf(componentMetaFile, "MetaStruct %.*s_meta = {\n", ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "\t\"%.*s\",\n", ms->name.length, ms->name.start);
@@ -626,8 +635,13 @@ void AppPreInit(int argc, char** argv){
 			fprintf(componentMetaFile, "\tnullptr,\n");
 		}
 
-		fprintf(componentMetaFile, "\t%.*s_metaFields,\n", ms->name.length, ms->name.start);
-		fprintf(componentMetaFile, "\t%d,\n", usedFieldCount);
+		if (fieldCount > 0) {
+			fprintf(componentMetaFile, "\t%.*s_metaFields,\n", ms->name.length, ms->name.start);
+		}
+		else {
+			fprintf(componentMetaFile, "\tnullptr,\n");
+		}
+		fprintf(componentMetaFile, "\t%d,\n", fieldCount);
 		fprintf(componentMetaFile, "\tsizeof(%.*s)\n", ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "};\n\n");
 	}
@@ -656,6 +670,16 @@ void AppPreInit(int argc, char** argv){
 				fprintf(componentMetaFile, "\t\tcompCast->%.*s = (%.*s)ParseEnum(%d, temp.string);\n\t}\n",
 					mf.name.length, mf.name.start, mf.type.length, mf.type.start, mf.enumType);
 			}
+			else if (fieldType == MT_Handle) {
+				if (mf.flags & FSF_SerializeFromId) {
+					fprintf(componentMetaFile, "\tif(elem->attributes.LookUp(\"%.*s\", &temp)){\n", mf.serializeFromId.length, mf.serializeFromId.start);
+					fprintf(componentMetaFile, "\t\tGlobalScene->res.assetIdMap.LookUp(temp.string, (int*)&compCast->%.*s.id);\n\t}\n", mf.name.length, mf.name.start);
+				}
+				else {
+					fprintf(componentMetaFile, "\tif(elem->attributes.LookUp(\"%.*s\", &temp)){\n", mf.name.length, mf.name.start);
+					fprintf(componentMetaFile, "\t\tcompCast->%.*s.id = Atoi(temp.string);\n\t}\n", mf.name.length, mf.name.start);
+				}
+			}
 			else if (fieldType != MT_Unknown && FindMetaAttribByName(mf.attrs, "DoNotSerialize") == nullptr) {
 				if (mf.flags & FSF_SerializeFromId) {
 					fprintf(componentMetaFile, "\tif(elem->attributes.LookUp(\"%.*s\", &temp)){\n", mf.serializeFromId.length, mf.serializeFromId.start);
@@ -683,6 +707,16 @@ void AppPreInit(int argc, char** argv){
 				fprintf(componentMetaFile, "\telem->attributes.Insert(\"%.*s\", EncodeEnum(%d, compCast->%.*s));\n",
 					mf.name.length, mf.name.start, mf.enumType, mf.name.length, mf.name.start);
 			}
+			else if (fieldType == MT_Handle) {
+				if (mf.flags & FSF_SerializeFromId) {
+					fprintf(componentMetaFile, "\tString id_%d = GlobalScene->res.FindFileNameByIdAndExtension(\"%.*s\", compCast->%.*s.id);\n",
+						j, mf.serializeExt.length, mf.serializeExt.start, mf.name.length, mf.name.start);
+					fprintf(componentMetaFile, "\telem->attributes.Insert(\"%.*s\", id_%d);\n", mf.serializeFromId.length, mf.serializeFromId.start, j);
+				}
+				else {
+					fprintf(componentMetaFile, "\telem->attributes.Insert(\"%.*s\", Itoa(compCast->%.*s.id));\n", mf.name.length, mf.name.start, mf.name.length, mf.name.start);
+				}
+			}
 			else if (fieldType != MT_Unknown && FindMetaAttribByName(mf.attrs, "DoNotSerialize") == nullptr) {
 				if (mf.flags & FSF_SerializeFromId) {
 					fprintf(componentMetaFile, "\tString id_%d = GlobalScene->res.FindFileNameByIdAndExtension(\"%.*s\", compCast->%.*s);\n",
@@ -705,7 +739,14 @@ void AppPreInit(int argc, char** argv){
 			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount, allParseMetaEnums, &enumName);
 
 			if (fieldType != MT_Unknown && FindMetaAttribByName(mf.attrs, "DoNotSerialize") == nullptr) {
-				fprintf(componentMetaFile, "\tstream->Write<%.*s>(compCast->%.*s);\n", mf.type.length, mf.type.start, mf.name.length, mf.name.start);
+				if (fieldType == MT_Handle) {
+					fprintf(componentMetaFile, "\tstream->Write<%.*s<%.*s>>(compCast->%.*s);\n", 
+						mf.type.length, mf.type.start, mf.typeParam.length, mf.typeParam.start, mf.name.length, mf.name.start);
+				}
+				else {
+					fprintf(componentMetaFile, "\tstream->Write<%.*s>(compCast->%.*s);\n", 
+						mf.type.length, mf.type.start, mf.name.length, mf.name.start);
+				}
 			}
 		}
 		fprintf(componentMetaFile, "}\n\n");
@@ -719,7 +760,14 @@ void AppPreInit(int argc, char** argv){
 			MetaType fieldType = ParseType(mf.type, mf.indirectionLevel, mf.arrayCount, allParseMetaEnums, &enumName);
 
 			if (fieldType != MT_Unknown && FindMetaAttribByName(mf.attrs, "DoNotSerialize") == nullptr) {
-				fprintf(componentMetaFile, "\tcompCast->%.*s = stream->Read<%.*s>();\n", mf.name.length, mf.name.start, mf.type.length, mf.type.start);
+				if (fieldType == MT_Handle) {
+					fprintf(componentMetaFile, "\tcompCast->%.*s = stream->Read<%.*s<%.*s>>();\n",
+						mf.name.length, mf.name.start, mf.type.length, mf.type.start, mf.typeParam.length, mf.typeParam.start);
+				}
+				else {
+					fprintf(componentMetaFile, "\tcompCast->%.*s = stream->Read<%.*s>();\n", 
+						mf.name.length, mf.name.start, mf.type.length, mf.type.start);
+				}
 			}
 		}
 		fprintf(componentMetaFile, "}\n\n");

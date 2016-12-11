@@ -16,7 +16,7 @@
 struct Texture;
 
 struct UniFont : IDBase{
-	int textureId;
+	IDHandle<Texture> textureId;
 
 	Vector<CodepointInfo> codepointListing;
 

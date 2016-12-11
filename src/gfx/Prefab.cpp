@@ -15,7 +15,7 @@ void Prefab::InstantiateIntoEntityPtr(Entity* toAdd, Vector3 position, Quaternio
 		ASSERT(compId >= 0 && compId < CCT_Count);
 
 		Component* comp = addComponentFuncs[compId]();
-		comp->entity = toAdd->id;
+		comp->entity = IDHandle<Entity>(toAdd->id);
 
 		componentMemDeserializeFuncs[compId](comp, &customComponents);
 	}

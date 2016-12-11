@@ -8,6 +8,8 @@
 
 #include "../gfx/Material.h"
 
+#include "../../ext/CppUtils/disc_union.h"
+
 enum AnimationType {
 	ANT_Float,
 	ANT_Vec2,
@@ -43,37 +45,45 @@ enum Animation3DTarget {
 	A3DT_Scale
 };
 
-struct AnimationTarget {
-	AnimationTargetType targetType;
+struct Transform;
+struct Armature;
 
-	union {
-		struct {
-			Animation3DTarget target3d;
-			int transformId;
-		} trans;
-
-		struct {
-			Animation3DTarget target3d;
-			int armId;
-			int boneIndex;
-		} bone;
-
-		struct {
-			int matId;
-			UniformType uniformType;
-			// TODO: Some better way of doing this?
-			char uniformName[16];
-		} uniform;
-
-		struct {
-			CustomComponentType compType;
-			int compId;
-			int fieldOffset;
-		} component;
-	};
-
-	void Resolve(const float* data, int size);
+struct AnimationTransformTarget {
+	Animation3DTarget target3d;
+	IDHandle<Transform> transformId;
 };
+
+struct AnimationBoneTarget {
+	Animation3DTarget target3d;
+	IDHandle<Armature> armId;
+	int boneIndex;
+};
+
+struct AnimationUniformTarget {
+	IDHandle<Material> matId;
+	UniformType uniformType;
+	// TODO: Some better way of doing this?
+	char uniformName[16];
+};
+
+struct AnimationCustomFieldTarget {
+	CustomComponentType compType;
+	int compId;
+	int fieldOffset;
+};
+
+#define AT_(mac) \
+	mac(AnimationTransformTarget) \
+	mac(AnimationBoneTarget) \
+	mac(AnimationUniformTarget) \
+	mac(AnimationCustomFieldTarget)
+
+
+DEFINE_DISCRIMINATED_UNION(AnimationTarget, AT_);
+
+#undef AT_
+
+void ResolveAnimationTarget(const AnimationTarget* target, const float* data, int size);
 
 struct AnimationInstance : Component {
 	bool shouldLoop;
@@ -86,7 +96,7 @@ struct AnimationInstance : Component {
 	bool isPlaying;
 
 	/*[SerializeFromId("src", "anim")]*/
-	int animId;
+	IDHandle<AnimationTrack> animId;
 
 	AnimationTarget target;
 

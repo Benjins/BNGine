@@ -13,7 +13,7 @@ enum GuiButtonState {
 };
 
 struct GuiButton : IDBase {
-	uint32 rect;
+	IDHandle<GuiRect> rect;
 	GuiContent content;
 
 	GuiButtonState state;
@@ -21,7 +21,6 @@ struct GuiButton : IDBase {
 	Action onClick;
 
 	GuiButton() {
-		rect = -1;
 		state = GBS_Off;
 	}
 
