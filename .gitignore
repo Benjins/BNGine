@@ -9,6 +9,7 @@ build/
 *.obj
 
 .vs/
+.vscode/
 
 gen/*.cpp
 gen/*.h
