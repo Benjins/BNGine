@@ -15,6 +15,8 @@ void NetworkClient::PollNetworkUpdate(){
 
 		if (index < 0 && newPacket.IsOpeningPacket()){
 			AddConnection(addr);
+			onConnect(&conns[connectionCount], &newPacket.packetData);
+
 			char addrBuffer[32] = {};
 			addr.WriteToString(addrBuffer, sizeof(addrBuffer));
 			printf("Log: Now connected to '%s'\n", addrBuffer);
@@ -80,7 +82,7 @@ void NetworkClient::PollNetworkUpdate(){
 
 		if (currTime - conns[c].lastReceivedPacketTime >= clientTimeout){
 			if (onDisconnect) {
-				onDisconnect(&conns[c]);
+				onDisconnect(&conns[c], nullptr);
 			}
 
 			char addrBuffer[32] = {};

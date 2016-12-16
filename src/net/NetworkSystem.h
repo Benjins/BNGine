@@ -28,8 +28,8 @@ struct ClientEntityMapping {
 	IDHandle<Entity> ClientToLocal(IDHandle<Entity> id);
 };
 
-void OnNetworkClientConnect(NetworkClientConn* client);
-void OnNetworkClientDisconnect(NetworkClientConn* client);
+void OnNetworkClientConnect(NetworkClientConn* client, void*);
+void OnNetworkClientDisconnect(NetworkClientConn* client, void*);
 
 struct NetworkSystem {
 	NetworkClient client;

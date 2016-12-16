@@ -127,7 +127,7 @@ struct NetworkClientConn{
 	}
 };
 
-typedef void (NetworkCallbackFunc)(NetworkClientConn* client);
+typedef void (NetworkCallbackFunc)(NetworkClientConn* client, void* user);
 
 #define MAX_CLIENT_CONNECTION_COUNT 8
 
@@ -165,10 +165,6 @@ struct NetworkClient{
 		conns[connectionCount].addr = addr;
 		conns[connectionCount].lastReceivedPacketTime = time(NULL);
 		connectionCount++;
-
-		if (onConnect) {
-			onConnect(&conns[connectionCount]);
-		}
 	}
 
 	void SendPacketImm(Packet* packet, int connIndex){
@@ -217,14 +213,20 @@ struct NetworkClient{
 		}
 	}
 
-	void OpenNewConnection(IPV4Addr addr){
+	void OpenNewConnection(IPV4Addr addr, void* userData = nullptr, int userDataLen = 0){
 		char addrBuffer[32] = {};
 		addr.WriteToString(addrBuffer, sizeof(addrBuffer));
 		printf("Log: Connecting to '%s'\n", addrBuffer);
 
 		Packet op;
 		op.SetIsOpeningPacket(true);
+
+		if (userData != nullptr && userDataLen > 0) {
+			BNS_MEMCPY(&op.packetData, userData, userDataLen);
+		}
+
 		AddConnection(addr);
+		onConnect(&conns[connectionCount], nullptr);
 		SendPacketImm(&op, connectionCount - 1);
 	}
 };

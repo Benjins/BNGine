@@ -51,10 +51,6 @@ Entity* Scene::AddEntityWithIdAndTrandId(uint32 id, uint32 transId) {
 }
 
 void Scene::AddVisibleEntityByEntityPtr(Entity* newEnt, IDHandle<Material> matId, IDHandle<Mesh> meshId) {
-	Transform* newTrans = transforms.CreateAndAdd();
-	newEnt->transform = IDHandle<Transform>(newTrans->id);
-	newTrans->entity = IDHandle<Entity>(newEnt->id);
-
 	ASSERT(res.materials.GetById(matId) != nullptr);
 	ASSERT(res.meshes.GetById(meshId) != nullptr);
 
@@ -65,14 +61,14 @@ void Scene::AddVisibleEntityByEntityPtr(Entity* newEnt, IDHandle<Material> matId
 }
 
 Entity* Scene::AddVisibleEntity(IDHandle<Material> matId, IDHandle<Mesh> meshId) {
-	Entity* newEnt = entities.CreateAndAdd();
+	Entity* newEnt = AddEntity();
 	AddVisibleEntityByEntityPtr(newEnt, matId, meshId);
 
 	return newEnt;
 }
 
 Entity* Scene::AddVisibleEntityWithId(uint32 entId, IDHandle<Material> matId, IDHandle<Mesh> meshId) {
-	Entity* newEnt = entities.AddWithId(entId);
+	Entity* newEnt = AddEntityWithId(entId);
 	AddVisibleEntityByEntityPtr(newEnt, matId, meshId);
 
 	return newEnt;

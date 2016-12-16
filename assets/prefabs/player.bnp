@@ -1,4 +1,6 @@
 <Prefab id='0'>
-	<Transform pos='0.000561,0.036339,-0.000696' id='0' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+	<Transform pos='0.000561,0.036339,-0.000696' id='8' scale='0.100000,0.800000,0.100000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+	<Material src='bullet.mat'/>
+	<Mesh src='test_2.obj'/>
 	<PlayerComponent jumpVelocity='3.000000' playerWidth='0.200000' playerHeight='0.600000' currState='CS_GROUNDED'/>
 </Prefab>
