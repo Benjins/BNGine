@@ -19,6 +19,7 @@ struct Prefab : IDBase{
 
 	Entity* Instantiate(Vector3 position, Quaternion rotation = QUAT_IDENTITY);
 	Entity* InstantiateWithId(uint32 id, Vector3 position, Quaternion rotation = QUAT_IDENTITY);
+	Entity* InstantiateWithIdAndTransId(uint32 id, uint32 transId, Vector3 position, Quaternion rotation = QUAT_IDENTITY);
 	void InstantiateIntoEntityPtr(Entity* toAdd, Vector3 position, Quaternion rotation);
 };
 

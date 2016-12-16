@@ -41,10 +41,9 @@
 		<Material src='floor.mat'/>
 		<Mesh src='floor.obj'/>
 	</Entity>
-	<Entity id='7'>
+	<PrefabInstance id='7' prefabId='player.bnp'>
 		<Transform pos='0.000561,0.036339,-0.000696' id='8' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<PlayerComponent jumpVelocity='3.000000' playerWidth='0.200000' playerHeight='0.600000' currState='CS_GROUNDED'/>
-	</Entity>
+	</PrefabInstance>
 	<Entity id='8'>
 		<Transform pos='0.010204,-0.019546,8.424690' id='9' scale='1.000000,1.000000,1.000000' rotation='0.992905,-0.117683,0.001881,-0.016887' parent='-1'/>
 		<BoxCollider isTrigger='F' colFlags='CF_NONE' size='5.000000,0.100000,5.000000' position='0.000000,0.000000,0.000000'/>
@@ -146,6 +145,6 @@
 		<Mesh src='floor.obj'/>
 	</Entity>
 	<PrefabInstance id='23' prefabId='bullet_like.bnp'>
-		<Transform pos='9.712412,1,-5' id='23' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<Transform pos='9.712412,1,-5' id='24' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 	</PrefabInstance>
 </Scene>

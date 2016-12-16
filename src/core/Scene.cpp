@@ -16,6 +16,40 @@ Scene::Scene() : entities(100), transforms(120), res()	 {
 	frameRateIsLocked = false;
 }
 
+Entity* Scene::AddEntity() {
+	Entity* newEnt = entities.CreateAndAdd();
+	Transform* newTrans = transforms.CreateAndAdd();
+	newEnt->transform = IDHandle<Transform>(newTrans->id);
+	newTrans->entity = IDHandle<Entity>(newEnt->id);
+
+	return newEnt;
+}
+
+Entity* Scene::AddEntityWithId(uint32 id) {
+	Entity* newEnt = entities.AddWithId(id);
+	Transform* newTrans = transforms.CreateAndAdd();
+	newEnt->transform = IDHandle<Transform>(newTrans->id);
+	newTrans->entity = IDHandle<Entity>(newEnt->id);
+
+	return newEnt;
+}
+
+Entity* Scene::AddVisibleEntityWithIdAndTransId(uint32 id, uint32 transId, IDHandle<Material> matId, IDHandle<Mesh> meshId) {
+	Entity* newEnt = AddEntityWithIdAndTrandId(id, transId);
+	AddVisibleEntityByEntityPtr(newEnt, matId, meshId);
+
+	return newEnt;
+}
+
+Entity* Scene::AddEntityWithIdAndTrandId(uint32 id, uint32 transId) {
+	Entity* newEnt = entities.AddWithId(id);
+	Transform* newTrans = transforms.AddWithId(transId);
+	newEnt->transform = IDHandle<Transform>(newTrans->id);
+	newTrans->entity = IDHandle<Entity>(newEnt->id);
+
+	return newEnt;
+}
+
 void Scene::AddVisibleEntityByEntityPtr(Entity* newEnt, IDHandle<Material> matId, IDHandle<Mesh> meshId) {
 	Transform* newTrans = transforms.CreateAndAdd();
 	newEnt->transform = IDHandle<Transform>(newTrans->id);
@@ -101,6 +135,17 @@ void Scene::StartUp() {
 
 	LoadLevel("Level1.lvl");
 
+	IDHandle<Prefab> playerPrefab;
+	res.assetIdMap.LookUp("player.bnp", &playerPrefab.id);
+	net.playerPrefab = playerPrefab;
+
+	for (int i = 0; i < gameplay.prefabInsts.currentCount; i++) {
+		if (gameplay.prefabInsts.vals[i].prefab == playerPrefab) {
+			net.playerEnt = gameplay.prefabInsts.vals[i].entity;
+			break;
+		}
+	}
+
 	frameTimer.Reset();
 }
 
@@ -122,9 +167,16 @@ void Scene::Update() {
 		gui.Init();
 	}
 
+	if (GlobalScene->input.KeyIsReleased('P')) {
+		IPV4Addr addr = IPV4Addr(127, 0, 0, 1, net.debugPortToConnectTo);
+		net.OpenNewConnection(addr);
+	}
+
 	for (int i = 0; i < deferredActions.count; i++) {
 		ExecuteAction(deferredActions.data[i]);
 	}
+
+	net.NetworkUpdate();
 
 	frameTimer.Reset();
 }
@@ -171,7 +223,7 @@ void Scene::LoadLevel(const char* name) {
 		PrefabInstance* inst = &level->prefabInsts.data[i];
 		Prefab* prefab = res.prefabs.GetById(inst->prefabId);
 
-		Entity* ent = prefab->InstantiateWithId(inst->instanceId, inst->pos, inst->rot);
+		Entity* ent = prefab->InstantiateWithIdAndTransId(inst->instanceId, inst->instanceTransformId, inst->pos, inst->rot);
 		transforms.GetById(ent->transform)->parent = IDHandle<Transform>(inst->parentTransform);
 	}
 

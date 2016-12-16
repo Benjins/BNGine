@@ -1,6 +1,8 @@
 #include "app_funcs.h"
 #include "../core/Scene.h"
 
+#include "../../ext/CppUtils/commandline.h"
+
 void AppPostInit(int argc, char** argv) {
 	GlobalScene = new Scene();
 
@@ -10,6 +12,19 @@ void AppPostInit(int argc, char** argv) {
 	glLoadIdentity();
 
 	GlobalScene->StartUp();
+
+	// A bit redundant, since we do this already on Windows to get argc/argv...
+	CommandLineParser parser;
+	parser.InitializeFromArgcArgv(argc, (const char**)argv);
+
+	if (parser.IsFlagPresent("-port")) {
+		int port = parser.FlagIntValue("-port");
+		GlobalScene->net.Initialize(port);
+	}
+
+	if (parser.IsFlagPresent("-connPort")) {
+		GlobalScene->net.debugPortToConnectTo = parser.FlagIntValue("-connPort");
+	}
 }
 
 bool AppUpdate(int argc, char** argv) {

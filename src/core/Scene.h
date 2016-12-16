@@ -25,6 +25,8 @@
 
 #include "../anim/Animations.h"
 
+#include "../net/NetworkSystem.h"
+
 #include "../script/ScriptSystem.h"
 
 #include "../../gen/Actions.h"
@@ -45,6 +47,7 @@ struct Scene {
 	ScriptSystem script;
 	GuiSystem gui;
 	AnimationSystem anims;
+	NetworkSystem net;
 
 	Camera cam;
 
@@ -89,6 +92,10 @@ struct Scene {
 	void SaveLevel(Level* level);
 	void SaveCustomComponentsToLevel(Level* level);
 
+	Entity* AddEntity();
+	Entity* AddEntityWithId(uint32 id);
+	Entity* AddVisibleEntityWithIdAndTransId(uint32 id, uint32 transId, IDHandle<Material> matId, IDHandle<Mesh> meshId);
+	Entity* AddEntityWithIdAndTrandId(uint32 id, uint32 transId);
 	Entity* AddVisibleEntity(IDHandle<Material> matId, IDHandle<Mesh> meshId);
 	Entity* AddVisibleEntityWithId(uint32 entId, IDHandle<Material> matId, IDHandle<Mesh> meshId);
 	void AddVisibleEntityByEntityPtr(Entity* newEnt, IDHandle<Material> matId, IDHandle<Mesh> meshId);
