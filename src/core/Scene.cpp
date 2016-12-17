@@ -11,7 +11,7 @@
 
 Scene* GlobalScene = nullptr;
 
-Scene::Scene() : entities(100), transforms(120), res()	 {
+Scene::Scene() : entities(100), transforms(120), res() {
 	GlobalScene = this;
 	frameRateIsLocked = false;
 }
@@ -133,7 +133,10 @@ void Scene::StartUp() {
 
 	IDHandle<Prefab> playerPrefab;
 	res.assetIdMap.LookUp("player.bnp", &playerPrefab.id);
-	net.playerPrefab = playerPrefab;
+
+	IDHandle<Prefab> enemyPlayerPrefab;
+	res.assetIdMap.LookUp("enemy_player.bnp", &enemyPlayerPrefab.id);
+	net.playerPrefab = enemyPlayerPrefab;
 
 	for (int i = 0; i < gameplay.prefabInsts.currentCount; i++) {
 		if (gameplay.prefabInsts.vals[i].prefab == playerPrefab) {

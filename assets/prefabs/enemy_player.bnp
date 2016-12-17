@@ -1,0 +1,5 @@
+<Prefab id='0'>
+	<Transform pos='0,0,0' id='0' scale='0.10000,0.20000,0.10000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+	<Material src='water.mat'/>
+	<Mesh src='test_2.obj'/>
+</Prefab>

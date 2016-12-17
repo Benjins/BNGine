@@ -23,6 +23,7 @@ void Prefab::InstantiateIntoEntityPtr(Entity* toAdd, Vector3 position, Quaternio
 	customComponents.readHead = customComponentsOldReadHead;
 
 	PrefabInstanceComponent* instComp = GlobalScene->gameplay.prefabInsts.CreateAndAdd();
+	instComp->entity = GET_PTR_HANDLE(toAdd);
 	instComp->prefab = GET_PTR_HANDLE(this);
 }
 

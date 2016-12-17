@@ -71,10 +71,10 @@ struct Packet{
 
 	void SetIsOpeningPacket(bool isOpening){
 		if (isOpening){
-			*(int*)packetHeader &= ~htonl(1 << 31);
+			*(int*)packetHeader |= htonl(1 << 31); 
 		}
 		else{
-			*(int*)packetHeader |= htonl(1 << 31);
+			*(int*)packetHeader &= ~htonl(1 << 31);
 		}
 	}
 
@@ -216,9 +216,9 @@ struct NetworkClient{
 	void OpenNewConnection(IPV4Addr addr, void* userData = nullptr, int userDataLen = 0){
 		char addrBuffer[32] = {};
 		addr.WriteToString(addrBuffer, sizeof(addrBuffer));
-		printf("Log: Connecting to '%s'\n", addrBuffer);
+		OutputDebugStringA(StringStackBuffer<256>("Log: Connecting to '%s'\n", addrBuffer).buffer);
 
-		Packet op;
+		Packet op = {};
 		op.SetIsOpeningPacket(true);
 
 		if (userData != nullptr && userDataLen > 0) {
@@ -226,7 +226,7 @@ struct NetworkClient{
 		}
 
 		AddConnection(addr);
-		onConnect(&conns[connectionCount], nullptr);
+		onConnect(&conns[connectionCount - 1], nullptr);
 		SendPacketImm(&op, connectionCount - 1);
 	}
 };

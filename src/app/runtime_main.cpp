@@ -14,7 +14,15 @@ void AppPostInit(int argc, char** argv) {
 	GlobalScene->StartUp();
 
 	// A bit redundant, since we do this already on Windows to get argc/argv...
+
+	CommandLineOption options[] = {
+		{ "-port", "Port to bind socket to", 1, 1 },
+		{ "-connPort", "Local port to connect to", 1, 1 }
+	};
+
 	CommandLineParser parser;
+	parser.SetOptions(options, BNS_ARRAY_COUNT(options));
+	parser.isProgramNamePresent = false;
 	parser.InitializeFromArgcArgv(argc, (const char**)argv);
 
 	if (parser.IsFlagPresent("-port")) {
@@ -63,7 +71,7 @@ void AppKeyDown(unsigned char key) {
 }
 
 void AppPreInit(int argc, char** argv) {
-	
+	StartUpSocketSystem();
 }
 
 void AppSetWindowSize(int w, int h){

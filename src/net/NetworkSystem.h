@@ -21,8 +21,8 @@ enum NetworkSystemState {
 };
 
 struct ClientEntityMapping {
-	Vector<IDHandle<Entity>> clientIds;
-	Vector<IDHandle<Entity>> localIds;
+	Vector<uint32> clientIds;
+	Vector<uint32> localIds;
 
 	IDHandle<Entity> LocalToClient(IDHandle<Entity> id);
 	IDHandle<Entity> ClientToLocal(IDHandle<Entity> id);
@@ -64,10 +64,7 @@ struct NetworkSystem {
 		currState = NSS_Initialized;
 	}
 
-	void OpenNewConnection(IPV4Addr addr) {
-		client.OpenNewConnection(addr);
-		currState = NSS_Connected;
-	}
+	void OpenNewConnection(IPV4Addr addr);
 
 	void RegisterPlayer(Entity* player) {
 		playerEnt = GET_PTR_HANDLE(player);
@@ -77,8 +74,8 @@ struct NetworkSystem {
 		spawnedEnts.PushBack(GET_PTR_HANDLE(ent));
 	}
 
-	void ReadReliablePacket(MemStream& stream);
-	void ReadStreamingPacket(MemStream& stream);
+	void ReadReliablePacket(int clientIndex, MemStream& stream);
+	void ReadStreamingPacket(int clientIndex, MemStream& stream);
 
 	void NetworkUpdate();
 };
