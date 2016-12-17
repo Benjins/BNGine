@@ -9,6 +9,7 @@
 #include "HealthComponent.h"
 #include "WaterVolumeComponent.h"
 #include "LadderComponent.h"
+#include "PrefabInstanceComponent.h"
 
 struct GameplayComponents {
 	//TODO: Automate
@@ -18,6 +19,7 @@ struct GameplayComponents {
 	IDTracker<HealthComponent> healthComps;
 	IDTracker<WaterVolumeComponent> waterComps;
 	IDTracker<LadderComponent> ladderComps;
+	IDTracker<PrefabInstanceComponent> prefabInsts;
 };
 
 #endif

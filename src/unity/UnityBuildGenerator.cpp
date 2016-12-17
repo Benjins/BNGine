@@ -160,6 +160,21 @@ int main(int argc, char** argv) {
 	fprintf(genFile, "#include \"%s%s\"\n", fileToTop, appFiles[(int)app]);
 	fprintf(genFile, "#include \"%s%s\"\n", fileToTop, platformFiles[(int)platform]);
 
+	// For everything except metagen, we want to include all of our generated files in the unity build
+	// except for itself
+	if (app != A_MetaGen) {
+		File genDir;
+		genDir.Load("gen");
+
+		Vector<File*> genFiles;
+		genDir.FindFilesWithExt("cpp", &genFiles);
+		for (int j = 0; j < genFiles.count; j++) {
+			if (!StrEqual(genFiles.Get(j)->fileName, "UnityBuild.cpp")) {
+				fprintf(genFile, "#include \"%s\"\n", genFiles.Get(j)->fileName);
+			}
+		}
+	}
+
 	fclose(genFile);
 
 	return 0;

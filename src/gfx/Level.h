@@ -21,6 +21,7 @@ struct LadderComponent;
 struct ScriptInstance;
 struct AnimationInstance;
 struct Prefab;
+struct PrefabInstanceComponent;
 
 struct PrefabInstance {
 	Quaternion rot;
@@ -28,6 +29,7 @@ struct PrefabInstance {
 	int parentTransform;
 	IDHandle<Prefab> prefabId;
 	uint32 instanceId;
+	uint32 instanceTransformId;
 };
 
 struct Level : IDBase{
@@ -50,6 +52,7 @@ struct Level : IDBase{
 	Vector<LadderComponent> ladderComps;
 	Vector<ScriptInstance> scriptInsts;
 	Vector<AnimationInstance> animInsts;
+	Vector<PrefabInstanceComponent> prefabInstComps;
 };
 
 #endif

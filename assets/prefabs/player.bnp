@@ -1,0 +1,4 @@
+<Prefab id='0'>
+	<Transform pos='0,0,0' id='0' scale='1.00000,1.00000,1.00000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+	<PlayerComponent jumpVelocity='3.000000' playerWidth='0.200000' playerHeight='0.600000' currState='CS_GROUNDED'/>
+</Prefab>

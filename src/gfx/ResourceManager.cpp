@@ -440,6 +440,7 @@ void ResourceManager::LoadLevelFromChunk(MemStream& stream, Level* outLevel) {
 			inst.rot = entTrans.rotation;
 			inst.prefabId = IDHandle<Prefab>(prefabId);
 			inst.instanceId = entId;
+			inst.instanceTransformId = entTrans.id;
 
 			outLevel->prefabInsts.PushBack(inst);
 		}
