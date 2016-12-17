@@ -52,7 +52,10 @@ struct NetworkSystem {
 
 	NetworkSystem() {
 		networkTicksPerSecond = 15;
-		client.packetLoss = 10;
+		//client.packetLoss = 10;
+		
+		client.clientTimeout = 1800;
+		
 		currState = NSS_Begin;
 
 		client.onConnect = OnNetworkClientConnect;
@@ -66,8 +69,9 @@ struct NetworkSystem {
 
 	void OpenNewConnection(IPV4Addr addr);
 
-	void RegisterPlayer(Entity* player) {
-		playerEnt = GET_PTR_HANDLE(player);
+	void RegisterPlayer(IDHandle<Entity> player) {
+		playerEnt = player;
+		ownedEnts.PushBack(playerEnt);
 	}
 
 	void RegisterSpawnedEntity(Entity* ent){

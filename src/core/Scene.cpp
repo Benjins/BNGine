@@ -140,7 +140,7 @@ void Scene::StartUp() {
 
 	for (int i = 0; i < gameplay.prefabInsts.currentCount; i++) {
 		if (gameplay.prefabInsts.vals[i].prefab == playerPrefab) {
-			net.playerEnt = gameplay.prefabInsts.vals[i].entity;
+			net.RegisterPlayer(gameplay.prefabInsts.vals[i].entity);
 			break;
 		}
 	}

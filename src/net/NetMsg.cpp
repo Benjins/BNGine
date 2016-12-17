@@ -63,11 +63,10 @@ void NetworkClient::PollNetworkUpdate(){
 				if (ackIndex > conns[index].reliableClientReceivePacketIndex) {
 					conns[index].reliableClientReceivePacketIndex = ackIndex;
 					conns[index].reliableClientReceivePacketAcks = ackBitfield;
-
-					conns[index].lastReceivedPacketTime = time(NULL);
-
-					conns[index].packetsReceived.PushBack(newPacket);
 				}
+
+				conns[index].lastReceivedPacketTime = time(NULL);
+				conns[index].packetsReceived.PushBack(newPacket);
 			}
 		}
 		else{

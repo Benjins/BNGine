@@ -135,7 +135,10 @@ void NetworkSystem::NetworkUpdate() {
 		}
 	}
 
-	reliablePacketData.Write(RGM_DoneWithMessages);
+	if (reliablePacketData.GetLength() > 0) {
+		reliablePacketData.Write(RGM_DoneWithMessages);
+		client.SendDataReliableToAll(reliablePacketData.readHead, reliablePacketData.GetLength());
+	}
 
 	MemStream streamPacketData;
 
@@ -152,7 +155,6 @@ void NetworkSystem::NetworkUpdate() {
 	}
 
 	client.StreamDataToAll(streamPacketData.readHead, streamPacketData.GetLength());
-	client.SendDataReliableToAll(reliablePacketData.readHead, reliablePacketData.GetLength());
 
 	if (updateSeconds >= tickTime) {
 		client.PollNetworkUpdate();
@@ -182,7 +184,7 @@ void NetworkSystem::NetworkUpdate() {
 			str.writeHead = nullptr;
 		}
 
-		client.conns[c].packetsReceived.Clear();	
+		client.conns[c].packetsReceived.Clear();
 	}
 }
 
