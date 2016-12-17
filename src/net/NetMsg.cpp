@@ -15,7 +15,7 @@ void NetworkClient::PollNetworkUpdate(){
 
 		if (index < 0 && newPacket.IsOpeningPacket()){
 			AddConnection(addr);
-			onConnect(&conns[connectionCount], &newPacket.packetData);
+			onConnect(&conns[connectionCount - 1], &newPacket.packetData);
 
 			char addrBuffer[32] = {};
 			addr.WriteToString(addrBuffer, sizeof(addrBuffer));
