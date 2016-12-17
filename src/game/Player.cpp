@@ -3,6 +3,8 @@
 
 #include "../core/Scene.h"
 
+#include "../net/NetworkSystem.h"
+
 void PlayerComponent::Update() {
 	float floorHeight = -2;
 
@@ -44,7 +46,9 @@ void PlayerComponent::Update() {
 		ASSERT(pref != nullptr);
 
 		Vector3 bulletSpawnPosition = entTrans->GetGlobalPosition() + entTrans->Forward() * 0.21f;
-		pref->Instantiate(bulletSpawnPosition, entTrans->rotation * camTrans->rotation);
+		Entity* bullet = pref->Instantiate(bulletSpawnPosition, entTrans->rotation * camTrans->rotation);
+
+		GlobalScene->net.RegisterSpawnedEntity(bullet);
 
 		// TODO: Instantiating a prefab invalidates pointers on realloc, should look into that
 		ent = GlobalScene->entities.GetById(entity);

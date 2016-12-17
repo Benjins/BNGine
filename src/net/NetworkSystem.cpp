@@ -132,6 +132,8 @@ void NetworkSystem::NetworkUpdate() {
 			// It's been destroyed...
 			reliablePacketData.Write(RGM_EntityDestroy);
 			reliablePacketData.Write(ownedEnts.data[i].id);
+			ownedEnts.Remove(i);
+			i--;
 		}
 	}
 
