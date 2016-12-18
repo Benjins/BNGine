@@ -58,7 +58,7 @@ TODO:
    - [ ] sliders (either imm or not, I just want some)
    - [X] non-imm checkboxes
    - [ ] non-imm labels
-   - [ ] non-imm string picker lists
+   - [X] non-imm string picker lists
    - [ ] non-imm frames/rects
    - [ ] non-imm scrollable rects
  * Graphics
@@ -66,6 +66,7 @@ TODO:
    - [ ] cube maps, sky boxes, static reflections
    - [X] armature, animations
    - [ ] particle systems
+   - [ ] lighting system w/ point lights, multiple lights, etc.
  * Animation
    - [ ] Animation states, split track by time
    - [ ] Animation targets serialize

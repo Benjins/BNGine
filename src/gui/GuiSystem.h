@@ -135,6 +135,8 @@ public:
 					Vector4 hoverCol = Vector4(0.4f, 0.4f, 0.4f, 0.4f),
 					Vector4 pressedCol = Vector4(0.5f, 0.5f, 0.5f, 0.5f));
 
+	float SimpleSlider(float val, float x, float y, float width, float height);
+
 	int StringPicker(const char** stringArr, int count, uint32 fontId, float scale, float x, float y, float w, float h);
 
 	void SelectTextInput(int index);

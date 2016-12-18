@@ -650,6 +650,51 @@ bool GuiSystem::SimpleButton(float x, float y, float w, float h) {
 	return false;
 }
 
+float GuiSystem::SimpleSlider(float val, float x, float y, float width, float height) {
+	float trueVal = BNS_MIN(1, BNS_MAX(0, val));
+
+	const float sliderWidth = 15;
+	float trueWidth = width - sliderWidth;
+	ASSERT(trueWidth > 0);
+
+	float sliderMiddleX = trueWidth * trueVal;
+	float sliderBegin = x + sliderMiddleX - sliderWidth / 2;
+
+	ColoredBox(x, y, width, height, Vector4(0.8f, 0.8f, 0.8f, 0.2f));
+	ColoredBox(sliderBegin, y, sliderWidth, height, Vector4(0.8f, 0.8f, 0.8f, 0.8f));
+
+	float mouseX = GlobalScene->input.cursorX;
+	float mouseY = GlobalScene->cam.heightPixels - GlobalScene->input.cursorY;
+
+	if (GlobalScene->input.MouseButtonIsDown(MouseButton::PRIMARY)) {
+		if (mouseX >= sliderBegin && mouseX < sliderBegin + sliderWidth
+		 && mouseY >= y && mouseY <= y + height) {
+			float newSliderMiddleX = sliderMiddleX + GlobalScene->input.cursorDeltaX;
+			float newVal = newSliderMiddleX / trueWidth;
+			float newTrueVal = BNS_MIN(1, BNS_MAX(0, newVal));
+
+			return newTrueVal;
+		}
+		// In case user moves mouse really fast, try to compensate
+		// by checking if we were over slider last frame
+		// TODO: Allow mouse to go outside slider, but still affect it as long as button stays down
+		else {
+			mouseX -= GlobalScene->input.cursorDeltaX;
+			mouseY -= GlobalScene->input.cursorDeltaY;
+			if (mouseX >= sliderBegin && mouseX < sliderBegin + sliderWidth
+			 && mouseY >= y && mouseY <= y + height) {
+				float newSliderMiddleX = sliderMiddleX + GlobalScene->input.cursorDeltaX;
+				float newVal = newSliderMiddleX / trueWidth;
+				float newTrueVal = BNS_MIN(1, BNS_MAX(0, newVal));
+
+				return newTrueVal;
+			}
+		}
+	}
+
+	return trueVal;
+}
+
 bool GuiSystem::TextButton(const char* text, uint32 fontId, float scale, float x, float y, float w, float h,
 	Vector4 backCol /*= Vector4(0.4f, 0.4f, 0.4f, 0.4f)*/, 
 	Vector4 hoverCol /*= Vector4(0.4f, 0.4f, 0.4f, 0.4f)*/,

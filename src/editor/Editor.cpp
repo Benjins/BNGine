@@ -420,6 +420,9 @@ void Editor::Render() {
 	static String fff = "The only wat out";
 	fff = gui.TextInput(fff, 0, 12, 300, 180, 120);
 
+	static float myVal = 0.2f;
+	myVal = gui.SimpleSlider(myVal, 50, 100, 150, 30);
+
 	gui.Render();
 
 	glDisable(GL_BLEND);
