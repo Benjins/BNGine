@@ -12,7 +12,7 @@ echo "Built unity build generator."
 
 ./unityBuild.out console metagen
 
-eval "$CXX -std=c++11 -O0 -g -Wall -DBNS_DEBUG gen/UnityBuild.cpp -o BNSMetaGen.out"
+eval "$CXX -std=c++11 -O0 -g -Wall -DBNS_DEBUG gen/UnityBuild.cpp -lpthread -o BNSMetaGen.out"
 
 echo "Built metaGen parser."
 
@@ -22,7 +22,7 @@ echo "Ran metaGen parser"
 
 ./unityBuild.out osmesa test
 
-eval "$CXX -std=c++11 -O0 -g -Wall -DBNS_DEBUG -DBNS_OS_MESA gen/*.cpp -lOSMesa -o BNgine_test.out"
+eval "$CXX -std=c++11 -O0 -g -Wall -DBNS_DEBUG -DBNS_OS_MESA gen/UnityBuild.cpp -lpthread -lOSMesa -o BNgine_test.out"
 
 echo "Built test"
 

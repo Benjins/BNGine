@@ -21,7 +21,7 @@ git submodule update --init --recursive
 
 Dependencies
 -------------
-Ubuntu: X11 and OpenGL development packages
+Ubuntu: pthread, X11, and OpenGL development packages
 
 Windows: Uhhh...OpenGL32.lib? Windows dependencies confuse me.
 
