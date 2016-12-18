@@ -12,7 +12,7 @@ echo "Built unity build generator."
 
 ./unityBuild.out console metagen
 
-eval "$CXX -std=c++11  -O0 -g -Wall -DBNS_DEBUG gen/UnityBuild.cpp -o BNSMetaGen.out"
+eval "$CXX -std=c++11  -O0 -g -Wall -DBNS_DEBUG gen/UnityBuild.cpp -lpthread -o BNSMetaGen.out"
 
 echo "Built metaGen parser."
 

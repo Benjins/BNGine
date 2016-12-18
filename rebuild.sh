@@ -9,4 +9,4 @@ fi
 
 ./unityBuild.out x11 $1
 
-eval "$CXX -std=c++11  -O0 -g -Wall -DBNS_DEBUG gen/UnityBuild.cpp -lX11 -lGL -o BNgine_$1.out"
+eval "$CXX -std=c++11  -O0 -g -Wall -DBNS_DEBUG gen/UnityBuild.cpp -lX11 -lGL -lpthread -o BNgine_$1.out"

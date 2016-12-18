@@ -216,7 +216,7 @@ struct NetworkClient{
 	void OpenNewConnection(IPV4Addr addr, void* userData = nullptr, int userDataLen = 0){
 		char addrBuffer[32] = {};
 		addr.WriteToString(addrBuffer, sizeof(addrBuffer));
-		OutputDebugStringA(StringStackBuffer<256>("Log: Connecting to '%s'\n", addrBuffer).buffer);
+		//OutputDebugStringA(StringStackBuffer<256>("Log: Connecting to '%s'\n", addrBuffer).buffer);
 
 		Packet op = {};
 		op.SetIsOpeningPacket(true);

@@ -5,7 +5,7 @@
 void OnNetworkClientConnect(NetworkClientConn* client, void* opPacketData) {
 	int index = client - GlobalScene->net.client.conns;
 
-	OutputDebugStringA(StringStackBuffer<256>("Connecting to client index: %d\n", index).buffer);
+	//OutputDebugStringA(StringStackBuffer<256>("Connecting to client index: %d\n", index).buffer);
 
 	if (opPacketData != nullptr) {
 		{
