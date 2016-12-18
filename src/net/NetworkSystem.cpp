@@ -98,6 +98,10 @@ IDHandle<Entity> ClientEntityMapping::ClientToLocal(IDHandle<Entity> id){
 }
 
 void NetworkSystem::NetworkUpdate() {
+	if (currState == NSS_Begin){
+		return;
+	}
+
 	updateSeconds += GlobalScene->GetDeltaTime();
 
 	const float tickTime = 1.0f / networkTicksPerSecond;
