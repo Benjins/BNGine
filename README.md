@@ -81,6 +81,7 @@ TODO:
    - [ ] interactions between networked entities
    - [ ] ownership?
    - [ ] better packet design, pack bits better
+   - [ ] test more than two players, join-in-progress
  * Metagen
    - [ ] Collect coroutines into discrimnated union
    - [X] Gui button actions, collect into enum and discriminated union
