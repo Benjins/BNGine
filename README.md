@@ -73,10 +73,14 @@ TODO:
    - [ ] IK stuff
  * Networking
    - [ ] basic matchmaking server backend, just for testing?
-   - [ ] Reliable and streaming packets, ACK's
-   - [ ] Resolve id's between host/client
-   - [ ] Player entity sync?
-   - [ ] Packet design, spawning/destroying entities?
+   - [X] Reliable and streaming packets, ACK's
+   - [X] Resolve id's between host/client
+   - [X] Player entity sync?
+   - [X] Packet design, spawning/destroying entities?
+   - [ ] Smooth out network information
+   - [ ] interactions between networked entities
+   - [ ] ownership?
+   - [ ] better packet design, pack bits better
  * Metagen
    - [ ] Collect coroutines into discrimnated union
    - [X] Gui button actions, collect into enum and discriminated union
