@@ -24,6 +24,25 @@
 #include "../../ext/3dbasics/Vector4.h"
 #include "../../ext/3dbasics/Quaternion.h"
 
+int FileCompare(File* a, File* b) {
+	return strcmp(a->fullName, b->fullName);
+}
+
+void SortAssetFiles(Vector<File*>& f) {
+	for (int i = 0; i < f.count; i++) {
+		for (int j = i; j > 0; j--) {
+			if (FileCompare(f.Get(j), f.Get(j - 1)) > 0) {
+				File* temp = f.data[j];
+				f.data[j] = f.data[j - 1];
+				f.data[j - 1] = temp;
+			}
+			else {
+				break;
+			}
+		}
+	}
+}
+
 void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 	File assetDir;
 	assetDir.Load(assetDirName);
@@ -70,6 +89,8 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 
 	Vector<File*> prefabFiles;
 	assetDir.FindFilesWithExt("bnp", &prefabFiles);
+	SortAssetFiles(prefabFiles);
+	// ^^ Network needs to agree on these
 
 	Vector<File*> scriptFiles;
 	assetDir.FindFilesWithExt("bnv", &scriptFiles);
