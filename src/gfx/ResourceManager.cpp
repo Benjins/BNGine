@@ -36,6 +36,8 @@ void ResourceManager::Reset() {
 	textures.Reset();
 	scripts.Reset();
 	prefabs.Reset();
+	anims.Reset();
+	armatures.Reset();
 }
 
 void ResourceManager::LoadAssetFile(const char* fileName) {
