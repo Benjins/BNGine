@@ -6,6 +6,7 @@ enum Platform {
 	P_Win32,
 	P_Console,
 	P_OSMesa,
+	P_OSX,
 	P_Count
 };
 
@@ -21,7 +22,8 @@ const char* platformNames[P_Count] = {
 	"x11",
 	"win32",
 	"console",
-	"osmesa"
+	"osmesa",
+	"osx"
 };
 
 const char* appNames[A_Count] = {
@@ -154,12 +156,15 @@ int main(int argc, char** argv) {
 		"src/platform/x11_entry_main.cpp",
 		"src/platform/win32_entry_main.cpp",
 		"src/platform/console_entry_main.cpp",
-		"src/platform/osmesa_entry_main.cpp"
+		"src/platform/osmesa_entry_main.cpp",
+		""
 	};
 
 	fprintf(genFile, "#include \"%s%s\"\n", fileToTop, appFiles[(int)app]);
-	fprintf(genFile, "#include \"%s%s\"\n", fileToTop, platformFiles[(int)platform]);
-
+	if (platform != P_OSX){
+		fprintf(genFile, "#include \"%s%s\"\n", fileToTop, platformFiles[(int)platform]);
+	}
+	
 	// For everything except metagen, we want to include all of our generated files in the unity build
 	// except for itself
 	if (app != A_MetaGen) {

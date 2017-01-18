@@ -125,12 +125,12 @@ void UniFont::CacheGlyphs(unsigned int* _codePoints, int count) {
 	}
 }
 
-struct Rect {
+struct UniFRect {
 	Vector2 lowerLeft;
 	Vector2 upperRight;
 };
 
-Rect ScaleRectToRect(Rect src, Rect bounds) {
+UniFRect ScaleRectToRect(UniFRect src, UniFRect bounds) {
 	Vector2 oldScale = src.upperRight - src.lowerLeft;
 	Vector2 boundsScale = bounds.lowerLeft - bounds.upperRight;
 
@@ -138,12 +138,12 @@ Rect ScaleRectToRect(Rect src, Rect bounds) {
 	Vector2 newScale = oldScale / scaleFactor;
 
 	Vector2 newCentre = (bounds.lowerLeft + bounds.upperRight) / 2;
-	Rect newRect = { newCentre - newScale / 2, newCentre + newScale / 2 };
+	UniFRect newRect = { newCentre - newScale / 2, newCentre + newScale / 2 };
 
 	return newRect;
 }
 
-void GetJamoRects(const int* codePoints, int codepointCount, Rect charRect, Rect* rects) {
+void GetJamoRects(const int* codePoints, int codepointCount, UniFRect charRect, UniFRect* rects) {
 	if (codepointCount == 2) {
 		float middleX = (charRect.lowerLeft.x + charRect.upperRight.x) / 2;
 		rects[0] = charRect;

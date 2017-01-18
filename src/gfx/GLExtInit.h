@@ -7,6 +7,9 @@
 
 void InitGlExts();
 
+// Apple already has these weakly linked, so don't
+#if !defined(__APPLE__)
+
 //These will be declared extern in all translation units except GLExtInit.cpp
 #if !defined(EXT_EXTERN)
 #define EXT_EXTERN extern
@@ -47,5 +50,7 @@ EXT_EXTERN PFNGLDELETESHADERPROC glDeleteShader;
 EXT_EXTERN PFNGLDELETEPROGRAMPROC glDeleteProgram;
 
 #undef EXT_EXTERN
+
+#endif
 
 #endif

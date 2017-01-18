@@ -8,6 +8,8 @@
 #include <gl/GL.h>
 #include <gl/glext.h>
 #elif defined(__APPLE__)
+#include <OpenGl/gl.h>
+#include <OpenGL/glext.h>
 #else
 #include<GL/gl.h>
 #include<GL/glx.h>
