@@ -8,7 +8,6 @@
 
 #include <stdio.h>
 
-#include "../gfx/GLExtInit.h"
 #include "../app/app_funcs.h"
 
 static pascal OSErr quitEventHandler( const AppleEvent *appleEvt, AppleEvent *reply, SInt32 refcon )
@@ -30,6 +29,7 @@ static pascal OSErr quitEventHandler( const AppleEvent *appleEvt, AppleEvent *re
 #define QZ_A		    0x00
 #define QZ_S			0x01
 #define QZ_D			0x02
+#define QZ_P            0x23
 #define QZ_ONE			0x12
 #define QZ_TWO			0x13
 #define QZ_THREE		0x14
@@ -65,6 +65,7 @@ pascal OSStatus keyboardEventHandler( EventHandlerCallRef nextHandler, EventRef 
 				case QZ_A: AppKeyDown('A'); break;
 				case QZ_S: AppKeyDown('S'); break;
 				case QZ_D: AppKeyDown('D'); break;
+				case QZ_P: AppKeyDown('P'); break;
 				
 				default:
 				{
@@ -92,6 +93,7 @@ pascal OSStatus keyboardEventHandler( EventHandlerCallRef nextHandler, EventRef 
 				case QZ_A: AppKeyUp('A'); break;
 				case QZ_S: AppKeyUp('S'); break;
 				case QZ_D: AppKeyUp('D'); break;
+				case QZ_P: AppKeyUp('P'); break;
 
 				default: return eventNotHandledErr;
 			}
@@ -101,28 +103,30 @@ pascal OSStatus keyboardEventHandler( EventHandlerCallRef nextHandler, EventRef 
 	{
 		EventMouseButton	button;
 		Point	point;
-		
+
+		const int titleBarOffset = 24;
+
 		if (eventKind == kEventMouseDown ){
 			GetEventParameter(event, kEventParamMouseButton, typeMouseButton, NULL, sizeof(EventMouseButton), NULL, &button);
-			GetEventParameter(event, kEventParamMouseLocation, typeQDPoint, NULL, sizeof(Point), NULL, &point);
+			//GetEventParameter(event, kEventParamMouseLocation, typeQDPoint, NULL, sizeof(Point), NULL, &point);
 			if (button == kEventMouseButtonPrimary){
 				AppMouseDown(0);
 			}
 		}
 		else if(eventKind == kEventMouseUp){
 			GetEventParameter(event, kEventParamMouseButton, typeMouseButton, NULL, sizeof(EventMouseButton), NULL, &button);
-			GetEventParameter(event, kEventParamMouseLocation, typeQDPoint, NULL, sizeof(Point), NULL, &point);
+			//GetEventParameter(event, kEventParamMouseLocation, typeQDPoint, NULL, sizeof(Point), NULL, &point);
 			if (button == kEventMouseButtonPrimary){
 				AppMouseUp(0);
 			}
 		}
 		else if(eventKind == kEventMouseMoved){
-			GetEventParameter(event, kEventParamMouseLocation, typeQDPoint, NULL, sizeof(Point), NULL, &point);
-			AppMouseMove(point.h, point.v);
+			GetEventParameter(event, kEventParamWindowMouseLocation, typeQDPoint, NULL, sizeof(Point), NULL, &point);
+			AppMouseMove(point.h, point.v - titleBarOffset);
 		}
 		else if(eventKind == kEventMouseDragged){
-			GetEventParameter(event, kEventParamMouseLocation, typeQDPoint, NULL, sizeof(Point), NULL, &point);
-			AppMouseMove(point.h, point.v);
+			GetEventParameter(event, kEventParamWindowMouseLocation, typeQDPoint, NULL, sizeof(Point), NULL, &point);
+			AppMouseMove(point.h, point.v - titleBarOffset);
 		}
 	}
 
@@ -282,7 +286,29 @@ void CloseDisplay()
 	window = 0;
 }
 
+#include <unistd.h>
+
 int main( int argc, char * argv[] ){
+
+	char newCurrDir[256];
+	snprintf(newCurrDir, sizeof(newCurrDir), "%s", argv[0]);
+	
+	{
+		int slashCount = 0;
+		char* end = newCurrDir + strlen(newCurrDir);
+		while (end > newCurrDir && slashCount < 4){
+			if (*end == '/'){
+				slashCount++;
+				*end = '\0';
+			}
+
+			end--;
+		}
+	}
+
+	chdir(newCurrDir);
+
+
 	AppPreInit(argc, argv);
 	
 	const int DisplayWidth = 1280;
@@ -293,10 +319,10 @@ int main( int argc, char * argv[] ){
 		return 1;
 	}
 	
-	InitGlExts();
+	//InitGlExts();
 
 	AppPostInit(argc, argv);
-	
+
 	bool isRunning = true;
 	while (isRunning){
 		
