@@ -27,6 +27,8 @@ Windows: Uhhh...OpenGL32.lib? Windows dependencies confuse me.
 
 OS X: Ha ha, there's no Mac version. _yet_.
 
+Update: Ha ha, there sort of is one.  But I'm not very good at Mac stuff, so it's 32-bit only and you can't resize the window and there are a lot of caveats. Yay.
+
 Building
 -------------
 *Windows*: Run ```build.bat runtime``` to build the runtime exe, or ```build.bat editor``` to build the editor.
@@ -103,3 +105,4 @@ TODO:
    - [ ] Some kind of ref-counted unicode strings, like String/SubString
    - [ ] console menu with console commands
    - [ ] Substrings from Substrings
+   - [ ] Resolve app_funcs into a single, event-based loop
