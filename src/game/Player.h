@@ -24,6 +24,9 @@ struct PlayerComponent : Component{
 	float playerWidth;
 	float jumpVelocity;
 
+	float currHealth;
+	float maxHealth;
+
 	ControlState currState;
 
 	PlayerComponent() {
@@ -32,12 +35,16 @@ struct PlayerComponent : Component{
 		jumpVelocity = 3.0f;
 		yVelocity = 0.0f;
 
+		currHealth = 5;
+		maxHealth = 5;
+
 		currState = CS_GROUNDED;
 	}
 
 	bool CheckWater(Vector3 pos);
 	bool CheckLadder(Vector3 pos);
 
+	void Start();
 	void Update();
 };
 

@@ -15,6 +15,8 @@
 
 #include "../../ext/3dbasics/Mat4.h"
 
+#include "../../gen/GuiFormGen.h"
+
 struct GuiDrawCall{
 	IDHandle<Material> matId;
 	IDHandle<Texture> texId;
@@ -69,6 +71,8 @@ public:
 	IDTracker<GuiStringPicker> stringPickers;
 
 	Vector<GuiRect> cachedRects;
+
+	IDTracker<GuiFormData> guiFormStack;
 
 	GuiButton* AddButton(Vector2 pos, Vector2 size) {
 		GuiButton* button = buttons.CreateAndAdd();

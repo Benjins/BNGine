@@ -74,6 +74,7 @@ struct Scene {
 	Scene();
 
 	void StartUp();
+	void StartUpCustomComponents();
 	void ShutDown();
 
 	void Update();
