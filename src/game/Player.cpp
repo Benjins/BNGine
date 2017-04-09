@@ -5,8 +5,17 @@
 
 #include "../net/NetworkSystem.h"
 
+void PlayerComponent::Start() {
+	GuiFormData* form = GlobalScene->gui.guiFormStack.CreateAndAdd();
+	form->type = GFT_GuiHealthForm;
+}
+
 void PlayerComponent::Update() {
 	float floorHeight = -2;
+
+	GuiFormData* form = &GlobalScene->gui.guiFormStack.vals[0];
+	form->GuiHealthForm_Data.health = currHealth;
+	form->GuiHealthForm_Data.maxHealth = maxHealth;
 
 	Entity* ent = GlobalScene->entities.GetById(entity);
 	Transform* entTrans = GlobalScene->transforms.GetById(ent->transform);
@@ -103,6 +112,7 @@ void PlayerComponent::Update() {
 
 		if (entTrans->position.y + moveVec.y < floorHeight) {
 			currState = CS_GROUNDED;
+			currHealth--;
 			yVelocity = 0;
 			moveVec.y = 0;
 			entTrans->position.y = floorHeight;
