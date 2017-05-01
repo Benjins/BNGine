@@ -147,6 +147,8 @@ void Scene::StartUp() {
 
 	StartUpCustomComponents();
 
+	net.Initialize(0);
+
 	frameTimer.Reset();
 }
 
