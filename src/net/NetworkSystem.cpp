@@ -101,6 +101,17 @@ void NetworkSystem::NetworkUpdate() {
 	if (currState == NSS_Begin){
 		return;
 	}
+	else if (currState == NSS_Initialized) {
+		char data[256];
+		int bytesReceived;
+		IPV4Addr recvFrom;
+		if (matchmakingSocket.ReceiveData(data, sizeof(data), &bytesReceived, &recvFrom)) {
+			if (bytesReceived == sizeof(IPV4Addr)) {
+				IPV4Addr remoteIpAddr = *(IPV4Addr*)data;
+				OpenNewConnection(remoteIpAddr);
+			}
+		}
+	}
 
 	updateSeconds += GlobalScene->GetDeltaTime();
 
