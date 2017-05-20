@@ -10,6 +10,72 @@ const UniFont::FontSpecialCase UniFont::fontFunctionSpecialCases[] = {
 	{&UniFont::CacheGlyphArabic, &UniFont::BakeVertexDataArabic, &UniFont::GetCharWidthHangul, UBT_Arabic, 1}
 };
 
+unsigned int arabicUnicodeLookup[] = {
+	0xFE8D,
+	0xFE8F,
+	0xFE95,
+	0xFE99,
+	0xFE9D,
+	0xFEA1,
+	0xFEA5,
+	0xFEA9,
+	0xFEAB,
+	0xFEAD,
+	0xFEAF,
+	0xFEB1,
+	0xFEB5,
+	0xFEB9,
+	0xFEBD,
+	0xFEC1,
+	0xFEC5,
+	0xFEC9,
+	0xFECD,
+	0xFED1,
+	0xFED5,
+	0xFED9,
+	0xFEDD,
+	0xFEE1,
+	0xFEE5,
+	0xFEE9,
+	0xFEED,
+	0xFEF1,
+	0xFE81,
+	0xFE93,
+	0xFEEF
+};
+
+enum ArabicLetterType {
+	ALT_Isolated = 0,
+	ALT_End      = 1,
+	ALT_Beginning  = 2,
+	ALT_Middle   = 3
+};
+
+ArabicLetterType DetermineArabicLetterType(const unsigned int* codepoints, int index, int len) {
+	bool hasLetterBefore = (index > 0)       && (GetBlockTypeOfCodePoint(codepoints[index - 1]) == UBT_Arabic);
+	bool hasLetterAfter  = (index < len - 1) && (GetBlockTypeOfCodePoint(codepoints[index + 1]) == UBT_Arabic);
+
+	if (hasLetterAfter && hasLetterBefore) {
+		return ALT_Middle;
+	}
+	else if (hasLetterAfter) {
+		return ALT_End;
+	}
+	else if (hasLetterBefore) {
+		return ALT_Beginning;
+	}
+	else {
+		return ALT_Isolated;
+	}
+}
+
+int GetArabicRenderCodepoint(const unsigned int* str, int index, int len) {
+	int arabicLetterIndex = str[index] - 0x0627;
+	ASSERT(arabicLetterIndex >= 0 && arabicLetterIndex < BNS_ARRAY_COUNT(arabicUnicodeLookup));
+	ArabicLetterType type = DetermineArabicLetterType(str, index, len);
+	return arabicUnicodeLookup[index] + (int)type;
+}
+
 CodepointInfo* UniFont::GetInfoForCodepoint(int codepoint) {
 	for (int i = 0; i < codepointListing.count; i++) {
 		if (codepointListing.data[i].codepoint == codepoint) {
@@ -20,7 +86,7 @@ CodepointInfo* UniFont::GetInfoForCodepoint(int codepoint) {
 	return nullptr;
 }
 
-void UniFont::CacheGlyphDefault(const unsigned int* str, int index, int cellCols, int cellRows, Texture* tex, bool* outIsDirty) {
+void UniFont::CacheGlyphDefault(const unsigned int* str, int index, int len, int cellCols, int cellRows, Texture* tex, bool* outIsDirty) {
 	int codePoint = str[index];
 	int charSize = fontScale + 2;
 	if (GetInfoForCodepoint(codePoint) == nullptr) {
@@ -88,19 +154,20 @@ void DecomposeHangulToJamo(int hangul, int* jamos) {
 	jamos[2] = final + 0x11A7;
 }
 
-void UniFont::CacheGlyphHangul(const unsigned int* str, int index, int cellCols, int cellRows, Texture* tex, bool* outIsDirty) {
+void UniFont::CacheGlyphHangul(const unsigned int* str, int index, int len, int cellCols, int cellRows, Texture* tex, bool* outIsDirty) {
 	int codePoint = str[index];
 	int codePoints[3] = {};
 	DecomposeHangulToJamo(codePoint, codePoints);
 
 	int count = codePoints[2] == 0x11A7 ? 2 : 3;
 	for (int i = 0; i < count; i++) {
-		CacheGlyphDefault((unsigned int*)codePoints, i, cellCols, cellRows, tex, outIsDirty);
+		CacheGlyphDefault((unsigned int*)codePoints, i, count, cellCols, cellRows, tex, outIsDirty);
 	}
 }
 
-void UniFont::CacheGlyphArabic(const unsigned int* str, int index, int cellCols, int cellRows, Texture* tex, bool* outIsDirty) {
-	CacheGlyphDefault(str, index, cellCols, cellRows, tex, outIsDirty);
+void UniFont::CacheGlyphArabic(const unsigned int* str, int index, int len, int cellCols, int cellRows, Texture* tex, bool* outIsDirty) {
+	unsigned int finalCodepoint = GetArabicRenderCodepoint(str, index, len);
+	CacheGlyphDefault(&finalCodepoint, 0, 1, cellCols, cellRows, tex, outIsDirty);
 }
 
 void UniFont::CacheGlyphs(unsigned int* _codePoints, int count) {
@@ -118,12 +185,12 @@ void UniFont::CacheGlyphs(unsigned int* _codePoints, int count) {
 			if (blockType == fontFunctionSpecialCases[j].block) {
 				foundSpecialCase = true;
 				CacheGlyphMemberFunc specialCase = fontFunctionSpecialCases[j].cacheGlyphMethod;
-				(this->*specialCase)(_codePoints, i, cellCols, cellRows, tex, &isDirty);
+				(this->*specialCase)(_codePoints, i, count, cellCols, cellRows, tex, &isDirty);
 			}
 		}
 
 		if (!foundSpecialCase) {
-			CacheGlyphDefault(_codePoints, i, cellCols, cellRows, tex, &isDirty);
+			CacheGlyphDefault(_codePoints, i, count, cellCols, cellRows, tex, &isDirty);
 		}
 	}
 
@@ -179,7 +246,7 @@ void GetJamoRects(const int* codePoints, int codepointCount, Rect charRect, Rect
 	}
 }
 
-void UniFont::BakeVertexDataHangul(const unsigned int* str, int index, float* x, float y, 
+void UniFont::BakeVertexDataHangul(const unsigned int* str, int index, int len, float* x, float y, 
 								   float width, float height, Texture* fontTexture, 
 								   float* outPosData, float* outUvData, int* outIndex) {
 	int c = str[index];
@@ -229,13 +296,14 @@ void UniFont::BakeVertexDataHangul(const unsigned int* str, int index, float* x,
 	*x += xAdvance;
 }
 
-void UniFont::BakeVertexDataArabic(const unsigned int* str, int index, float* x, float y,
+void UniFont::BakeVertexDataArabic(const unsigned int* str, int index, int len, float* x, float y,
 								   float width, float height, Texture* fontTexture,
 								   float* outPosData, float* outUvData, int* outIndex) {
-	BakeVertexDataDefault(str, index, x, y, width, height, fontTexture, outPosData, outUvData, outIndex);
+	unsigned int finalCodepoint = GetArabicRenderCodepoint(str, index, len);
+	BakeVertexDataDefault(&finalCodepoint, 0, 1, x, y, width, height, fontTexture, outPosData, outUvData, outIndex);
 }
 
-void UniFont::BakeVertexDataDefault(const unsigned int* str, int index, float* x, float y, float width, float height, 
+void UniFont::BakeVertexDataDefault(const unsigned int* str, int index, int len, float* x, float y, float width, float height, 
 									Texture* fontTexture, float* outPosData, float* outUvData, int* outIndex) {
 	int c = str[index];
 	CodepointInfo* info = GetInfoForCodepoint(c);
@@ -281,13 +349,13 @@ float UniFont::BakeU32ToVertexData(U32String string, float xStart, float yStart,
 			if (blockType == fontFunctionSpecialCases[j].block) {
 				foundSpecialCase = true;
 				BakeVertexDataMemberFunc specialCase = fontFunctionSpecialCases[j].bakeVertexMethod;
-				(this->*specialCase)(string.start, c, &x, y, width - x, height, fontTexture, outPosData, outUvData, &index);
+				(this->*specialCase)(string.start, c, string.length, &x, y, width - x, height, fontTexture, outPosData, outUvData, &index);
 
 			}
 		}
 
 		if (!foundSpecialCase) {
-			BakeVertexDataDefault(string.start, c, &x, y, width - x, height, fontTexture, outPosData, outUvData, &index);
+			BakeVertexDataDefault(string.start, c, string.length, &x, y, width - x, height, fontTexture, outPosData, outUvData, &index);
 		}
 }
 
