@@ -147,7 +147,7 @@ void Scene::StartUp() {
 
 	StartUpCustomComponents();
 
-	net.Initialize(0);
+	//net.Initialize(0);
 
 	frameTimer.Reset();
 }
@@ -368,6 +368,10 @@ void Scene::Render() {
 		int fileLength;
 		char* unicodeEncoded = ReadTextFile("assets/strings/chinese_test.txt", &fileLength);
 		unicodeText = DecodeUTF8(unicodeEncoded, fileLength);
+		for (int i = 0; i < unicodeText.length; i++) {
+			int codepoint = unicodeText.start[i];
+			OutputDebugStringA(StringStackBuffer<256>("Code point(%2d): %5d %#04x\n", i, codepoint, codepoint).buffer);
+		}
 		free(unicodeEncoded);
 	}
 	else {
@@ -381,7 +385,7 @@ void Scene::Render() {
 	firstPass = false;
 
 	// TODO: This unicode label prevents other UI Text from showing up?
-	//gui.DrawUnicodeLabel(unicodeText, IDHandle<UniFont>(0), 18, 30, 30);
+	gui.DrawUnicodeLabel(unicodeText, IDHandle<UniFont>(0), 18, 30, 30);
 
 	gui.Render();
 

@@ -6,7 +6,8 @@
 #include "../assets/AssetFile.h"
 
 const UniFont::FontSpecialCase UniFont::fontFunctionSpecialCases[] = {
-	{&UniFont::CacheGlyphHangul, &UniFont::BakeVertexDataHangul, &UniFont::GetCharWidthHangul, UBT_HangulSyllables, 3}
+	{&UniFont::CacheGlyphHangul, &UniFont::BakeVertexDataHangul, &UniFont::GetCharWidthHangul, UBT_HangulSyllables, 3},
+	{&UniFont::CacheGlyphArabic, &UniFont::BakeVertexDataArabic, &UniFont::GetCharWidthHangul, UBT_Arabic, 1}
 };
 
 CodepointInfo* UniFont::GetInfoForCodepoint(int codepoint) {
@@ -19,7 +20,8 @@ CodepointInfo* UniFont::GetInfoForCodepoint(int codepoint) {
 	return nullptr;
 }
 
-void UniFont::CacheGlyphDefault(int codePoint, int cellCols, int cellRows, Texture* tex, bool* outIsDirty) {
+void UniFont::CacheGlyphDefault(const unsigned int* str, int index, int cellCols, int cellRows, Texture* tex, bool* outIsDirty) {
+	int codePoint = str[index];
 	int charSize = fontScale + 2;
 	if (GetInfoForCodepoint(codePoint) == nullptr) {
 		stbtt_fontinfo* font = nullptr;
@@ -86,14 +88,19 @@ void DecomposeHangulToJamo(int hangul, int* jamos) {
 	jamos[2] = final + 0x11A7;
 }
 
-void UniFont::CacheGlyphHangul(int codePoint, int cellCols, int cellRows, Texture* tex, bool* outIsDirty) {
+void UniFont::CacheGlyphHangul(const unsigned int* str, int index, int cellCols, int cellRows, Texture* tex, bool* outIsDirty) {
+	int codePoint = str[index];
 	int codePoints[3] = {};
 	DecomposeHangulToJamo(codePoint, codePoints);
 
 	int count = codePoints[2] == 0x11A7 ? 2 : 3;
 	for (int i = 0; i < count; i++) {
-		CacheGlyphDefault(codePoints[i], cellCols, cellRows, tex, outIsDirty);
+		CacheGlyphDefault((unsigned int*)codePoints, i, cellCols, cellRows, tex, outIsDirty);
 	}
+}
+
+void UniFont::CacheGlyphArabic(const unsigned int* str, int index, int cellCols, int cellRows, Texture* tex, bool* outIsDirty) {
+	CacheGlyphDefault(str, index, cellCols, cellRows, tex, outIsDirty);
 }
 
 void UniFont::CacheGlyphs(unsigned int* _codePoints, int count) {
@@ -111,12 +118,12 @@ void UniFont::CacheGlyphs(unsigned int* _codePoints, int count) {
 			if (blockType == fontFunctionSpecialCases[j].block) {
 				foundSpecialCase = true;
 				CacheGlyphMemberFunc specialCase = fontFunctionSpecialCases[j].cacheGlyphMethod;
-				(this->*specialCase)(codePoint, cellCols, cellRows, tex, &isDirty);
+				(this->*specialCase)(_codePoints, i, cellCols, cellRows, tex, &isDirty);
 			}
 		}
 
 		if (!foundSpecialCase) {
-			CacheGlyphDefault(codePoint, cellCols, cellRows, tex, &isDirty);
+			CacheGlyphDefault(_codePoints, i, cellCols, cellRows, tex, &isDirty);
 		}
 	}
 
@@ -172,7 +179,10 @@ void GetJamoRects(const int* codePoints, int codepointCount, Rect charRect, Rect
 	}
 }
 
-void UniFont::BakeVertexDataHangul(int c, float* x, float y, float width, float height, Texture* fontTexture, float* outPosData, float* outUvData, int* index) {
+void UniFont::BakeVertexDataHangul(const unsigned int* str, int index, float* x, float y, 
+								   float width, float height, Texture* fontTexture, 
+								   float* outPosData, float* outUvData, int* outIndex) {
+	int c = str[index];
 	int codePoints[3] = {};
 	DecomposeHangulToJamo(c, codePoints);
 
@@ -206,20 +216,28 @@ void UniFont::BakeVertexDataHangul(int c, float* x, float y, float width, float 
 		float jamoX = *x + info->xOffset;
 		float jamoY = y - info->yOffset;
 		for (int i = 0; i < 6; i++) {
-			outPosData[*index] = (jamoX + xAddPos[i]) / GlobalScene->cam.widthPixels * 2 - 1;
-			outPosData[*index + 1] = (jamoY - yAddPos[i]) / GlobalScene->cam.heightPixels * 2 - 1;
+			outPosData[*outIndex] = (jamoX + xAddPos[i]) / GlobalScene->cam.widthPixels * 2 - 1;
+			outPosData[*outIndex + 1] = (jamoY - yAddPos[i]) / GlobalScene->cam.heightPixels * 2 - 1;
 
-			outUvData[*index] = (info->x + xAddUv[i]) / fontTexture->width;
-			outUvData[*index + 1] = (info->y + yAddUv[i]) / fontTexture->height;
+			outUvData[*outIndex] = (info->x + xAddUv[i]) / fontTexture->width;
+			outUvData[*outIndex + 1] = (info->y + yAddUv[i]) / fontTexture->height;
 
-			*index += 2;
+			*outIndex += 2;
 		}
 	}
 
 	*x += xAdvance;
 }
 
-void UniFont::BakeVertexDataDefault(int c, float* x, float y, float width, float height, Texture* fontTexture, float* outPosData, float* outUvData, int* index) {
+void UniFont::BakeVertexDataArabic(const unsigned int* str, int index, float* x, float y,
+								   float width, float height, Texture* fontTexture,
+								   float* outPosData, float* outUvData, int* outIndex) {
+	BakeVertexDataDefault(str, index, x, y, width, height, fontTexture, outPosData, outUvData, outIndex);
+}
+
+void UniFont::BakeVertexDataDefault(const unsigned int* str, int index, float* x, float y, float width, float height, 
+									Texture* fontTexture, float* outPosData, float* outUvData, int* outIndex) {
+	int c = str[index];
 	CodepointInfo* info = GetInfoForCodepoint(c);
 
 	if (info == nullptr) {
@@ -237,13 +255,13 @@ void UniFont::BakeVertexDataDefault(int c, float* x, float y, float width, float
 	}
 
 	for (int i = 0; i < 6; i++) {
-		outPosData[*index] = (*x + info->xOffset + xAdd[i]) / GlobalScene->cam.widthPixels * 2 - 1;
-		outPosData[*index + 1] = (y - info->yOffset - yAdd[i]) / GlobalScene->cam.heightPixels * 2 - 1;
+		outPosData[*outIndex] = (*x + info->xOffset + xAdd[i]) / GlobalScene->cam.widthPixels * 2 - 1;
+		outPosData[*outIndex + 1] = (y - info->yOffset - yAdd[i]) / GlobalScene->cam.heightPixels * 2 - 1;
 
-		outUvData[*index] = (info->x + xAdd[i]) / fontTexture->width;
-		outUvData[*index + 1] = (info->y + yAdd[i]) / fontTexture->height;
+		outUvData[*outIndex] = (info->x + xAdd[i]) / fontTexture->width;
+		outUvData[*outIndex + 1] = (info->y + yAdd[i]) / fontTexture->height;
 
-		*index += 2;
+		*outIndex += 2;
 	}
 
 	*x += info->xAdvance;
@@ -263,13 +281,13 @@ float UniFont::BakeU32ToVertexData(U32String string, float xStart, float yStart,
 			if (blockType == fontFunctionSpecialCases[j].block) {
 				foundSpecialCase = true;
 				BakeVertexDataMemberFunc specialCase = fontFunctionSpecialCases[j].bakeVertexMethod;
-				(this->*specialCase)(codePoint, &x, y, width - x, height, fontTexture, outPosData, outUvData, &index);
+				(this->*specialCase)(string.start, c, &x, y, width - x, height, fontTexture, outPosData, outUvData, &index);
 
 			}
 		}
 
 		if (!foundSpecialCase) {
-			BakeVertexDataDefault(codePoint, &x, y, width - x, height, fontTexture, outPosData, outUvData, &index);
+			BakeVertexDataDefault(string.start, c, &x, y, width - x, height, fontTexture, outPosData, outUvData, &index);
 		}
 }
 
@@ -328,9 +346,11 @@ float UniFont::GetCursorPos(const U32String string, int cursorPos) {
 		for (int j = 0; j < BNS_ARRAY_COUNT(fontFunctionSpecialCases); j++) {
 			if (block == fontFunctionSpecialCases[j].block) {
 				GetCharWidthMemberFunc specialCase = fontFunctionSpecialCases[j].getCharWidthMethod;
-				x += (this->*specialCase)(string, i, codePoint);
-				foundSpecialCase = true;
-				break;
+				if (specialCase != nullptr) {
+					x += (this->*specialCase)(string, i, codePoint);
+					foundSpecialCase = true;
+					break;
+				}
 			}
 		}
 
