@@ -101,11 +101,14 @@ void UniFont::CacheGlyphDefault(const unsigned int* str, int index, int len, int
 		unsigned char* cBmp = nullptr;
 		int cW = 0, cH = 0;
 		for (int j = 0; j < fontInfos.count; j++) {
-			float pixelScale = stbtt_ScaleForPixelHeight(&fontInfos.data[j], fontScale);
-			cBmp = stbtt_GetCodepointBitmap(&fontInfos.data[j], 0, pixelScale, codePoint, &cW, &cH, 0, 0);
-			if (cBmp) {
-				font = &fontInfos.data[j];
-				break;
+			if (fontInfos.data[j].low <= codePoint && codePoint <= fontInfos.data[j].high) {
+				float pixelScale = stbtt_ScaleForPixelHeight(&fontInfos.data[j].info, fontScale);
+				int glyphIdx = stbtt_FindGlyphIndex(&fontInfos.data[j].info, codePoint);
+				cBmp = stbtt_GetCodepointBitmap(&fontInfos.data[j].info, 0, pixelScale, codePoint, &cW, &cH, 0, 0);
+				if (cBmp) {
+					font = &fontInfos.data[j].info;
+					break;
+				}
 			}
 		}
 
@@ -448,10 +451,12 @@ float UniFont::GetCursorPos(const U32String string, int cursorPos) {
 	return x;
 }
 
-void UniFont::AddFont(unsigned char* fontBuffer, int bufferSize) {
-	stbtt_fontinfo fontInfo;
+void UniFont::AddFont(unsigned char* fontBuffer, int bufferSize, int low /*= 0*/, int high /*= 1 << 31*/) {
+	UniFontInfo fontInfo;
 	int fontOffset = stbtt_GetFontOffsetForIndex(fontBuffer, 0);
-	stbtt_InitFont(&fontInfo, fontBuffer, fontOffset);
+	stbtt_InitFont(&fontInfo.info, fontBuffer, fontOffset);
+	fontInfo.low = low;
+	fontInfo.high = high;
 	fontInfos.PushBack(fontInfo);
 	fontBuffersInMem.PushBack(fontBuffer);
 }

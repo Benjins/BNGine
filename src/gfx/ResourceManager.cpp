@@ -487,10 +487,13 @@ void ResourceManager::LoadUniFontFromChunk(MemStream& stream, UniFont* outFont) 
 	int fontCount = stream.Read<int>();
 
 	for (int i = 0; i < fontCount; i++) {
+		int low  = stream.Read<int>();
+		int high = stream.Read<int>();
+
 		int fontBufferSize = stream.Read<int>();
 		unsigned char* buffer = (unsigned char*)malloc(fontBufferSize);
 		stream.ReadArray<unsigned char>(buffer, fontBufferSize);
-		outFont->AddFont(buffer, fontBufferSize);
+		outFont->AddFont(buffer, fontBufferSize, low, high);
 	}
 
 	Texture* tex = textures.CreateAndAdd();

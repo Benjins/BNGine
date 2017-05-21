@@ -888,6 +888,18 @@ void WriteUniFontChunk(const char* fontFileName, const Vector<File*>& ttfFiles, 
 		elem->attributes.LookUp("path", &ttfFileShortName);
 		const char* ttfFilePath = FindFilePathByName(ttfFiles, ttfFileShortName.string);
 
+		int low = 0, high = 1 << 30;
+		String temp;
+		if (elem->attributes.LookUp("charRangeLo", &temp)) {
+			low = HexAtoi(temp.string);
+		}
+		if (elem->attributes.LookUp("charRangeHi", &temp)) {
+			high = HexAtoi(temp.string);
+		}
+
+		fwrite(&low, 1, 4, assetFileHandle);
+		fwrite(&high, 1, 4, assetFileHandle);
+
 		int fontFileLength = 0;
 		unsigned char* fontFileBuffer = ReadBinaryFile(ttfFilePath, &fontFileLength);
 

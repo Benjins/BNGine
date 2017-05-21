@@ -15,6 +15,12 @@
 
 struct Texture;
 
+struct UniFontInfo {
+	stbtt_fontinfo info;
+	int low;
+	int high;
+};
+
 struct UniFont : IDBase{
 	IDHandle<Texture> textureId;
 
@@ -22,7 +28,7 @@ struct UniFont : IDBase{
 
 	CodepointInfo* GetInfoForCodepoint(int codepoint);
 
-	Vector<stbtt_fontinfo> fontInfos;
+	Vector<UniFontInfo> fontInfos;
 	Vector<void*> fontBuffersInMem;
 
 	int cacheCursor;
@@ -45,7 +51,7 @@ struct UniFont : IDBase{
 
 	static const FontSpecialCase fontFunctionSpecialCases[];
 
-	void AddFont(unsigned char* fontBuffer, int bufferSize);
+	void AddFont(unsigned char* fontBuffer, int bufferSize, int low = 0, int high = 1 << 30);
 
 	void CacheGlyphDefault(const unsigned int* str, int index, int len, int cellCols, int cellRows, Texture* tex, bool* outIsDirty);
 	void CacheGlyphHangul( const unsigned int* str, int index, int len, int cellCols, int cellRows, Texture* tex, bool* outIsDirty);
