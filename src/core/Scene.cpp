@@ -385,7 +385,7 @@ void Scene::Render() {
 	firstPass = false;
 
 	// TODO: This unicode label prevents other UI Text from showing up?
-	gui.DrawUnicodeLabel(unicodeText, IDHandle<UniFont>(0), 18, 30, 30);
+	gui.DrawUnicodeLabel(unicodeText, IDHandle<UniFont>(0), 18, 30, 30, 500);
 
 	gui.Render();
 

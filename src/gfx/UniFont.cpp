@@ -13,6 +13,7 @@ const UniFont::FontSpecialCase UniFont::fontFunctionSpecialCases[] = {
 unsigned int arabicUnicodeLookup[] = {
 	0xFE8D,
 	0xFE8F,
+	0xFE93,
 	0xFE95,
 	0xFE99,
 	0xFE9D,
@@ -30,6 +31,12 @@ unsigned int arabicUnicodeLookup[] = {
 	0xFEC5,
 	0xFEC9,
 	0xFECD,
+	0x0000,
+	0x0000,
+	0x0000,
+	0x0000,
+	0x0000,
+	0x0000,
 	0xFED1,
 	0xFED5,
 	0xFED9,
@@ -38,10 +45,9 @@ unsigned int arabicUnicodeLookup[] = {
 	0xFEE5,
 	0xFEE9,
 	0xFEED,
+	0xFEEF,
 	0xFEF1,
-	0xFE81,
-	0xFE93,
-	0xFEEF
+	0xFE81
 };
 
 enum ArabicLetterType {
@@ -59,10 +65,10 @@ ArabicLetterType DetermineArabicLetterType(const unsigned int* codepoints, int i
 		return ALT_Middle;
 	}
 	else if (hasLetterAfter) {
-		return ALT_End;
+		return ALT_Beginning;
 	}
 	else if (hasLetterBefore) {
-		return ALT_Beginning;
+		return ALT_End;
 	}
 	else {
 		return ALT_Isolated;
@@ -72,8 +78,9 @@ ArabicLetterType DetermineArabicLetterType(const unsigned int* codepoints, int i
 int GetArabicRenderCodepoint(const unsigned int* str, int index, int len) {
 	int arabicLetterIndex = str[index] - 0x0627;
 	ASSERT(arabicLetterIndex >= 0 && arabicLetterIndex < BNS_ARRAY_COUNT(arabicUnicodeLookup));
+	ASSERT(arabicUnicodeLookup[arabicLetterIndex] != 0);
 	ArabicLetterType type = DetermineArabicLetterType(str, index, len);
-	return arabicUnicodeLookup[index] + (int)type;
+	return arabicUnicodeLookup[arabicLetterIndex] + (int)type;
 }
 
 CodepointInfo* UniFont::GetInfoForCodepoint(int codepoint) {
@@ -300,7 +307,15 @@ void UniFont::BakeVertexDataArabic(const unsigned int* str, int index, int len, 
 								   float width, float height, Texture* fontTexture,
 								   float* outPosData, float* outUvData, int* outIndex) {
 	unsigned int finalCodepoint = GetArabicRenderCodepoint(str, index, len);
+	CodepointInfo* info = GetInfoForCodepoint(finalCodepoint);
+	ASSERT(info != nullptr);
+
+	float offsetHack = 100;// width - info->w;
+	//*x += offsetHack;
+	//*x -= info->xAdvance * 2;
 	BakeVertexDataDefault(&finalCodepoint, 0, 1, x, y, width, height, fontTexture, outPosData, outUvData, outIndex);
+	//*x -= offsetHack;
+	
 }
 
 void UniFont::BakeVertexDataDefault(const unsigned int* str, int index, int len, float* x, float y, float width, float height, 
