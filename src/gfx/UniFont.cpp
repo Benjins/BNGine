@@ -313,7 +313,7 @@ void UniFont::BakeVertexDataArabic(const unsigned int* str, int index, int len, 
 	CodepointInfo* info = GetInfoForCodepoint(finalCodepoint);
 	ASSERT(info != nullptr);
 
-	float offsetHack = 450;// width - info->w - info->xAdvance;
+	float offsetHack = width + *x;
 	*x += offsetHack;
 	*x -= info->xAdvance;
 	BakeVertexDataDefault(&finalCodepoint, 0, 1, x, y, width, height, fontTexture, outPosData, outUvData, outIndex);
@@ -330,12 +330,16 @@ void UniFont::BakeVertexDataDefault(const unsigned int* str, int index, int len,
 		return;
 	}
 
+	if (width < 0) {
+		return;
+	}
+
 	float w = info->w, h = info->h;
 	float xAdd[6] = { 0, w, w, 0, 0, w };
 	float yAdd[6] = { 0, 0, h, 0, h, h };
 
-	if (*x + w > width) {
-		xAdd[1] = width - *x;
+	if (w > width) {
+		xAdd[1] = width - w;
 		xAdd[2] = xAdd[1];
 		xAdd[5] = xAdd[1];
 	}
@@ -368,7 +372,6 @@ float UniFont::BakeU32ToVertexData(U32String string, float xStart, float yStart,
 				foundSpecialCase = true;
 				BakeVertexDataMemberFunc specialCase = fontFunctionSpecialCases[j].bakeVertexMethod;
 				(this->*specialCase)(string.start, c, string.length, &x, y, width - x, height, fontTexture, outPosData, outUvData, &index);
-
 			}
 		}
 
