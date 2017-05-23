@@ -259,7 +259,7 @@ float GuiSystem::DrawTextLabel(const char* text, IDHandle<BitmapFont> fontId, fl
 
 	int dcIndex = -1;
 	for (int i = 0; i < guiDrawCalls.count; i++) {
-		if (guiDrawCalls.Get(i).matId == guiTextMatId) {
+		if (guiDrawCalls.Get(i).matId == guiTextMatId && guiDrawCalls.Get(i).texId == font->textureId) {
 			dcIndex = i;
 			break;
 		}

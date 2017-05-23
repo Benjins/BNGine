@@ -374,24 +374,16 @@ void Scene::Render() {
 		}
 		free(unicodeEncoded);
 	}
-	else {
-		static int fc = 0;
-		fc++;
-		if (fc > 1200000) {
-			unicodeText.start[0]++;
-			fc = 0;
-		}
-	}
+
 	firstPass = false;
 
 	static float x = 150;
 	static float width = 900;
-	//x += 0.5f;
 
 	width -= 0.2f;
 
-	// TODO: This unicode label prevents other UI Text from showing up?
 	gui.DrawUnicodeLabel(unicodeText, IDHandle<UniFont>(0), 18, x, 30, width);
+	gui.DrawTextLabel("Hi", IDHandle<BitmapFont>(0), 24, 40, 80, 100);
 
 	gui.Render();
 
