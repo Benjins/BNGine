@@ -5,8 +5,20 @@
 
 #include "../net/NetworkSystem.h"
 
+void PlayerComponent::Start() {
+	GuiFormData* form = GlobalScene->gui.guiFormStack.CreateAndAdd();
+	form->type = GFT_GuiHealthForm;
+
+	GuiFormData* form2 = GlobalScene->gui.guiFormStack.CreateAndAdd();
+	form2->type = GFT_GuiIPConnectForm;
+}
+
 void PlayerComponent::Update() {
 	float floorHeight = -2;
+
+	GuiFormData* form = &GlobalScene->gui.guiFormStack.vals[0];
+	form->GuiHealthForm_Data.health = currHealth;
+	form->GuiHealthForm_Data.maxHealth = maxHealth;
 
 	Entity* ent = GlobalScene->entities.GetById(entity);
 	Transform* entTrans = GlobalScene->transforms.GetById(ent->transform);
@@ -47,6 +59,9 @@ void PlayerComponent::Update() {
 
 		Vector3 bulletSpawnPosition = entTrans->GetGlobalPosition() + entTrans->Forward() * 0.21f;
 		Entity* bullet = pref->Instantiate(bulletSpawnPosition, entTrans->rotation * camTrans->rotation);
+
+		PrefabInstanceComponent* instComp = FIND_COMPONENT_BY_ENTITY(PrefabInstanceComponent, GET_PTR_HANDLE(bullet));
+		ASSERT(instComp != nullptr);
 
 		GlobalScene->net.RegisterSpawnedEntity(bullet);
 
@@ -103,6 +118,7 @@ void PlayerComponent::Update() {
 
 		if (entTrans->position.y + moveVec.y < floorHeight) {
 			currState = CS_GROUNDED;
+			currHealth--;
 			yVelocity = 0;
 			moveVec.y = 0;
 			entTrans->position.y = floorHeight;

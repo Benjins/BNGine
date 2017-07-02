@@ -145,6 +145,10 @@ void Scene::StartUp() {
 		}
 	}
 
+	StartUpCustomComponents();
+
+	net.Initialize(0);
+
 	frameTimer.Reset();
 }
 
@@ -376,7 +380,8 @@ void Scene::Render() {
 	}
 	firstPass = false;
 
-	gui.DrawUnicodeLabel(unicodeText, IDHandle<UniFont>(0), 18, 30, 30);
+	// TODO: This unicode label prevents other UI Text from showing up?
+	//gui.DrawUnicodeLabel(unicodeText, IDHandle<UniFont>(0), 18, 30, 30);
 
 	gui.Render();
 

@@ -1,4 +1,4 @@
-#include "GuiSystem.h"
+	#include "GuiSystem.h"
 
 #include "../core/Scene.h"
 
@@ -629,6 +629,10 @@ void GuiSystem::Render() {
 				ExecuteAction(picker->onSelect);
 			}
 		}
+	}
+
+	for (int i = 0; i < guiFormStack.currentCount; i++) {
+		DoGuiFormData(this, &guiFormStack.vals[i], GlobalScene->cam.widthPixels, GlobalScene->cam.heightPixels);
 	}
 
 	for (int i = 0; i < guiDrawCalls.count; i++) {

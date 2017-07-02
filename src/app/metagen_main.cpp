@@ -574,6 +574,8 @@ void AppPreInit(int argc, char** argv){
 	}
 
 	DefineCustomComponentFunction(componentMetaFile, &componentIndices, &allParseMetaStructs,
+		&getComponentPathList, "Scene::StartUpCustomComponents", "Start");
+	DefineCustomComponentFunction(componentMetaFile, &componentIndices, &allParseMetaStructs,
 		&getComponentPathList, "Scene::UpdateCustomComponents", "Update");
 	DefineCustomComponentFunction(componentMetaFile, &componentIndices, &allParseMetaStructs,
 		&getComponentPathList, "Scene::CustomComponentEditorGui", "EditorGui");
@@ -933,8 +935,10 @@ void AppPreInit(int argc, char** argv){
 	FILE* actionHeaderFile = fopen("gen/Actions.h", "wb");
 
 	Vector <ParseMetaFuncDef> funcsWithActionAttrib;
+	Vector <ParseMetaFuncDef> funcsWithGuiFormAttrib;
 
-	BNS_VEC_FILTER(allParseMetaFuncs, funcsWithActionAttrib, FuncDefHasAttrib(&item, "Action"));
+	BNS_VEC_FILTER(allParseMetaFuncs, funcsWithActionAttrib,  FuncDefHasAttrib(&item, "Action"));
+	BNS_VEC_FILTER(allParseMetaFuncs, funcsWithGuiFormAttrib, FuncDefHasAttrib(&item, "GuiForm"));
 
 	fprintf(actionHeaderFile, "#ifndef ACTION_H\n");
 	fprintf(actionHeaderFile, "#define ACTION_H\n\n");
@@ -1038,6 +1042,97 @@ void AppPreInit(int argc, char** argv){
 
 	fprintf(actionHeaderFile, "#endif\n");
 	fclose(actionHeaderFile);
+
+
+	//-------------------------
+	// Gui Forms
+
+	FILE* guiFormGenInludeFile = fopen("gen/GuiFormGen.h", "wb");
+
+	fprintf(guiFormGenInludeFile, "#ifndef GUIFORMGEN_H\n");
+	fprintf(guiFormGenInludeFile, "#define GUIFORMGEN_H\n\n");
+	fprintf(guiFormGenInludeFile, "#pragma once\n\n");
+
+	fprintf(guiFormGenInludeFile, "#include \"../ext/CppUtils/assert.h\"\n");
+	fprintf(guiFormGenInludeFile, "#include \"../ext/CppUtils/idbase.h\"\n\n");
+
+	fprintf(guiFormGenInludeFile, "struct GuiSystem;\n\n");
+
+	// Forward declare all functions
+	for (int i = 0; i < funcsWithGuiFormAttrib.count; i++) {
+		DumpFunctionHeader(&funcsWithGuiFormAttrib.data[i], actionHeaderFile);
+		fprintf(guiFormGenInludeFile, "\n");
+	}
+	fprintf(guiFormGenInludeFile, "\n");
+
+	fprintf(guiFormGenInludeFile, "enum GuiFormType {\n");
+	BNS_VEC_FOREACH(funcsWithGuiFormAttrib) {
+		fprintf(guiFormGenInludeFile, "\tGFT_%.*s,\n", BNS_LEN_START(ptr->name));
+	}
+	fprintf(guiFormGenInludeFile, "\tGFT_Count\n");
+	fprintf(guiFormGenInludeFile, "};\n\n");
+
+	fprintf(guiFormGenInludeFile, "const char* guiFormNames[GFT_Count] = {\n");
+	BNS_VEC_FOREACH(funcsWithGuiFormAttrib) {
+		fprintf(guiFormGenInludeFile, "\t\"%.*s\",\n", BNS_LEN_START(ptr->name));
+	}
+	fprintf(guiFormGenInludeFile, "};\n\n");
+
+	BNS_VEC_FOREACH(funcsWithGuiFormAttrib) {
+		fprintf(guiFormGenInludeFile, "struct %.*s_Struct {\n", BNS_LEN_START(ptr->name));
+		BNS_VEC_FOREACH_NAME(ptr->params, fieldPtr) {
+			if (fieldPtr->name != "w" && fieldPtr->name != "h" && fieldPtr->type.typeName != "GuiSystem") {
+				MetaTypeInfo fieldType = fieldPtr->type;
+				if (fieldType.pointerLevel > 0) {
+					fieldType.pointerLevel--;
+				}
+				char typeNameBuff[256];
+				SerializeVarDecl(&fieldType, BNS_START_LEN(fieldPtr->name), typeNameBuff, sizeof(typeNameBuff));
+				fprintf(guiFormGenInludeFile, "\t%s;\n", typeNameBuff);
+			}
+		}
+		fprintf(guiFormGenInludeFile, "};\n\n");
+	}
+
+	fprintf(guiFormGenInludeFile, "struct GuiFormData : IDBase {\n");
+	fprintf(guiFormGenInludeFile, "\tGuiFormType type;\n");
+	fprintf(guiFormGenInludeFile, "\tfloat w;\n");
+	fprintf(guiFormGenInludeFile, "\tfloat h;\n");
+	BNS_VEC_FOREACH(funcsWithGuiFormAttrib) {
+		fprintf(guiFormGenInludeFile, "\t%.*s_Struct %.*s_Data ;\n", BNS_LEN_START(ptr->name), BNS_LEN_START(ptr->name));
+	}
+	fprintf(guiFormGenInludeFile, "};\n\n");
+
+	fprintf(guiFormGenInludeFile, "bool DoGuiFormData(GuiSystem* sys, GuiFormData* data, float w, float h){\n");
+	fprintf(guiFormGenInludeFile, "\tswitch(data->type){\n");
+
+	BNS_VEC_FOREACH(funcsWithGuiFormAttrib) {
+		fprintf(guiFormGenInludeFile, "\tcase GFT_%.*s: {\n", BNS_LEN_START(ptr->name));
+		fprintf(guiFormGenInludeFile, "\t\treturn %.*s(sys, w, h", BNS_LEN_START(ptr->name));
+		BNS_VEC_FOREACH_NAME(ptr->params, fieldPtr) {
+			if (fieldPtr->name != "w" && fieldPtr->name != "h" && fieldPtr->type.typeName != "GuiSystem") {
+				if (fieldPtr->type.pointerLevel > 0) {
+					fprintf(guiFormGenInludeFile, ", &data->%.*s_Data.%.*s", BNS_LEN_START(ptr->name), BNS_LEN_START(fieldPtr->name));
+				}
+				else {
+					fprintf(guiFormGenInludeFile, ", data->%.*s_Data.%.*s", BNS_LEN_START(ptr->name), BNS_LEN_START(fieldPtr->name));
+				}
+			}
+		}
+		fprintf(guiFormGenInludeFile, ");\n");
+
+		fprintf(guiFormGenInludeFile, "\t} break;\n\n");
+	}
+
+	fprintf(guiFormGenInludeFile, "\tdefault: { ASSERT(false); } break;\n");
+
+	fprintf(guiFormGenInludeFile, "\t}\n");
+	fprintf(guiFormGenInludeFile, "\treturn false;\n");
+	fprintf(guiFormGenInludeFile, "}\n\n");
+
+	fprintf(guiFormGenInludeFile, "#endif\n");
+
+	fclose(guiFormGenInludeFile);
 
 	//-------------------------
 	// Script funcs

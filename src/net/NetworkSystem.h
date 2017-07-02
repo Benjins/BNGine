@@ -50,6 +50,8 @@ struct NetworkSystem {
 
 	short debugPortToConnectTo;
 
+	Socket matchmakingSocket;
+
 	NetworkSystem() {
 		networkTicksPerSecond = 15;
 		//client.packetLoss = 10;
@@ -63,6 +65,11 @@ struct NetworkSystem {
 	}
 
 	void Initialize(short port) {
+		matchmakingSocket.Create(SP_TCP, SBT_Blocking);
+		matchmakingSocket.Bind();
+		matchmakingSocket.Connect(IPV4Addr(127, 0, 0, 1, 8099));
+		matchmakingSocket.SetBlocking(SBT_NonBlocking);
+
 		client.Init(port);
 		currState = NSS_Initialized;
 	}

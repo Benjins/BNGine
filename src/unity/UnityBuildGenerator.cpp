@@ -14,6 +14,7 @@ enum Application {
 	A_MetaGen,
 	A_Editor,
 	A_Test,
+	A_Server,
 	A_Count
 };
 
@@ -28,7 +29,19 @@ const char* appNames[A_Count] = {
 	"runtime",
 	"metagen",
 	"editor",
-	"test"
+	"test",
+	"server"
+};
+
+// XXX: HACK: Ehhh....yeah.
+// This is to avoid having to refactor the build pipeline...
+// Not the best solution
+bool forceConsoleApp[A_Count] = {
+	false,
+	true,
+	false,
+	false,
+	true
 };
 
 int main(int argc, char** argv) {
@@ -59,13 +72,8 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	if (platform == P_Count) {
-		printf("Could not find platform '%s'\n.", argv[1]);
-		exit(-1);
-	}
-
 	Application app = A_Count;
-	for (int i = 0; i < P_Count; i++) {
+	for (int i = 0; i < A_Count; i++) {
 		if (StrEqual(appNames[i], argv[2])) {
 			app = (Application)i;
 			break;
@@ -75,6 +83,16 @@ int main(int argc, char** argv) {
 	if (app == A_Count) {
 		printf("Could not find app '%s'\n.", argv[2]);
 		exit(-1);
+	}
+
+	if (forceConsoleApp[(int)app]) {
+		platform = P_Console;
+	}
+	else {
+		if (platform == P_Count) {
+			printf("Could not find platform '%s'\n.", argv[1]);
+			exit(-1);
+		}
 	}
 
 	if (app != A_Editor) {
@@ -147,7 +165,8 @@ int main(int argc, char** argv) {
 		"src/app/runtime_main.cpp",
 		"src/app/metagen_main.cpp",
 		"src/app/editor_main.cpp",
-		"src/app/test_main.cpp"
+		"src/app/test_main.cpp",
+		"src/app/matchmaking_server.cpp"
 	};
 
 	const char* platformFiles[P_Count] = {
