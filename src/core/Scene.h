@@ -109,15 +109,20 @@ struct Scene {
 	void SendCollisionToCustomComponents(IDHandle<Entity> entity, Collision col);
 
 	template<typename T>
-	T* FindComponentByEntity(CustomComponentType type, IDHandle<Entity> entityId) {
+	T* FindComponentByEntity(CustomComponentType type, IDHandle<Entity> entityId, int index = 0) {
 		Component* comp = nullptr;
 		Component* compCursor = getComponentArrayFuncs[type]();
 		int compCount = getComponentCountFuncs[type]();
 		
 		for (int i = 0; i < compCount; i++) {
 			if (compCursor->entity == entityId) {
-				comp = compCursor;
-				break;
+				if (index > 0) {
+					index--;
+				}
+				else {
+					comp = compCursor;
+					break;
+				}
 			}
 
 			compCursor = (Component*)(((char*)compCursor) + componentMetaData[type]->size);
@@ -131,7 +136,8 @@ struct Scene {
 	//Vector<Mat4x4> cachedTransforms;
 };
 
-#define FIND_COMPONENT_BY_ENTITY(compType, entityId) GlobalScene->FindComponentByEntity<compType>(CCT_##compType, entityId)
+#define FIND_COMPONENT_BY_ENTITY_AND_INDEX(compType, entityId, idx) GlobalScene->FindComponentByEntity<compType>(CCT_##compType, entityId, idx)
+#define FIND_COMPONENT_BY_ENTITY(compType, entityId) FIND_COMPONENT_BY_ENTITY_AND_INDEX(compType, entityId, 0)
 
 /*[Action]*/
 void DestroyEntityImmediate(uint32 entId);

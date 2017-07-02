@@ -6,8 +6,23 @@
 
 void LadderComponent::Update() {
 	if (collider.id == 0xFFFFFFFF) {
-		BoxCollider* col = FIND_COMPONENT_BY_ENTITY(BoxCollider, entity);
-		collider = IDHandle<BoxCollider>(col->id);
+		int idx = 0;
+		BoxCollider* col = nullptr;
+		while (true) {
+			BoxCollider* thisCol = FIND_COMPONENT_BY_ENTITY_AND_INDEX(BoxCollider, entity, idx);
+			if (thisCol == nullptr) {
+				break;
+			}
+			else if (thisCol->isTrigger) {
+				col = thisCol;
+			}
+
+			idx++;
+		}
+
+		ASSERT(col != nullptr);
+
+		collider = IDHandle<BoxCollider>((col == nullptr) ? -1 : col->id);
 	}
 }
 

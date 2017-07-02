@@ -14,7 +14,7 @@ void PlayerComponent::Start() {
 }
 
 void PlayerComponent::Update() {
-	float floorHeight = -2;
+	float floorHeight = -10;
 
 	GuiFormData* form = &GlobalScene->gui.guiFormStack.vals[0];
 	form->GuiHealthForm_Data.health = currHealth;
@@ -90,7 +90,7 @@ void PlayerComponent::Update() {
 			moveVec.y = heightShift;
 		}
 
-		if (entTrans->position.y > floorHeight) {
+		if (entTrans->position.y > floorHeight + 0.005f) {
 			currState = CS_FALLING;
 		}
 		else if (GlobalScene->input.KeyIsDown(KC_Space)) {

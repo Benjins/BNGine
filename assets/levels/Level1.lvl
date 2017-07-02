@@ -36,14 +36,16 @@
 		<Mesh src='floor.obj'/>
 	</Entity>
 	<Entity id='6'>
-		<Transform pos='7.953962,-2.637922,0.000000' id='7' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<Transform pos='7.953962,-2.637922,-0.004787' id='7' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 		<BoxCollider isTrigger='F' colFlags='CF_NONE' size='5.000000,0.100000,5.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='floor.mat'/>
 		<Mesh src='floor.obj'/>
 	</Entity>
-	<PrefabInstance id='7' prefabId='player.bnp'>
+	<Entity id='7'>
 		<Transform pos='0.000561,0.036339,-0.000696' id='8' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-	</PrefabInstance>
+		<PlayerComponent jumpVelocity='3.000000' currHealth='5.000000' playerWidth='0.200000' playerHeight='0.600000' currState='CS_GROUNDED' maxHealth='5.000000'/>
+		<PrefabInstanceComponent prefab='0'/>
+	</Entity>
 	<Entity id='8'>
 		<Transform pos='0.010204,-0.019546,8.424690' id='9' scale='1.000000,1.000000,1.000000' rotation='0.992905,-0.117683,0.001881,-0.016887' parent='-1'/>
 		<BoxCollider isTrigger='F' colFlags='CF_NONE' size='5.000000,0.100000,5.000000' position='0.000000,0.000000,0.000000'/>
@@ -52,7 +54,7 @@
 	</Entity>
 	<Entity id='9'>
 		<Transform pos='0.000000,-0.760581,0.929053' id='10' scale='0.200000,0.200000,0.200000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<EnemyComponent pauseTime='3.800000' currentState='ES_Patrol' speed='2.000000'/>
+		<EnemyComponent pauseTime='3.800000' playerId='-1' currentState='ES_Patrol' speed='2.000000'/>
 		<HealthComponent currentHealth='5.000000' maxHealth='5.000000'/>
 		<BoxCollider isTrigger='F' colFlags='CF_NONE' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='bullet.mat'/>
@@ -90,14 +92,14 @@
 	</Entity>
 	<Entity id='15'>
 		<Transform pos='16.006924,-2.934580,-0.085569' id='16' scale='0.580000,1.000000,1.200000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<WaterVolumeComponent/>
+		<WaterVolumeComponent collider='-1'/>
 		<BoxCollider isTrigger='T' colFlags='CF_NONE' size='5.000000,4.000000,5.000000' position='0.000000,-4.000000,0.000000'/>
 		<Material src='water.mat'/>
 		<Mesh src='floor.obj'/>
 	</Entity>
 	<Entity id='16'>
 		<Transform pos='14.000000,-3.300000,5.800000' id='17' scale='2.000000,2.000000,2.000000' rotation='0.709171,-0.705037,0.000000,0.000000' parent='-1'/>
-		<LadderComponent/>
+		<LadderComponent collider='-1'/>
 		<BoxCollider isTrigger='T' colFlags='CF_NONE' size='0.400000,0.400000,1.000000' position='0.000000,0.200000,0.000000'/>
 		<BoxCollider isTrigger='F' colFlags='CF_NONE' size='0.400000,0.080000,1.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='bullet.mat'/>
@@ -111,9 +113,9 @@
 	</Entity>
 	<Entity id='18'>
 		<Transform pos='5.137226,-2.618721,3.502055' id='19' scale='2.000000,2.000000,2.000000' rotation='0.709171,-0.705037,0.000000,0.000000' parent='-1'/>
-		<LadderComponent/>
-		<BoxCollider isTrigger='F' colFlags='CF_NONE' size='0.400000,0.100000,1.000000' position='0.000000,0.000000,0.000000'/>
-		<BoxCollider isTrigger='T' colFlags='CF_NONE' size='0.400000,0.300000,1.000000' position='0.000000,0.100000,0.000000'/>
+		<LadderComponent collider='-1'/>
+		<BoxCollider isTrigger='F' colFlags='CF_NONE' size='0.250000,0.100000,1.000000' position='0.000000,0.000000,0.000000'/>
+		<BoxCollider isTrigger='T' colFlags='CF_NONE' size='0.250000,0.400000,1.000000' position='0.000000,0.100000,0.000000'/>
 		<Material src='bullet.mat'/>
 		<Mesh src='ladder.obj'/>
 	</Entity>
@@ -144,7 +146,11 @@
 		<Material src='floor.mat'/>
 		<Mesh src='floor.obj'/>
 	</Entity>
-	<PrefabInstance id='23' prefabId='bullet_like.bnp'>
-		<Transform pos='9.712412,1,-5' id='24' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-	</PrefabInstance>
+	<Entity id='23'>
+		<Transform pos='9.712412,1.000000,-5.000000' id='24' scale='1.100000,1.100000,1.100000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<PrefabInstanceComponent prefab='2'/>
+		<BoxCollider isTrigger='F' colFlags='CF_NONE' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
+		<Material src='water.mat'/>
+		<Mesh src='test_2.obj'/>
+	</Entity>
 </Scene>
