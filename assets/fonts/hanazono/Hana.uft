@@ -1,4 +1,5 @@
 <UnicodeFont size='48' cacheSize='1024'>
+	<Source path='AGA-Rasheeq-Regular.ttf' charRangeLo='0xFE70' charRangeHi='0xFEFE'/>
 	<Source path='HanaMinA.ttf'/>
 	<Source path='HanaMinB.ttf'/>
 </UnicodeFont>

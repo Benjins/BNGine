@@ -147,7 +147,8 @@ void Scene::StartUp() {
 
 	StartUpCustomComponents();
 
-	net.Initialize(0);
+	// TODO: Only do this if needed
+	//net.Initialize(0);
 
 	frameTimer.Reset();
 }
@@ -368,20 +369,22 @@ void Scene::Render() {
 		int fileLength;
 		char* unicodeEncoded = ReadTextFile("assets/strings/chinese_test.txt", &fileLength);
 		unicodeText = DecodeUTF8(unicodeEncoded, fileLength);
+		for (int i = 0; i < unicodeText.length; i++) {
+			int codepoint = unicodeText.start[i];
+			OutputDebugStringA(StringStackBuffer<256>("Code point(%2d): %5d %#04x\n", i, codepoint, codepoint).buffer);
+		}
 		free(unicodeEncoded);
 	}
-	else {
-		static int fc = 0;
-		fc++;
-		if (fc > 1200000) {
-			unicodeText.start[0]++;
-			fc = 0;
-		}
-	}
+
 	firstPass = false;
 
-	// TODO: This unicode label prevents other UI Text from showing up?
-	//gui.DrawUnicodeLabel(unicodeText, IDHandle<UniFont>(0), 18, 30, 30);
+	static float x = 150;
+	static float width = 900;
+
+	width -= 0.2f;
+
+	gui.DrawUnicodeLabel(unicodeText, IDHandle<UniFont>(0), 18, x, 30, width);
+	gui.DrawTextLabel("Hi", IDHandle<BitmapFont>(0), 24, 40, 80, 100);
 
 	gui.Render();
 
