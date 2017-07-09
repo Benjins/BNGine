@@ -41,6 +41,7 @@ void ExecuteDrawCalls(DrawCall* calls, int count) {
 		mat->SetMatrix4Uniform("_camMatrix", camera);
 		mat->SetMatrix4Uniform("_perspMatrix", persp);
 		mat->SetVector3Uniform("_lightAngle", lightVec);
+		mat->SetFloatUniform("_time", GlobalScene->GetTotalTime());
 
 		for (int i = 0; i < mat->texCount; i++) {
 			Texture* tex =  GlobalScene->res.textures.GetById(mat->texIds[i]);

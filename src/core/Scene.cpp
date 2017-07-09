@@ -153,6 +153,7 @@ void Scene::StartUp() {
 	//net.Initialize(0);
 
 	frameTimer.Reset();
+	totalTimer.Reset();
 }
 
 void Scene::ShutDown(){

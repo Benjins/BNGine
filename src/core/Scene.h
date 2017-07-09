@@ -52,6 +52,7 @@ struct Scene {
 	Camera cam;
 
 	Timer frameTimer;
+	Timer totalTimer;
 
 	Vector<Action> deferredActions;
 	
@@ -69,6 +70,11 @@ struct Scene {
 	
 	double GetDeltaTime() {
 		return frameRateIsLocked ? lockedFrameRate : frameTimer.GetTimeSince();
+	}
+
+	double GetTotalTime() {
+		// TODO: If framerate is locked, this will also need to be adjusted
+		return totalTimer.GetTimeSince();
 	}
 
 	Scene();
