@@ -6,19 +6,19 @@
 #include "../net/NetworkSystem.h"
 
 void PlayerComponent::Start() {
-	GuiFormData* form = GlobalScene->gui.guiFormStack.CreateAndAdd();
-	form->type = GFT_GuiHealthForm;
-
-	GuiFormData* form2 = GlobalScene->gui.guiFormStack.CreateAndAdd();
-	form2->type = GFT_GuiIPConnectForm;
+	//GuiFormData* form = GlobalScene->gui.guiFormStack.CreateAndAdd();
+	//form->type = GFT_GuiHealthForm;
+	//
+	//GuiFormData* form2 = GlobalScene->gui.guiFormStack.CreateAndAdd();
+	//form2->type = GFT_GuiIPConnectForm;
 }
 
 void PlayerComponent::Update() {
 	float floorHeight = -10;
 
-	GuiFormData* form = &GlobalScene->gui.guiFormStack.vals[0];
-	form->GuiHealthForm_Data.health = currHealth;
-	form->GuiHealthForm_Data.maxHealth = maxHealth;
+	//GuiFormData* form = &GlobalScene->gui.guiFormStack.vals[0];
+	//form->GuiHealthForm_Data.health = currHealth;
+	//form->GuiHealthForm_Data.maxHealth = maxHealth;
 
 	Entity* ent = GlobalScene->entities.GetById(entity);
 	Transform* entTrans = GlobalScene->transforms.GetById(ent->transform);

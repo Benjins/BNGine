@@ -131,7 +131,7 @@ void Scene::StartUp() {
 
 	gui.Init();
 
-	LoadLevel("Level1.lvl");
+	LoadLevel("Level2.lvl");
 
 	IDHandle<Prefab> playerPrefab;
 	res.assetIdMap.LookUp("player.bnp", &playerPrefab.id);
@@ -393,7 +393,7 @@ void Scene::Render() {
 	glScissor((int)cam.xOffset, (int)cam.yOffset, (int)cam.widthPixels, (int)cam.heightPixels);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glScissor((int)cam.xOffset, (int)cam.yOffset + 100, (int)cam.widthPixels, (int)cam.heightPixels - 100);
+	//glScissor((int)cam.xOffset, (int)cam.yOffset + 100, (int)cam.widthPixels, (int)cam.heightPixels - 100);
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -435,8 +435,8 @@ void Scene::Render() {
 
 	width -= 0.2f;
 
-	gui.DrawUnicodeLabel(unicodeText, IDHandle<UniFont>(0), 18, x, 30, width);
-	gui.DrawTextLabel("Hi", IDHandle<BitmapFont>(0), 24, 40, 80, 100);
+	//gui.DrawUnicodeLabel(unicodeText, IDHandle<UniFont>(0), 18, x, 30, width);
+	//gui.DrawTextLabel("Hi", IDHandle<BitmapFont>(0), 24, 40, 80, 100);
 
 	gui.Render();
 
