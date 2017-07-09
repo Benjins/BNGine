@@ -5,6 +5,7 @@
 
 #include "BoxCollider.h"
 #include "SphereCollider.h"
+#include "MeshCollider.h"
 #include "Collision.h"
 
 #include "../../ext/CppUtils/idbase.h"
@@ -25,6 +26,7 @@ struct RaycastHit {
 struct PhysicsSystem {
 	IDTracker<BoxCollider> boxCols;
 	IDTracker<SphereCollider> sphereCols;
+	IDTracker<MeshCollider> meshCols;
 
 	Vector<Collision> collisions;
 	Vector<Collision> prevCollisions;
@@ -45,6 +47,7 @@ struct PhysicsSystem {
 };
 
 RaycastHit RaycastBox(Vector3 origin, Vector3 direction, BoxCollider* boxCol);
-RaycastHit RaycastSphere(Vector3 origin, Vector3 direction, SphereCollider* boxCol);
+RaycastHit RaycastSphere(Vector3 origin, Vector3 direction, SphereCollider* sphereCol);
+RaycastHit RaycastMesh(Vector3 origin, Vector3 direction, MeshCollider* meshCol);
 
 #endif

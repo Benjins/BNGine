@@ -12,6 +12,7 @@ struct Transform;
 struct Entity;
 struct BoxCollider;
 struct SphereCollider;
+struct MeshCollider;
 struct PlayerComponent;
 struct BulletComponent;
 struct EnemyComponent;
@@ -44,6 +45,7 @@ struct Level : IDBase{
 	// TODO: Automate
 	Vector<BoxCollider> boxCols;
 	Vector<SphereCollider> sphereCols;
+	Vector<MeshCollider> meshCols;
 	Vector<PlayerComponent> playerComps;
 	Vector<BulletComponent> bulletComps;
 	Vector<EnemyComponent> enemyComps;

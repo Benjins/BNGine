@@ -1,13 +1,13 @@
 <Scene>
 	<Entity id='3'>
 		<Transform pos='0.000544,-1.003885,0.000000' id='4' scale='5.000000,5.000000,5.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<BoxCollider isTrigger='F' colFlags='CF_NONE' size='10.000000,0.100000,10.000000' position='0.000000,0.000000,0.000000'/>
+		<MeshCollider isTrigger='F' colFlags='CF_NONE' src='ground.obj'/>
 		<Material src='floor.mat'/>
 		<Mesh src='ground.obj'/>
 	</Entity>
 	<Entity id='7'>
 		<Transform pos='0.000561,0.036339,-0.000696' id='8' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
-		<PlayerComponent jumpVelocity='3.000000' currHealth='5.000000' playerWidth='0.200000' playerHeight='0.600000' currState='CS_GROUNDED' maxHealth='5.000000' movementSpeed='8.000000'/>
+		<PlayerComponent jumpVelocity='3.000000' currHealth='5.000000' playerWidth='0.200000' playerHeight='0.600000' currState='CS_GROUNDED' maxHealth='5.000000' movementSpeed='3.000000'/>
 		<PrefabInstanceComponent prefab='0'/>
 	</Entity>
 	<Camera nearClip='0.010000' farClip='1000.000000' fov='80'>

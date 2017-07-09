@@ -21,6 +21,15 @@ RaycastHit PhysicsSystem::Raycast(Vector3 origin, Vector3 direction) {
 			}
 		}
 	}
+	for (int i = 0; i < meshCols.currentCount; i++) {
+		if (!meshCols.vals[i].isTrigger) {
+			RaycastHit meshHit = RaycastMesh(origin, direction, &meshCols.vals[i]);
+
+			if (meshHit.wasHit && meshHit.depth < finalHit.depth) {
+				finalHit = meshHit;
+			}
+		}
+	}
 
 	return finalHit;
 }
@@ -161,17 +170,18 @@ RaycastHit RaycastBox(Vector3 origin, Vector3 direction, BoxCollider* boxCol) {
 	}
 }
 
-RaycastHit RaycastSphere(Vector3 origin, Vector3 direction, SphereCollider* boxCol){
+RaycastHit RaycastSphere(Vector3 origin, Vector3 direction, SphereCollider* sphereCol){
 	RaycastHit hit;
 	hit.wasHit = false;
 	return hit;
 }
 
-/*
-RaycastHit RaycastMesh(Vector3 origin, Vector3 direction, MeshCollider* boxCol) {
+
+RaycastHit RaycastMesh(Vector3 origin, Vector3 direction, MeshCollider* meshCol) {
 	RaycastHit hit;
 	hit.wasHit = false;
+	//Mesh* mesh = box
+
 	return hit;
 }
-*/
 
