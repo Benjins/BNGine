@@ -8,6 +8,13 @@ GLenum cubeMapTypes[] = {   GL_TEXTURE_CUBE_MAP_NEGATIVE_X, GL_TEXTURE_CUBE_MAP_
 							GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
 							GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, GL_TEXTURE_CUBE_MAP_POSITIVE_Z };
 
+inline void SetPixel(Texture* tex, int x, int y, unsigned char r, unsigned char g, unsigned char b) {
+	unsigned char* pixel = &tex->texMem[(tex->width * y + x) * 3];
+	pixel[0] = r;
+	pixel[1] = g;
+	pixel[2] = b;
+}
+
 void CubeMap::UploadToGraphicsDevice() {
 	// TODO: ???
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -26,6 +33,20 @@ void CubeMap::UploadToGraphicsDevice() {
 		Texture* tex = GlobalScene->res.textures.GetById(textures[i]);
 		// TODO: Seems like a lot of copying?  Way to flag texture type?
 		// But then couldn't be re-used....
+
+		//Edge debugging.
+		/*
+		for(int x = 0; x < tex->width; x++){
+			SetPixel(tex, x, 0, 255, 0, 0);
+			SetPixel(tex, x, tex->height - 1, 255, 0, 0);
+		}
+
+		for(int y = 0; y < tex->height; y++){
+			SetPixel(tex, 0, y, 255, 0, 0);
+			SetPixel(tex, tex->width-1, y, 255, 0, 0);
+		}
+		*/
+
 		glTexImage2D(cubeMapTypes[i], 0, GL_RGB, tex->width, tex->height, 0, GL_BGR, GL_UNSIGNED_BYTE, tex->texMem);
 	}
 
