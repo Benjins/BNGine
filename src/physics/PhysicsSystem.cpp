@@ -166,3 +166,12 @@ RaycastHit RaycastSphere(Vector3 origin, Vector3 direction, SphereCollider* boxC
 	hit.wasHit = false;
 	return hit;
 }
+
+/*
+RaycastHit RaycastMesh(Vector3 origin, Vector3 direction, MeshCollider* boxCol) {
+	RaycastHit hit;
+	hit.wasHit = false;
+	return hit;
+}
+*/
+

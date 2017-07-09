@@ -35,8 +35,6 @@ void PlayerComponent::Update() {
 
 	Vector3 moveVec;
 
-	const float movementSpeed = 3.0f;
-
 	if (GlobalScene->input.KeyIsDown('W')) {
 		moveVec = moveVec + camTrans->Forward() * GlobalScene->GetDeltaTime() * movementSpeed;
 	}

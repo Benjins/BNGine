@@ -27,6 +27,8 @@ struct PlayerComponent : Component{
 	float currHealth;
 	float maxHealth;
 
+	float movementSpeed;
+
 	ControlState currState;
 
 	PlayerComponent() {
@@ -34,6 +36,8 @@ struct PlayerComponent : Component{
 		playerWidth = 0.2f;
 		jumpVelocity = 3.0f;
 		yVelocity = 0.0f;
+
+		movementSpeed = 3.0f;
 
 		currHealth = 5;
 		maxHealth = 5;

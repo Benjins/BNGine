@@ -13,7 +13,7 @@ uniform float _ambientAmount = 0.2;
 uniform float tilingScale = 14.0;
 uniform float secondLayerScale = 7.0;
 uniform float desaturation = 0.25;
-uniform float brightness = 2.0;
+uniform float brightness = 1.6;
 
 vec4 rgb2grey(vec4 col){
 	float val = dot(col.rgb, vec3(0.22, 0.707, 0.071));

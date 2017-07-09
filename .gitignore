@@ -20,3 +20,11 @@ gen/*.h
 *~
 
 *.bna
+
+# That oughta do it
+*.blend1
+*.blend2
+*.blend3
+*.blend4
+*.blend5
+*.blend6
