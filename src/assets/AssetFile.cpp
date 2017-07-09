@@ -1531,10 +1531,11 @@ void WriteCubeMapChunk(const char* cubeMapFileName, const StringMap<int>& assetI
 		bool res = assetIds.LookUp(texFileName.string, &texId);
 		ASSERT_MSG(res, "Could not find texture '%s' referenced by '%s'", texFileName.string, cubeMapFileName);
 		
-		if (side == "L") {
+		// TODO: These seem wrong, double check how things line up w/ OpenGL?
+		if (side == "B") {
 			texIds[0] = texId;
 		}
-		else if (side == "R") {
+		else if (side == "F") {
 			texIds[1] = texId;
 		}
 		else if (side == "U") {
@@ -1543,10 +1544,10 @@ void WriteCubeMapChunk(const char* cubeMapFileName, const StringMap<int>& assetI
 		else if (side == "D") {
 			texIds[3] = texId;
 		}
-		else if (side == "B") {
+		else if (side == "L") {
 			texIds[4] = texId;
 		}
-		else if (side == "F") {
+		else if (side == "R") {
 			texIds[5] = texId;
 		}
 		else {

@@ -8,8 +8,8 @@
 struct CubeMap : IDBase {
 	union {
 		struct {
-			IDHandle<Texture> leftTex;
 			IDHandle<Texture> rightTex;
+			IDHandle<Texture> leftTex;
 			IDHandle<Texture> bottomTex;
 			IDHandle<Texture> topTex;
 			IDHandle<Texture> backTex;
