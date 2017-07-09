@@ -49,7 +49,10 @@ void CubeMap::UploadToGraphicsDevice() {
 
 		glTexImage2D(cubeMapTypes[i], 0, GL_RGB, tex->width, tex->height, 0, GL_BGR, GL_UNSIGNED_BYTE, tex->texMem);
 	}
+}
 
-
+void CubeMap::Bind(GLenum textureTarget) {
+	glActiveTexture(textureTarget);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMapObj);
 }
 

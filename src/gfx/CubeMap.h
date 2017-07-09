@@ -23,6 +23,8 @@ struct CubeMap : IDBase {
 
 	}
 
+	void Bind(GLenum textureTarget);
+
 	CubeMap(const CubeMap& orig) {
 		id = orig.id;
 		BNS_FOR_I(6) {

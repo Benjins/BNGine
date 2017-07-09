@@ -348,6 +348,10 @@ void ResourceManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat)
 
 	int uniformCount = stream.Read<int>();
 
+	int cubeMapId = -1;
+
+	char* cubeMapName = nullptr;
+
 	for (int i = 0; i < uniformCount; i++) {
 		int strLength = stream.Read<int>();
 		BNS_UNUSED(strLength);
@@ -372,6 +376,15 @@ void ResourceManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat)
 			Vector4 val = stream.Read<Vector4>();
 			outMat->SetVector4Uniform(uniformName, val);
 		}
+		else if (uniformType == UT_CUBEMAP) {
+			uint32 texId = stream.Read<uint32>();
+			outMat->cubeMap = IDHandle<CubeMap>(texId);
+			cubeMapName = uniformName;
+		}
+	}
+
+	if (cubeMapName != nullptr) {
+		outMat->SetIntUniform(cubeMapName, outMat->texCount);
 	}
 }
 

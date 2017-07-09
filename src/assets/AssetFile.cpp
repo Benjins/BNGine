@@ -421,6 +421,9 @@ UniformType ParseUniformType(const char* typeName) {
 	else if (StrEqual(typeName, "vec4")) {
 		return UT_VEC4;
 	}
+	else if (StrEqual(typeName, "texCube")) {
+		return UT_CUBEMAP;
+	}
 	else {
 		ASSERT_WARN("Unkown uniform type name: '%s'", typeName);
 		return UT_UNKNOWN;
@@ -523,6 +526,12 @@ void WriteMaterialChunk(const char* materialFileName, const StringMap<int>& asse
 			case UT_VEC4: {
 				Vector4 val = ParseVector4(valString.string);
 				fwrite(&val, 1, sizeof(Vector4), assetFileHandle);
+			} break;
+
+			case UT_CUBEMAP: {
+				int cubeMapId;
+				assetIds.LookUp(valString.string, &cubeMapId);
+				fwrite(&cubeMapId, 1, sizeof(int), assetFileHandle);
 			} break;
 
 			default:

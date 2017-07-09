@@ -340,23 +340,12 @@ void DestroyEntityImmediate(uint32 entId) {
 	}
 }
 
-void Scene::Render() {
-	glViewport((int)cam.xOffset, (int)cam.yOffset, (int)cam.widthPixels, (int)cam.heightPixels);
-	glScissor((int)cam.xOffset, (int)cam.yOffset, (int)cam.widthPixels, (int)cam.heightPixels);
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glScissor((int)cam.xOffset, (int)cam.yOffset + 100, (int)cam.widthPixels, (int)cam.heightPixels - 100);
-
-	glEnable(GL_DEPTH_TEST);
-
-	res.Render();
-
-	// Render sky box
+void RenderSkyBox() {
 	int skyBoxMatId;
-	bool hasSkyBox = res.assetIdMap.LookUp("skybox.mat", &skyBoxMatId);
+	bool hasSkyBox = GlobalScene->res.assetIdMap.LookUp("skybox.mat", &skyBoxMatId);
 
 	int ballMeshId;
-	bool hasBall = res.assetIdMap.LookUp("ball.obj", &ballMeshId);
+	bool hasBall = GlobalScene->res.assetIdMap.LookUp("ball.obj", &ballMeshId);
 
 	ASSERT(hasSkyBox);
 	ASSERT(hasBall);
@@ -369,17 +358,21 @@ void Scene::Render() {
 	glCullFace(GL_FRONT);
 	glDepthFunc(GL_LEQUAL);
 
-	Material* skyBoxMat = res.materials.GetByIdNum(skyBoxMatId);
-	Mesh* ballMesh = res.meshes.GetByIdNum(ballMeshId);
+	Material* skyBoxMat = GlobalScene->res.materials.GetByIdNum(skyBoxMatId);
+	Mesh* ballMesh = GlobalScene->res.meshes.GetByIdNum(ballMeshId);
 
-	skyBoxMat->SetIntUniform("_cubeMap", 2);
+	CubeMap* skyBox = GlobalScene->res.cubeMaps.GetById(skyBoxMat->cubeMap);
+	ASSERT(skyBox != nullptr);
+	skyBox->Bind(GL_TEXTURE0 + skyBoxMat->texCount);
+
+	skyBoxMat->SetIntUniform("_cubeMap", skyBoxMat->texCount);
 
 	Mat4x4 camera = GlobalScene->cam.GetCameraMatrix();
 	Mat4x4 persp = GlobalScene->cam.GetPerspectiveMatrix();
 	skyBoxMat->SetMatrix4Uniform("_cameraMatrix", camera);
 	skyBoxMat->SetMatrix4Uniform("_perspMatrix", persp);
 
-	Program* prog = res.programs.GetById(skyBoxMat->programId);
+	Program* prog = GlobalScene->res.programs.GetById(skyBoxMat->programId);
 	glUseProgram(prog->programObj);
 	skyBoxMat->UpdateUniforms();
 
@@ -387,14 +380,26 @@ void Scene::Render() {
 	glBindBuffer(GL_ARRAY_BUFFER, ballMesh->posVbo);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	glDrawArrays(GL_TRIANGLES, 0, ballMesh->faces.count*3);
+	glDrawArrays(GL_TRIANGLES, 0, ballMesh->faces.count * 3);
 
 	glDisableVertexAttribArray(0);
 
 	glCullFace(oldCullFaceMode);
 	glDepthFunc(oldDepthFuncMode);
+}
 
-	//--------------------------
+void Scene::Render() {
+	glViewport((int)cam.xOffset, (int)cam.yOffset, (int)cam.widthPixels, (int)cam.heightPixels);
+	glScissor((int)cam.xOffset, (int)cam.yOffset, (int)cam.widthPixels, (int)cam.heightPixels);
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glScissor((int)cam.xOffset, (int)cam.yOffset + 100, (int)cam.widthPixels, (int)cam.heightPixels - 100);
+
+	glEnable(GL_DEPTH_TEST);
+
+	res.Render();
+
+	RenderSkyBox();
 
 	glDisable(GL_DEPTH_TEST);
 
