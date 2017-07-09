@@ -38,6 +38,7 @@ void ResourceManager::Reset() {
 	prefabs.Reset();
 	anims.Reset();
 	armatures.Reset();
+	cubeMaps.Reset();
 }
 
 void ResourceManager::LoadAssetFile(const char* fileName) {
@@ -120,6 +121,10 @@ void ResourceManager::LoadAssetFile(const char* fileName) {
 		else if (memcmp(chunkId, "BNUF", 4) == 0) {
 			UniFont* font = uniFonts.AddWithId(assetId);
 			LoadUniFontFromChunk(fileBufferStream, font);
+		}
+		else if (memcmp(chunkId, "BNCM", 4) == 0) {
+			CubeMap* cubeMap = cubeMaps.AddWithId(assetId);
+			LoadCubeMapFromChunk(fileBufferStream, cubeMap);
 		}
 		else if (memcmp(chunkId, "BNPF", 4) == 0) {
 			Prefab* prefab = prefabs.AddWithId(assetId);
@@ -269,6 +274,12 @@ void ResourceManager::LoadAnimationTrackFromChunk(MemStream& stream, AnimationTr
 	outTrack->data.count = dataSize;
 }
 
+void ResourceManager::LoadCubeMapFromChunk(MemStream& stream, CubeMap* outCubeMap) {
+	stream.ReadArray<int>((int*)outCubeMap->textures, 6);
+
+	outCubeMap->UploadToGraphicsDevice();
+}
+
 void ResourceManager::LoadVShaderFromChunk(MemStream& stream, Shader* outShader) {
 	outShader->CompileShader(stream.ReadStringInPlace(), GL_VERTEX_SHADER);
 }
@@ -288,9 +299,6 @@ void ResourceManager::LoadTextureFromChunk(MemStream& stream, Texture* outTextur
 
 	outTexture->textureType = GL_TEXTURE_2D;
 	outTexture->UploadToGraphicsDevice();
-
-	free(outTexture->texMem);
-	outTexture->texMem = nullptr;
 }
 
 void ResourceManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat) {

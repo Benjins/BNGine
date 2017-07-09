@@ -2,6 +2,8 @@
 
 #include "../assets/AssetFile.h"
 
+#include "../gfx/GLExtInit.h"
+
 #include "../metagen/MetaParse.h"
 
 #include "../util/LevelLoading.h"
@@ -348,6 +350,51 @@ void Scene::Render() {
 	glEnable(GL_DEPTH_TEST);
 
 	res.Render();
+
+	// Render sky box
+	int skyBoxMatId;
+	bool hasSkyBox = res.assetIdMap.LookUp("skybox.mat", &skyBoxMatId);
+
+	int ballMeshId;
+	bool hasBall = res.assetIdMap.LookUp("ball.obj", &ballMeshId);
+
+	ASSERT(hasSkyBox);
+	ASSERT(hasBall);
+
+	GLint oldCullFaceMode;
+	glGetIntegerv(GL_CULL_FACE_MODE, &oldCullFaceMode);
+	GLint oldDepthFuncMode;
+	glGetIntegerv(GL_DEPTH_FUNC, &oldDepthFuncMode);
+
+	glCullFace(GL_FRONT);
+	glDepthFunc(GL_LEQUAL);
+
+	Material* skyBoxMat = res.materials.GetByIdNum(skyBoxMatId);
+	Mesh* ballMesh = res.meshes.GetByIdNum(ballMeshId);
+
+	skyBoxMat->SetIntUniform("_cubeMap", 2);
+
+	Mat4x4 camera = GlobalScene->cam.GetCameraMatrix();
+	Mat4x4 persp = GlobalScene->cam.GetPerspectiveMatrix();
+	skyBoxMat->SetMatrix4Uniform("_cameraMatrix", camera);
+	skyBoxMat->SetMatrix4Uniform("_perspMatrix", persp);
+
+	Program* prog = res.programs.GetById(skyBoxMat->programId);
+	glUseProgram(prog->programObj);
+	skyBoxMat->UpdateUniforms();
+
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, ballMesh->posVbo);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glDrawArrays(GL_TRIANGLES, 0, ballMesh->faces.count*3);
+
+	glDisableVertexAttribArray(0);
+
+	glCullFace(oldCullFaceMode);
+	glDepthFunc(oldDepthFuncMode);
+
+	//--------------------------
 
 	glDisable(GL_DEPTH_TEST);
 

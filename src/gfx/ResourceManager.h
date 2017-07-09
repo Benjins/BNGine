@@ -16,6 +16,7 @@
 #include "UniFont.h"
 #include "Prefab.h"
 #include "Armature.h"
+#include "CubeMap.h"
 
 #include "../anim/Animations.h"
 
@@ -38,6 +39,7 @@ struct ResourceManager {
 	IDTracker<ScriptObject> scripts;
 	IDTracker<Armature> armatures;
 	IDTracker<AnimationTrack> anims;
+	IDTracker<CubeMap> cubeMaps;
 
 	StringMap<int> assetIdMap;
 
@@ -60,6 +62,7 @@ struct ResourceManager {
 	void LoadPrefabFromChunk(MemStream& stream, Prefab* outPrefab);
 	void LoadScriptObjectFromChunk(MemStream& stream, ScriptObject* outScript);
 	void LoadAnimationTrackFromChunk(MemStream& stream, AnimationTrack* outTrack);
+	void LoadCubeMapFromChunk(MemStream& stream, CubeMap* outCubeMap);
 
 	void SaveLevelToFile(const Level* lvl, const char* fileName);
 	void SavePrefabToFile(Prefab* prefab, const char* fileName);

@@ -76,6 +76,7 @@ void WriteUniFontChunk(const char* fontFileName, const Vector<File*>& ttfFiles, 
 void WritePrefabChunk(const char* prefabFileName, const StringMap<int>& assetIds, int id, FILE* assetFileHandle);
 void WriteScriptChunk(const char* scriptFileName, const StringMap<int>& assetIds, int id, FILE* assetFileHandle);
 void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& assetIds, int id, int armId, int* trackCount, FILE* assetFileHandle);
+void WriteCubeMapChunk(const char* cubeMapFileName, const StringMap<int>& assetIds, int id, FILE* assetFileHandle);
 
 void WriteAssetNameIdMap(const StringMap<int>& map, FILE* assetFileHandle);
 
