@@ -1,4 +1,4 @@
 <Material vs='posNorm.vs' fs='posCol.fs'>
 	<Uniform name='_mainTex' type='tex2D' value='stone_01_D.bmp'/>
-	<Uniform name='uvScale' type='float' value='1.5'/>
+	<Uniform name='uvScale' type='float' value='4.5'/>
 </Material>
