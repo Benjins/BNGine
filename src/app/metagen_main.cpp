@@ -554,7 +554,6 @@ void AppPreInit(int argc, char** argv){
 		fprintf(componentMetaFile, "Component* %.*s_createAndAdd(){\n", ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "\t%.*s* comp = %s.CreateAndAdd();\n", ms->name.length, ms->name.start, getComponentPathList.data[i].string);
 		fprintf(componentMetaFile, "\tcomp->type = CCT_%.*s;\n", ms->name.length, ms->name.start);
-		fprintf(componentMetaFile, "\tcomp->type = CCT_%.*s;\n", ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "\treturn comp;\n");
 		fprintf(componentMetaFile, "}\n\n");
 

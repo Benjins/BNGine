@@ -98,6 +98,9 @@ void PlayerComponent::Update() {
 		else if (CheckLadder(entTrans->position + moveVec)) {
 			currState = CS_LADDERCLIMB;
 		}
+		else if (CheckWater(entTrans->position + moveVec)) {
+			currState = CS_FALLINGWATER;
+		}
 	}
 	else if (currState == CS_JUMPING) {
 		yVelocity -= gravity;
