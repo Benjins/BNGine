@@ -20,6 +20,8 @@
 	</Entity>
 	<Entity id='4'>
 		<Transform pos='5.645571,-1.165176,-5.677401' id='5' scale='2.800000,2.800000,2.800000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<WaterVolumeComponent collider='-1'/>
+		<BoxCollider isTrigger='T' colFlags='CF_NONE' size='4.000000,1.000000,4.000000' position='0.000000,-1.000000,0.000000'/>
 		<Material src='water.mat'/>
 		<Mesh src='water.obj'/>
 	</Entity>

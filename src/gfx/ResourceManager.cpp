@@ -19,7 +19,7 @@
 #include "../../gen/ScriptGen.h"
 
 ResourceManager::ResourceManager() 
-	: shaders(30), programs(20), materials(15), meshes(30), textures(20), drawCalls(40), levels(10){
+	: shaders(30), programs(20), materials(15), meshes(30), textures(50), drawCalls(40), levels(10){
 
 }
 
