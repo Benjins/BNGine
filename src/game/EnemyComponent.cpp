@@ -6,6 +6,17 @@ void EnemyComponent::Update() {
 		playerId = GlobalScene->gameplay.players.vals[0].entity;
 	}
 
+	if (!hasCalculatedPatrolPoints) {
+		patrolPoints.EnsureCapacity(GlobalScene->gameplay.patrolPoints.currentCount);
+		for (int i = 0; i < GlobalScene->gameplay.patrolPoints.currentCount; i++) {
+			patrolPoints.PushBack(GlobalScene->gameplay.patrolPoints.vals[i].entity);
+		}
+
+		ASSERT_MSG(patrolPoints.count > 0, "Must have patrol points if have an enemy in scene %d", GlobalScene->currentLevel)
+
+		hasCalculatedPatrolPoints = true;
+	}
+
 	Transform* trans = GlobalScene->transforms.GetById(GlobalScene->entities.GetById(entity)->transform);
 
 	HealthComponent* health = FIND_COMPONENT_BY_ENTITY(HealthComponent, entity);
@@ -15,7 +26,9 @@ void EnemyComponent::Update() {
 
 	switch (currentState) {
 		case ES_Patrol: {
-			Vector3 toGoal = patrolPoints.data[patrolIndex] - trans->GetGlobalPosition();
+			Entity* goalEnt = GlobalScene->entities.GetById(patrolPoints.data[patrolIndex]);
+			Vector3 goal = GlobalScene->transforms.GetById(goalEnt->transform)->GetGlobalPosition();
+			Vector3 toGoal = goal - trans->GetGlobalPosition();
 			if (toGoal.Magnitude() < 0.2f){
 				patrolIndex = (patrolIndex + 1) % patrolPoints.count;
 				currentState = ES_Paused;

@@ -10,6 +10,7 @@
 #include "WaterVolumeComponent.h"
 #include "LadderComponent.h"
 #include "PrefabInstanceComponent.h"
+#include "PatrolPoint.h"
 
 struct GameplayComponents {
 	//TODO: Automate
@@ -20,6 +21,7 @@ struct GameplayComponents {
 	IDTracker<WaterVolumeComponent> waterComps;
 	IDTracker<LadderComponent> ladderComps;
 	IDTracker<PrefabInstanceComponent> prefabInsts;
+	IDTracker<PatrolPointComponent> patrolPoints;
 };
 
 #endif

@@ -31,4 +31,16 @@
 		<Material src='stone.mat'/>
 		<Mesh src='bridge_01.obj'/>
 	</Entity>
+	<Entity id='9'>
+		<Transform pos='0.000000,-0.760581,0.929053' id='10' scale='0.200000,0.200000,0.200000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<EnemyComponent pauseTime='3.800000' playerId='-1' currentState='ES_Patrol' speed='2.000000'/>
+		<HealthComponent currentHealth='5.000000' maxHealth='5.000000'/>
+		<BoxCollider isTrigger='F' colFlags='CF_NONE' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
+		<Material src='stone.mat'/>
+		<Mesh src='monkey.obj'/>
+	</Entity>
+	<Entity id='10'>
+		<Transform pos='2,3,2' id='11' scale='1,1,1' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<PatrolPointComponent/>
+	</Entity>
 </Scene>
