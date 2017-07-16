@@ -129,6 +129,8 @@ void PlayerComponent::Update() {
 
 		if (inWater) {
 			currState = CS_FALLINGWATER;
+			const float waterEntryVelocityDamping = 0.5f;
+			yVelocity *= waterEntryVelocityDamping;
 		}
 		else if (CheckLadder(entTrans->position + moveVec)) {
 			currState = CS_LADDERCLIMB;
