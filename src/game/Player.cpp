@@ -24,7 +24,7 @@ void PlayerComponent::Update() {
 	Transform* entTrans = GlobalScene->transforms.GetById(ent->transform);
 	Transform* camTrans = GlobalScene->transforms.GetById(GlobalScene->cam.transform);
 
-	RaycastHit downCast = GlobalScene->phys.Raycast(entTrans->GetGlobalPosition() + Vector3(0, 0.1f - playerHeight, 0), Y_AXIS * -1);
+	RaycastHit downCast = GlobalScene->phys.Raycast(entTrans->GetGlobalPosition() + Vector3(0, 0.1f, 0), Y_AXIS * -1);
 
 	if (downCast.wasHit) {
 		floorHeight = downCast.globalPos.y + playerHeight;

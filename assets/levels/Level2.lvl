@@ -40,7 +40,7 @@
 		<Mesh src='monkey.obj'/>
 	</Entity>
 	<Entity id='10'>
-		<Transform pos='2,3,2' id='11' scale='1,1,1' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<Transform pos='2,2.8,2' id='11' scale='1,1,1' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 		<PatrolPointComponent/>
 	</Entity>
 </Scene>
