@@ -93,7 +93,14 @@ Entity* Scene::CloneEntity(Entity* srcEnt) {
 		ASSERT(srcTrans != nullptr);
 		if (srcTrans != nullptr) {
 			DrawCall* dc = GetDrawCallForEntity(IDHandle<Entity>(srcEnt->id));
-			Entity* newEnt = AddVisibleEntity(dc->matId, dc->meshId);
+			Entity* newEnt = nullptr;
+			if (dc != nullptr) {
+				newEnt = AddVisibleEntity(dc->matId, dc->meshId);
+			}
+			else {
+				newEnt = AddEntity();
+			}
+
 			Transform* newTrans = transforms.GetById(newEnt->transform);
 			newTrans->position = srcTrans->position;
 			newTrans->rotation = srcTrans->rotation;

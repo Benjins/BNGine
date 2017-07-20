@@ -395,9 +395,7 @@ void Editor::Render() {
 		mat->SetMatrix4Uniform("_perspMatrix", persp);
 	}
 
-	if (selectedEntity != -1) {
-		scene.CustomComponentEditorGuiForEntity(IDHandle<Entity>(selectedEntity));
-	}
+	scene.CustomComponentEditorGuiForEntity(IDHandle<Entity>(selectedEntity));
 
 	scene.cam.xOffset = 0;
 	scene.cam.yOffset = 0;

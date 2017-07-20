@@ -6,7 +6,7 @@
 #include "../core/Component.h"
 
 struct PatrolPointComponent : Component {
-	
+	void EditorGui(bool isSelected);
 };
 
 #endif
