@@ -16,9 +16,12 @@ void LoadVectorToIDTracker(const Vector<T>& from, IDTracker<T>& to) {
 	}
 	to.currentCount = from.count;
 
-	if (from.count > 0) {
-		to.currentMaxId = from.data[from.count - 1].id + 1;
+	uint32 maxId = 0;
+	BNS_VEC_FOREACH(from) {
+		maxId = BNS_MAX(maxId, ptr->id);
 	}
+
+	to.currentMaxId = maxId + 1;
 }
 
 template<typename T>

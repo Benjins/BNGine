@@ -48,7 +48,7 @@ void PlayerComponent::Update() {
 		moveVec = moveVec + camTrans->Right() * GlobalScene->GetDeltaTime() * movementSpeed;
 	}
 
-	if (GlobalScene->input.MouseButtonIsDown(PRIMARY)) {
+	if (GlobalScene->input.MouseButtonIsReleased(PRIMARY)) {
 		/*
 		int prefId = -1;
 		GlobalScene->res.assetIdMap.LookUp("bullet.bnp", &prefId);
