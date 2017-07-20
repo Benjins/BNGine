@@ -124,6 +124,7 @@ RaycastHit RaycastBox(Vector3 origin, Vector3 direction, BoxCollider* boxCol) {
 	if (minDepth > 0 && minDepth < maxDepth) {
 		RaycastHit hit;
 		hit.wasHit = true;
+		hit.type = CT_BOX;
 
 		Mat4x4 loc2glob = trans->GetLocalToGlobalMatrix();
 
@@ -241,8 +242,10 @@ RaycastHit RaycastMesh(Vector3 origin, Vector3 direction, MeshCollider* meshCol)
 
 			if (!hit.wasHit || depth < hit.depth) {
 				hit.wasHit = true;
+				hit.type = CT_MESH;
 				hit.depth = depth;
 				hit.globalPos = globalHitPos;
+				hit.colId = meshCol->id;
 				hit.globalNormal = loc2glob.MultiplyAsDirection(normal).Normalized();
 			}
 		}

@@ -9,7 +9,8 @@
 
 enum ColliderType {
 	CT_BOX,
-	CT_SPHERE
+	CT_SPHERE,
+	CT_MESH
 };
 
 enum CollisionState {
