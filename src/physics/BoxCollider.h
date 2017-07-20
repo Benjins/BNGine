@@ -20,7 +20,7 @@ struct BoxCollider : Component {
 		colFlags = CF_NONE;
 	}
 
-	void EditorGui();
+	void EditorGui(bool isSelected);
 };
 
 bool WithinVolume(Vector3 pos, Vector3 min, Vector3 max);

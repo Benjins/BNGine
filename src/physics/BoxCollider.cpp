@@ -22,10 +22,12 @@ bool IsInsideBoxCollider(const BoxCollider* col, Vector3 pos){
 	return WithinVolume(localPos, boxMin, boxMax);
 }
 
-void BoxCollider::EditorGui() {
-	Entity* ent = GlobalScene->entities.GetById(entity);
-	Transform* trans = GlobalScene->transforms.GetById(ent->transform);
+void BoxCollider::EditorGui(bool isSelected) {
+	if (isSelected) {
+		Entity* ent = GlobalScene->entities.GetById(entity);
+		Transform* trans = GlobalScene->transforms.GetById(ent->transform);
 
-	DebugDrawWireCube(position, size, trans);
+		DebugDrawWireCube(position, size, trans);
+	}
 }
 
