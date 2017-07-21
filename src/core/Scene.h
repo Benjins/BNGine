@@ -22,6 +22,7 @@
 #include "../physics/PhysicsSystem.h"
 
 #include "../gui/GuiSystem.h"
+#include "../gui/GameConsole.h"
 
 #include "../anim/Animations.h"
 
@@ -48,6 +49,8 @@ struct Scene {
 	GuiSystem gui;
 	AnimationSystem anims;
 	NetworkSystem net;
+
+	GameConsole gameConsole;
 
 	Camera cam;
 

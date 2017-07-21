@@ -30,22 +30,26 @@ void PlayerComponent::Update() {
 		floorHeight = downCast.globalPos.y + playerHeight;
 	}
 
-	entTrans->rotation = Quaternion(Y_AXIS, GlobalScene->input.cursorX / 80);
-	camTrans->rotation = Quaternion(X_AXIS, GlobalScene->input.cursorY / 80 - 2);
+	if (!disablePlayerInput) {
+		entTrans->rotation = Quaternion(Y_AXIS, GlobalScene->input.cursorX / 80);
+		camTrans->rotation = Quaternion(X_AXIS, GlobalScene->input.cursorY / 80 - 2);
+	}
 
 	Vector3 moveVec;
 
-	if (GlobalScene->input.KeyIsDown('W')) {
-		moveVec = moveVec + camTrans->Forward() * GlobalScene->GetDeltaTime() * movementSpeed;
-	}
-	if (GlobalScene->input.KeyIsDown('S')) {
-		moveVec = moveVec - camTrans->Forward() * GlobalScene->GetDeltaTime() * movementSpeed;
-	}
-	if (GlobalScene->input.KeyIsDown('A')) {
-		moveVec = moveVec - camTrans->Right() * GlobalScene->GetDeltaTime() * movementSpeed;
-	}
-	if (GlobalScene->input.KeyIsDown('D')) {
-		moveVec = moveVec + camTrans->Right() * GlobalScene->GetDeltaTime() * movementSpeed;
+	if (!disablePlayerInput) {
+		if (GlobalScene->input.KeyIsDown('W')) {
+			moveVec = moveVec + camTrans->Forward() * GlobalScene->GetDeltaTime() * movementSpeed;
+		}
+		if (GlobalScene->input.KeyIsDown('S')) {
+			moveVec = moveVec - camTrans->Forward() * GlobalScene->GetDeltaTime() * movementSpeed;
+		}
+		if (GlobalScene->input.KeyIsDown('A')) {
+			moveVec = moveVec - camTrans->Right() * GlobalScene->GetDeltaTime() * movementSpeed;
+		}
+		if (GlobalScene->input.KeyIsDown('D')) {
+			moveVec = moveVec + camTrans->Right() * GlobalScene->GetDeltaTime() * movementSpeed;
+		}
 	}
 
 	if (GlobalScene->input.MouseButtonIsReleased(PRIMARY)) {
@@ -93,7 +97,7 @@ void PlayerComponent::Update() {
 		if (entTrans->position.y > floorHeight + 0.005f) {
 			currState = CS_FALLING;
 		}
-		else if (GlobalScene->input.KeyIsDown(KC_Space)) {
+		else if (!disablePlayerInput && GlobalScene->input.KeyIsDown(KC_Space)) {
 			yVelocity = jumpVelocity;
 			currState = CS_JUMPING;
 		}
@@ -141,11 +145,13 @@ void PlayerComponent::Update() {
 	else if (currState == CS_FALLINGWATER) {
 		yVelocity += gravity / 4;
 
-		if (GlobalScene->input.KeyIsDown('Q')) {
-			yVelocity += waterMoveVerticalSpeed * GlobalScene->GetDeltaTime();
-		}
-		if (GlobalScene->input.KeyIsDown('Z')) {
-			yVelocity -= waterMoveVerticalSpeed * GlobalScene->GetDeltaTime();
+		if (!disablePlayerInput) {
+			if (GlobalScene->input.KeyIsDown('Q')) {
+				yVelocity += waterMoveVerticalSpeed * GlobalScene->GetDeltaTime();
+			}
+			if (GlobalScene->input.KeyIsDown('Z')) {
+				yVelocity -= waterMoveVerticalSpeed * GlobalScene->GetDeltaTime();
+			}
 		}
 
 		moveVec.y = yVelocity * GlobalScene->GetDeltaTime();
@@ -175,11 +181,13 @@ void PlayerComponent::Update() {
 	else if (currState == CS_RISINGWATER) {
 		yVelocity += gravity / 10;
 
-		if (GlobalScene->input.KeyIsDown('Q')) {
-			yVelocity += waterMoveVerticalSpeed * GlobalScene->GetDeltaTime();
-		}
-		if (GlobalScene->input.KeyIsDown('Z')) {
-			yVelocity -= waterMoveVerticalSpeed * GlobalScene->GetDeltaTime();
+		if (!disablePlayerInput) {
+			if (GlobalScene->input.KeyIsDown('Q')) {
+				yVelocity += waterMoveVerticalSpeed * GlobalScene->GetDeltaTime();
+			}
+			if (GlobalScene->input.KeyIsDown('Z')) {
+				yVelocity -= waterMoveVerticalSpeed * GlobalScene->GetDeltaTime();
+			}
 		}
 
 		static float maxVelocity = 0.4f;
@@ -211,7 +219,7 @@ void PlayerComponent::Update() {
 	}
 	else if (currState == CS_LADDERCLIMB) {
 		moveVec.y = oldMoveVecY;
-		if (GlobalScene->input.KeyIsDown(KC_Space)) {
+		if (!disablePlayerInput && GlobalScene->input.KeyIsDown(KC_Space)) {
 			yVelocity = jumpVelocity;
 			currState = CS_JUMPING;
 		}

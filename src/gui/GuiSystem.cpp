@@ -251,6 +251,7 @@ float GuiSystem::DrawTextLabel(const char* text, IDHandle<BitmapFont> fontId, fl
 		return 0;
 	}
 
+	// TODO: Avoid this malloc
 	float* posBuffer = (float*)malloc(textLen*12*sizeof(float));
 	float* uvsBuffer = (float*)malloc(textLen*12*sizeof(float));
 
@@ -377,12 +378,7 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 		textToDraw = &textToDraw[textInputState.textOffset];
 	}
 
-	if (textInputState.count == textInputState.activeIndex) {
-		DrawTextLabel(textToDraw, IDHandle<BitmapFont>(fontId), scale, x + textOffset, y, w, scale);
-	}
-	else {
-		DrawTextLabel(textToDraw, IDHandle<BitmapFont>(fontId), scale, x + textOffset, y, w, scale);
-	}
+	DrawTextLabel(textToDraw, IDHandle<BitmapFont>(fontId), scale, x + textOffset, y, w, scale);
 
 	textInputState.count++;
 

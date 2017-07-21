@@ -20,6 +20,9 @@ struct PlayerComponent : Component{
 	/*[DoNotSerialize]*/
 	float yVelocity;
 
+	/*[DoNotSerialize]*/
+	bool disablePlayerInput;
+
 	float playerHeight;
 	float playerWidth;
 	float jumpVelocity;
@@ -43,6 +46,8 @@ struct PlayerComponent : Component{
 		maxHealth = 5;
 
 		currState = CS_GROUNDED;
+
+		disablePlayerInput = false;
 	}
 
 	bool CheckWater(Vector3 pos);

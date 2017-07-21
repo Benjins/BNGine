@@ -446,6 +446,17 @@ void Scene::Render() {
 	//gui.DrawUnicodeLabel(unicodeText, IDHandle<UniFont>(0), 18, x, 30, width);
 	//gui.DrawTextLabel("Hi", IDHandle<BitmapFont>(0), 24, 40, 80, 100);
 
+	// TODO: Hack
+	if (input.KeyIsReleased('T')) {
+		// TODO: Focus the console input as well?
+		// Also defocus it?
+		gameConsole.shouldDisplayConsole = !gameConsole.shouldDisplayConsole;
+		// TODO: HACK: Better way to signal this?
+		gameplay.players.vals[0].disablePlayerInput = !gameplay.players.vals[0].disablePlayerInput;
+	}
+
+	gameConsole.Render(&gui);
+
 	gui.Render();
 
 	glDisable(GL_BLEND);
