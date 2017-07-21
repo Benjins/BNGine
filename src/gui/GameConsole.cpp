@@ -52,7 +52,7 @@ void GameConsole::Render(GuiSystem* gui) {
 		gui->ColoredBox(startX, startY, width, height, Vector4(0.4f, 0.4f, 0.4f, 0.7f));
 
 		String newLine = gui->TextInput(currentLine, 0, lineHeight, startX, startY, width);
-		if (newLine.string != currentLine.string) {
+		if (newLine != currentLine) {
 			pastLines.PushBack(newLine);
 
 			Vector<SubString> parts;
