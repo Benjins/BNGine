@@ -1146,10 +1146,12 @@ void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& as
 	String polyCountStr = polyListElem->GetExistingAttrValue("count");
 	int polyCount = Atoi(polyCountStr.string);
 
-	XMLElement* vCountElem = polyListElem->GetChild("vcount");
-	Vector<int> vCountData = ParseIntArray(vCountElem->plainText.start, vCountElem->plainText.length, polyCount);
-	for (int i = 0; i < vCountData.count; i++) {
-		ASSERT(vCountData.Get(i) == 3);
+	{
+		XMLElement* vCountElem = polyListElem->GetChild("vcount");
+		Vector<int> vCountData = ParseIntArray(vCountElem->plainText.start, vCountElem->plainText.length, polyCount);
+		for (int i = 0; i < vCountData.count; i++) {
+			ASSERT(vCountData.Get(i) == 3);
+		}
 	}
 
 	char* uvId = nullptr;

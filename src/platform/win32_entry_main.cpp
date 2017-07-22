@@ -89,12 +89,12 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 			}
 		}
 
-		HDC hdc = GetDC(window);
+		HDC drawingContext = GetDC(window);
 
 		isRunning &= AppUpdate(argc, argv);
 
-		SwapBuffers(hdc);
-		ReleaseDC(window, hdc);
+		SwapBuffers(drawingContext);
+		ReleaseDC(window, drawingContext);
 
 		Sleep(16);
 	}

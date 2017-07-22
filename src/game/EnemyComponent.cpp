@@ -1,7 +1,7 @@
 #include "EnemyComponent.h"
 #include "../core/Scene.h"
 
-CONFIG_VAR(bool, enemydoDownCast, "enemy_floor", false);
+CONFIG_VAR(bool, enemydoDownCast, "enemy_floor", true);
 
 void EnemyComponent::Update() {
 	if (playerId.id == 0xFFFFFFFF) {

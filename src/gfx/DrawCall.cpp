@@ -43,9 +43,9 @@ void ExecuteDrawCalls(DrawCall* calls, int count) {
 		mat->SetVector3Uniform("_lightAngle", lightVec);
 		mat->SetFloatUniform("_time", GlobalScene->GetTotalTime());
 
-		for (int i = 0; i < mat->texCount; i++) {
-			Texture* tex =  GlobalScene->res.textures.GetById(mat->texIds[i]);
-			tex->Bind(GL_TEXTURE0 + i);
+		for (int j = 0; j < mat->texCount; j++) {
+			Texture* tex =  GlobalScene->res.textures.GetById(mat->texIds[j]);
+			tex->Bind(GL_TEXTURE0 + j);
 		}
 
 		mat->UpdateUniforms();

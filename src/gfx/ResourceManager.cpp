@@ -220,11 +220,11 @@ void ResourceManager::LoadArmatureFromChunk(MemStream& stream, Armature* outArma
 	Vector<float> boneWeights(vertCount * MAX_BONES_PER_VERTEX);
 	Vector<float> boneIndices(vertCount * MAX_BONES_PER_VERTEX);
 	for (int i = 0; i < vertCount; i++) {
-		int boneCount = stream.Read<int>();
-		ASSERT(boneCount <= MAX_BONES_PER_VERTEX);
+		int bonesForThisVert = stream.Read<int>();
+		ASSERT(bonesForThisVert <= MAX_BONES_PER_VERTEX);
 		
 		float mag = 0.0f;
-		for (int j = 0; j < boneCount; j++) {
+		for (int j = 0; j < bonesForThisVert; j++) {
 			boneIndices.PushBack(stream.Read<int>());
 			float weight = stream.Read<float>();
 			boneWeights.PushBack(weight);
@@ -234,7 +234,7 @@ void ResourceManager::LoadArmatureFromChunk(MemStream& stream, Armature* outArma
 		ASSERT(BNS_ABS(mag - 1) < 0.001f);
 
 		//Pad to MAX_BONES_PER_VERTEX bones
-		for (int j = boneCount; j < MAX_BONES_PER_VERTEX; j++) {
+		for (int j = bonesForThisVert; j < MAX_BONES_PER_VERTEX; j++) {
 			boneIndices.PushBack(0);
 			boneWeights.PushBack(0.0f);
 		}

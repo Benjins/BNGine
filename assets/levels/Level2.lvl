@@ -54,7 +54,7 @@
 		<Mesh src='stairs.obj'/>
 	</Entity>
 	<Entity id='14'>
-		<Transform pos='0.000000,-0.760581,0.929053' id='15' scale='0.200000,0.200000,0.200000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<Transform pos='0.000000,1.669307,0.929053' id='15' scale='0.200000,0.200000,0.200000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 		<EnemyComponent pauseTime='3.000000' playerId='-1' currentState='ES_Patrol' speed='2.000000'/>
 		<HealthComponent currentHealth='5.000000' maxHealth='5.000000'/>
 		<Material src='bullet.mat'/>
