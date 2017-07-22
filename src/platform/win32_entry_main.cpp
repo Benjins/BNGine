@@ -221,7 +221,10 @@ KeyStrokeCode SystemKeyToKeyStrokeCode(int key) {
 			{ KC_LeftArrow,	   VK_LEFT },
 			{ KC_RightArrow,   VK_RIGHT },
 			{ KC_Space,        VK_SPACE },
-			{ KC_Minus,        VK_OEM_MINUS }
+			{ KC_Minus,        VK_OEM_MINUS },
+			// TODO: The ` is VK_OEM_3 on US keyboards, but
+			// I don't really understand how to handle diff keybaord layouts
+			{ KC_BackTick,     VK_OEM_3 }
 			// TODO: Minus/underscore
 		};
 

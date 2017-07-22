@@ -455,7 +455,7 @@ void Scene::Render() {
 	//gui.DrawTextLabel("Hi", IDHandle<BitmapFont>(0), 24, 40, 80, 100);
 
 	// TODO: Hack
-	if (input.KeyIsReleased('T')) {
+	if (input.KeyIsReleased(KC_BackTick)) {
 		// TODO: Focus the console input as well?
 		// Also defocus it?
 		gameConsole.shouldDisplayConsole = !gameConsole.shouldDisplayConsole;
