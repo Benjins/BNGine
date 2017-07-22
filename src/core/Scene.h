@@ -37,6 +37,8 @@ struct DrawCall;
 
 extern ConfigVarTable globalConfigTable;
 
+extern float sceneTimeScale;
+
 struct Scene {
 	IDTracker<Entity> entities;
 	IDTracker<Transform> transforms;
@@ -75,7 +77,7 @@ struct Scene {
 	}
 	
 	double GetDeltaTime() {
-		return frameRateIsLocked ? lockedFrameRate : frameTimer.GetTimeSince();
+		return sceneTimeScale * (frameRateIsLocked ? lockedFrameRate : frameTimer.GetTimeSince());
 	}
 
 	double GetTotalTime() {

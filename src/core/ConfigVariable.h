@@ -72,7 +72,7 @@ struct _ConfigVarInit {
 	_ConfigVarInit(Vector4* cVal, const char* name);
 };
 
-#define CONFIG_FLOAT(type, var, name, defaultVal) \
+#define CONFIG_VAR(type, var, name, defaultVal) \
 	type var = defaultVal; \
 	_ConfigVarInit BNS_GLUE_TOKS(_config_var_, __COUNTER__) (&(var), name)
 

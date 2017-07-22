@@ -15,6 +15,8 @@ Scene* GlobalScene = nullptr;
 
 ConfigVarTable globalConfigTable;
 
+CONFIG_VAR(float, sceneTimeScale, "time_scale", 1.0f);
+
 Scene::Scene() : entities(100), transforms(120), res() {
 	GlobalScene = this;
 	frameRateIsLocked = false;

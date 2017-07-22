@@ -7,7 +7,7 @@
 
 #include "../core/ConfigVariable.h"
 
-CONFIG_FLOAT(float, playerGravity, "gravity", 0.08f);
+CONFIG_VAR(float, playerGravity, "gravity", 0.08f);
 
 void PlayerComponent::Start() {
 	//GuiFormData* form = GlobalScene->gui.guiFormStack.CreateAndAdd();
