@@ -52,6 +52,16 @@ struct ConfigVarTable {
 		return false;
 	}
 
+	ConfigVariable* GetVar(const String& name) {
+		BNS_VEC_FOREACH(vars) {
+			if (name == ptr->name.buffer) {
+				return ptr;
+			}
+		}
+
+		return nullptr;
+	}
+
 	void SetFloat(const String& varName, float val) {
 		BNS_VEC_FOREACH(vars) {
 			if (varName == ptr->name.buffer) {

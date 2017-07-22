@@ -39,9 +39,23 @@ void Console_SetVariable(Vector<SubString>* args, String* outString) {
 		*outString = "Error: set expects two args";
 	}
 	else {
-		if (globalConfigTable.VarExists(args->data[0])) {
-			// TODO: More types
-			globalConfigTable.SetFloat(args->data[0], Atof(args->data[1].start));
+		if (ConfigVariable* configVar = globalConfigTable.GetVar(args->data[0])) {
+			if (configVar->value.IsConfigFloat()) {
+				*configVar->value.AsConfigFloat() = Atof(args->data[1].start);
+			}
+			else if (configVar->value.IsConfigInt()) {
+				*configVar->value.AsConfigInt() = Atoi(args->data[1].start);
+			}
+			else if (configVar->value.IsConfigBool()) {
+				*configVar->value.AsConfigBool() =  (args->data[1].start != "F");
+			}
+			else if (configVar->value.IsConfigString()) {
+				*configVar->value.AsConfigString() = args->data[1].start;
+			}
+			else {
+				// TODO: Othe types
+				ASSERT(false);
+			}
 		}
 		else {
 			*outString = "Error: var does not exist";
