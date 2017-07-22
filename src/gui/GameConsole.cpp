@@ -30,9 +30,30 @@ void Console_Add(Vector<SubString>* args, String* outString) {
 	}
 }
 
+void Console_Reload(Vector<SubString>* args, String* outString) {
+	GlobalScene->ReloadAssets();
+}
+
+void Console_SetVariable(Vector<SubString>* args, String* outString) {
+	if (args->count != 2) {
+		*outString = "Error: set expects two args";
+	}
+	else {
+		if (globalConfigTable.VarExists(args->data[0])) {
+			// TODO: More types
+			globalConfigTable.SetFloat(args->data[0], Atof(args->data[1].start));
+		}
+		else {
+			*outString = "Error: var does not exist";
+		}
+	}
+}
+
 ConsoleCommandBinding defaultBindings[] = {
 	{ "echo", Console_EchoArgs },
-	{ "add", Console_Add }
+	{ "add", Console_Add },
+	{ "reload", Console_Reload },
+	{ "set", Console_SetVariable }
 };
 
 void GameConsole::InitCommandBindings() {
@@ -52,7 +73,7 @@ void GameConsole::Render(GuiSystem* gui) {
 		gui->ColoredBox(startX, startY, width, height, Vector4(0.4f, 0.4f, 0.4f, 0.7f));
 
 		String newLine = gui->TextInput(currentLine, 0, lineHeight, startX, startY, width);
-		if (newLine != currentLine) {
+		if (newLine != currentLine && newLine != "") {
 			pastLines.PushBack(newLine);
 
 			Vector<SubString> parts;
@@ -75,6 +96,9 @@ void GameConsole::Render(GuiSystem* gui) {
 				else {
 					pastLines.PushBack("Unknown command");
 				}
+			}
+			else {
+				ASSERT(false);
 			}
 
 			currentLine = "";

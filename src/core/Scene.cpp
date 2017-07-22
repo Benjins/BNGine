@@ -13,6 +13,8 @@
 
 Scene* GlobalScene = nullptr;
 
+ConfigVarTable globalConfigTable;
+
 Scene::Scene() : entities(100), transforms(120), res() {
 	GlobalScene = this;
 	frameRateIsLocked = false;
@@ -167,6 +169,13 @@ void Scene::ShutDown(){
 	gui.ShutDown();
 }
 
+void Scene::ReloadAssets() {
+	gui.ShutDown();
+	PackAssetFile("assets", "assets.bna");
+	res.LoadAssetFile("assets.bna");
+	gui.Init();
+}
+
 void Scene::Update() {
 	phys.AdvanceTime(GetDeltaTime());
 
@@ -174,11 +183,8 @@ void Scene::Update() {
 
 	UpdateCustomComponents();
 
-	if (GlobalScene->input.KeyIsReleased('R')) {
-		gui.ShutDown();
-		PackAssetFile("assets", "assets.bna");
-		res.LoadAssetFile("assets.bna");
-		gui.Init();
+	if (!gameConsole.shouldDisplayConsole && GlobalScene->input.KeyIsReleased('R')) {
+		ReloadAssets();
 	}
 
 	if (GlobalScene->input.KeyIsReleased('P')) {

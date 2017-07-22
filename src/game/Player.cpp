@@ -5,6 +5,10 @@
 
 #include "../net/NetworkSystem.h"
 
+#include "../core/ConfigVariable.h"
+
+CONFIG_FLOAT(float, playerGravity, "gravity", 0.08f);
+
 void PlayerComponent::Start() {
 	//GuiFormData* form = GlobalScene->gui.guiFormStack.CreateAndAdd();
 	//form->type = GFT_GuiHealthForm;
@@ -79,7 +83,6 @@ void PlayerComponent::Update() {
 	float oldMoveVecY = moveVec.y;
 	moveVec.y = 0;
 
-	static const float gravity = 0.08f;
 	static const float waterMoveVerticalSpeed = 1.5f;
 	static const float waterMaxHorizontalSpeed = 0.3f;
 
@@ -109,7 +112,7 @@ void PlayerComponent::Update() {
 		}
 	}
 	else if (currState == CS_JUMPING) {
-		yVelocity -= gravity;
+		yVelocity -= playerGravity;
 		moveVec.y = yVelocity / 50.0f;
 
 		if (yVelocity < 0) {
@@ -120,7 +123,7 @@ void PlayerComponent::Update() {
 		}
 	}
 	else if (currState == CS_FALLING) {
-		yVelocity -= gravity;
+		yVelocity -= playerGravity;
 		moveVec.y = yVelocity * GlobalScene->GetDeltaTime();
 
 		if (entTrans->position.y + moveVec.y < floorHeight) {
@@ -143,7 +146,7 @@ void PlayerComponent::Update() {
 		}
 	}
 	else if (currState == CS_FALLINGWATER) {
-		yVelocity += gravity / 4;
+		yVelocity += playerGravity / 4;
 
 		if (!disablePlayerInput) {
 			if (GlobalScene->input.KeyIsDown('Q')) {
@@ -179,7 +182,7 @@ void PlayerComponent::Update() {
 		}
 	}
 	else if (currState == CS_RISINGWATER) {
-		yVelocity += gravity / 10;
+		yVelocity += playerGravity / 10;
 
 		if (!disablePlayerInput) {
 			if (GlobalScene->input.KeyIsDown('Q')) {

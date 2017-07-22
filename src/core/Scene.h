@@ -12,6 +12,7 @@
 #include "Camera.h"
 #include "Input.h"
 #include "Timer.h"
+#include "ConfigVariable.h"
 
 #include "../metagen/ComponentMeta.h"
 #include "../metagen/MetaStruct.h"
@@ -33,6 +34,8 @@
 #include "../../gen/Actions.h"
 
 struct DrawCall;
+
+extern ConfigVarTable globalConfigTable;
 
 struct Scene {
 	IDTracker<Entity> entities;
@@ -85,6 +88,8 @@ struct Scene {
 	void StartUp();
 	void StartUpCustomComponents();
 	void ShutDown();
+
+	void ReloadAssets();
 
 	void Update();
 	void UpdateCustomComponents();
