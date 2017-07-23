@@ -200,9 +200,7 @@ RaycastHit RaycastMesh(Vector3 origin, Vector3 direction, MeshCollider* meshCol)
 		Vector3 v1 = mesh->positions.data[ptr->posIndices[1]];
 		Vector3 v2 = mesh->positions.data[ptr->posIndices[2]];
 
-		Vector3 normal = CrossProduct(v1 - v0, v2 - v0);
-		float triangleArea = normal.Magnitude();
-		normal = normal / triangleArea;
+		Vector3 normal = CrossProduct(v1 - v0, v2 - v0).Normalized();
 		Vector3 v0Toorigin = localOrigin - v0;
 		Vector3 v1Toorigin = localOrigin - v1;
 		Vector3 v2Toorigin = localOrigin - v2;
@@ -227,14 +225,19 @@ RaycastHit RaycastMesh(Vector3 origin, Vector3 direction, MeshCollider* meshCol)
 
 		Vector3 rayHitsPlane = localOrigin + localDirection * rayDistanceToPlane;
 
-		float area1 = CrossProduct(v0 - rayHitsPlane, v1 - rayHitsPlane).Magnitude();
-		float area2 = CrossProduct(v1 - rayHitsPlane, v2 - rayHitsPlane).Magnitude();
-		float area3 = CrossProduct(v0 - rayHitsPlane, v2 - rayHitsPlane).Magnitude();
+		Vector3 v01Check = CrossProduct(v0 - rayHitsPlane, v1 - v0);
+		Vector3 v12Check = CrossProduct(v1 - rayHitsPlane, v2 - v1);
+		Vector3 v20Check = CrossProduct(v2 - rayHitsPlane, v0 - v2);
 
-		float totalArea = area1 + area2 + area3;
+		Vector3 v01Expect = CrossProduct(v0 - v2, v1 - v0);
+		Vector3 v12Expect = CrossProduct(v1 - v0, v2 - v1);
+		Vector3 v20Expect = CrossProduct(v2 - v1, v0 - v2);
 
-		const float fudgeFactor = 1.01f;
-		if (totalArea < triangleArea * fudgeFactor) {
+		bool isInsideTriangle = DotProduct(v01Check, v01Expect) >= 0;
+		isInsideTriangle &= DotProduct(v12Check, v12Expect) >= 0;
+		isInsideTriangle &= DotProduct(v20Check, v20Expect) >= 0;
+
+		if (isInsideTriangle) {
 			Mat4x4 loc2glob = trans->GetLocalToGlobalMatrix();
 			Vector3 globalHitPos = loc2glob.MultiplyAsPosition(rayHitsPlane);
 
