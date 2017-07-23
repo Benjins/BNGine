@@ -47,6 +47,7 @@ struct ResourceManager {
 
 	void Reset();
 
+	void ReloadSingleAsset(const char* assetFileName);
 	void LoadAssetFile(const char* fileName);
 
 	void LoadMeshFromChunk(MemStream& stream, Mesh* outModel);

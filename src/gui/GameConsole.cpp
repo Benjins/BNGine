@@ -63,11 +63,22 @@ void Console_SetVariable(Vector<SubString>* args, String* outString) {
 	}
 }
 
+void Console_ReloadAsset(Vector<SubString>* args, String* outString) {
+	if (args->count != 1) {
+		*outString = "Error: reload_asset expects one arg";
+	}
+	else {
+		String assetName = args->data[0];
+		GlobalScene->res.ReloadSingleAsset(assetName.string);
+	}
+}
+
 ConsoleCommandBinding defaultBindings[] = {
 	{ "echo", Console_EchoArgs },
 	{ "add", Console_Add },
 	{ "reload", Console_Reload },
-	{ "set", Console_SetVariable }
+	{ "set", Console_SetVariable },
+	{ "reload_asset", Console_ReloadAsset }
 };
 
 void GameConsole::InitCommandBindings() {

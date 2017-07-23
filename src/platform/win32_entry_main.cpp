@@ -13,6 +13,8 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 
 KeyStrokeCode SystemKeyToKeyStrokeCode(int key);
 
+uint64_t GetFileModifiedTime(const char* filename);
+
 int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmdShow) {
 
 	CommandLineParser parser;
@@ -184,6 +186,21 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 	}
 
 	return result;
+}
+
+uint64_t GetFileModifiedTime(const char* filename) {
+	HANDLE fileHandle = CreateFile( filename, GENERIC_READ, FILE_SHARE_READ, NULL,
+									OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	
+	FILETIME writeTime;
+	GetFileTime(fileHandle, NULL, NULL, &writeTime);
+	CloseHandle(fileHandle);
+
+	LARGE_INTEGER writeTimeLInt;
+	writeTimeLInt.HighPart = writeTime.dwHighDateTime;
+	writeTimeLInt.LowPart = writeTime.dwLowDateTime;
+
+	return writeTimeLInt.QuadPart;
 }
 
 struct VKDef {

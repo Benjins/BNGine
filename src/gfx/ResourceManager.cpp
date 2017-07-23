@@ -41,6 +41,68 @@ void ResourceManager::Reset() {
 	cubeMaps.Reset();
 }
 
+// TODO: move this into CppUtils/strings.h
+bool StringEndsWith(const char* haystack, const char* needle) {
+	int hLength = StrLen(haystack);
+	int nLength = StrLen(needle);
+
+	const char* suspectedStart = haystack + hLength - nLength;
+
+	return StrEqualN(suspectedStart, needle, nLength);
+}
+
+// TODO: Avoid crawling the dir tree each time,
+// also should be pulled out to expose functionality to other places
+const char* GetFullFilePath(const char* fileName) {
+	File assets;
+	assets.Load("assets");
+	Vector<File*> assetFiles;
+	// TODO: Don't assume 3-letter extension
+	assets.FindFilesWithExt(fileName + StrLen(fileName) - 3, &assetFiles);
+
+	for (int i = 0; i < assetFiles.count; i++) {
+		if (StrEqual(fileName, assetFiles.Get(i)->fileName)) {
+			return assetFiles.Get(i)->fullName;
+		}
+	}
+
+	return "";
+}
+
+void ResourceManager::ReloadSingleAsset(const char* assetFileName) {
+	if (StringEndsWith(assetFileName, ".obj")) {
+		const char* fullPath = GetFullFilePath(assetFileName);
+		if (*fullPath != '\0') {
+			int assetId;
+			bool found = assetIdMap.LookUp(assetFileName, &assetId);
+			ASSERT(found);
+			// TODO: Avoid writing out to a file, just have asset write out to memstream,
+			// then write that to a file, but allow us to hijack it
+			FILE* fakeAssetFile = fopen("temp.bna", "wb");
+			WriteMeshChunk(fullPath, assetId, fakeAssetFile);
+			fclose(fakeAssetFile);
+
+			MemStream fileStream;
+			fileStream.ReadInFromFile("temp.bna");
+
+			char chunkTag[4];
+			fileStream.ReadArray<char>(chunkTag, 4);
+			fileStream.Read<int>();
+
+			Mesh* mesh = meshes.GetByIdNum(assetId);
+			mesh->Destroy();
+			LoadMeshFromChunk(fileStream, mesh);
+		}
+		else {
+			ASSERT(false);
+		}
+	}
+	else {
+		// TODO: Add more types
+		ASSERT(false);
+	}
+}
+
 void ResourceManager::LoadAssetFile(const char* fileName) {
 	Reset();
 
