@@ -97,9 +97,20 @@ void GameConsole::Render(GuiSystem* gui) {
 		float height = GlobalScene->cam.heightPixels * consoleHeightRatio;
 		gui->ColoredBox(startX, startY, width, height, Vector4(0.4f, 0.4f, 0.4f, 0.7f));
 
-		String newLine = gui->TextInput(currentLine, 0, lineHeight, startX, startY, width);
-		if (newLine != currentLine && newLine != "") {
+		String newLine;
+		if (GlobalScene->input.KeyIsReleased(KC_UpArrow)){
+			if (pastLines.count > 0) {
+				currentLine = pastCommands.Back();
+			}
+		}
+		else {
+			newLine = gui->TextInput(currentLine, 0, lineHeight, startX, startY, width);
+		}
+
+		if ((newLine.string != currentLine.string && newLine != "")
+			|| (newLine != "" && GlobalScene->input.KeyIsReleased(KC_Enter))) {
 			pastLines.PushBack(newLine);
+			pastCommands.PushBack(newLine);
 
 			Vector<SubString> parts;
 			SplitStringIntoParts(newLine, " ", &parts, true);

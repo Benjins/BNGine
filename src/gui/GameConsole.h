@@ -15,6 +15,8 @@ struct GameConsole {
 
 	String currentLine;
 	Vector<String> pastLines;
+	Vector<String> pastCommands;
+	int pastCommandIndexOffset;
 
 	float consoleHeightRatio;
 
@@ -23,6 +25,8 @@ struct GameConsole {
 	GameConsole() {
 		shouldDisplayConsole = false;
 		consoleHeightRatio = 0.7f;
+
+		pastCommandIndexOffset = 0;
 
 		InitCommandBindings();
 	}
