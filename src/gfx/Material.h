@@ -20,10 +20,17 @@ struct Texture;
 struct Program;
 struct CubeMap;
 
+enum MaterialType {
+	MT_Opaque,
+	MT_Transparent
+};
+
 struct Material : IDBase {
 	IDHandle<Program> programId;
 	IDHandle<Texture> texIds[MAX_TEXTURES_PER_MATERIAL];
 	int texCount;
+
+	MaterialType type;
 
 	IDHandle<CubeMap> cubeMap;
 

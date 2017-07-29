@@ -447,6 +447,12 @@ void WriteMaterialChunk(const char* materialFileName, const StringMap<int>& asse
 	found = rootElem->attributes.LookUp("fs", &fShader);
 	ASSERT(found);
 
+	String matTypeName;
+	MaterialType matType = MT_Opaque;
+	if (rootElem->attributes.LookUp("type", &matTypeName)) {
+		matType = (MaterialType)ParseEnum(CDE_MaterialType, matTypeName.string);
+	}
+
 	int vShaderId;
 	int fShaderId;
 	
@@ -470,6 +476,7 @@ void WriteMaterialChunk(const char* materialFileName, const StringMap<int>& asse
 	fwrite(&vShaderId, 1, sizeof(int), assetFileHandle);
 	fwrite(&fShaderId, 1, sizeof(int), assetFileHandle);
 	fwrite(&uniformCount, 1, sizeof(int), assetFileHandle);
+	fwrite(&matType, 1, sizeof(MaterialType), assetFileHandle);
 
 	for (int i = 0; i < rootElem->childrenIds.count; i++) {
 		XMLElement* childElem = matDoc.elements.GetById(rootElem->childrenIds.Get(i));

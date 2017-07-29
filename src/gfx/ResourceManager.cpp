@@ -410,6 +410,8 @@ void ResourceManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat)
 
 	int uniformCount = stream.Read<int>();
 
+	outMat->type = stream.Read<MaterialType>();
+
 	int cubeMapId = -1;
 
 	char* cubeMapName = nullptr;
@@ -779,7 +781,29 @@ void ResourceManager::SaveLevelToFile(const Level* lvl, const char* fileName) {
 }
 
 void ResourceManager::Render() {
-	ExecuteDrawCalls(drawCalls.vals, drawCalls.currentCount);
+	Vector<DrawCall> opaqueDrawCalls;
+	Vector<DrawCall> transparentDrawCalls;
+	// TODO: Batching would probably be done here?
+	// Would likely mean doing object space -> world space on CPU side
+	for (int i = 0; i < drawCalls.currentCount; i++) {
+		IDHandle<Material> matId = drawCalls.vals[i].matId;
+		Material* mat = materials.GetById(matId);
+		if (mat->type == MT_Opaque) {
+			opaqueDrawCalls.PushBack(drawCalls.vals[i]);
+		}
+		else if (mat->type == MT_Transparent) {
+			transparentDrawCalls.PushBack(drawCalls.vals[i]);
+		}
+		else {
+			ASSERT(false);
+		}
+	}
+
+	glDisable(GL_BLEND);
+	ExecuteDrawCalls(opaqueDrawCalls.data, opaqueDrawCalls.count);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	ExecuteDrawCalls(transparentDrawCalls.data, transparentDrawCalls.count);
 }
 
 String ResourceManager::FindFileNameByIdAndExtension(const char* ext, uint32 id) {
