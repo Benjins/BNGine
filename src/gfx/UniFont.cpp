@@ -259,9 +259,9 @@ void GetJamoRects(const int* codePoints, int codepointCount, Rect charRect, Rect
 void UniFont::BakeVertexDataHangul(const unsigned int* str, int index, int len, float* x, float y, 
 								   float width, float height, Texture* fontTexture, 
 								   float* outPosData, float* outUvData, int* outIndex) {
-	int c = str[index];
+	int codepoint = str[index];
 	int codePoints[3] = {};
-	DecomposeHangulToJamo(c, codePoints);
+	DecomposeHangulToJamo(codepoint, codePoints);
 
 	int codePointCount = (codePoints[2] == 0x11A7) ? 2 : 3;
 

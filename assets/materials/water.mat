@@ -1,3 +1,5 @@
-<Material vs='pos.vs' fs='posCol.fs'>
+<Material vs='water.vs' fs='water.fs' type='MT_Transparent'>
 	<Uniform name='_mainTex' type='tex2D' value='water.bmp'/>
+	<Uniform name='alpha' type='float' value='0.6'/>
+	<Uniform name='waveHeight' type='float' value='0.01'/>
 </Material>

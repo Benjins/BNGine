@@ -1,0 +1,8 @@
+<CubeMap>
+	<Tex side='L' tex='sky1_lf.bmp'/>
+	<Tex side='R' tex='sky1_rt.bmp'/>
+	<Tex side='U' tex='sky1_up.bmp'/>
+	<Tex side='F' tex='sky1_ft.bmp'/>
+	<Tex side='D' tex='sky1_dn.bmp'/>
+	<Tex side='B' tex='sky1_bk.bmp'/>
+</CubeMap>

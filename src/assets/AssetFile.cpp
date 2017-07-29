@@ -87,6 +87,9 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 	Vector<File*> uniFontFiles;
 	assetDir.FindFilesWithExt("uft", &uniFontFiles);
 
+	Vector<File*> cubeMapFiles;
+	assetDir.FindFilesWithExt("cbm", &cubeMapFiles);
+
 	Vector<File*> prefabFiles;
 	assetDir.FindFilesWithExt("bnp", &prefabFiles);
 	SortAssetFiles(prefabFiles);
@@ -129,6 +132,10 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 
 	for (int i = 0; i < uniFontFiles.count; i++) {
 		assetFileIds.Insert(uniFontFiles.Get(i)->fileName, i);
+	}
+
+	for (int i = 0; i < cubeMapFiles.count; i++) {
+		assetFileIds.Insert(cubeMapFiles.Get(i)->fileName, i);
 	}
 
 	for (int i = 0; i < prefabFiles.count; i++) {
@@ -177,6 +184,10 @@ void PackAssetFile(const char* assetDirName, const char* packedFileName) {
 
 	for (int i = 0; i < uniFontFiles.count; i++) {
 		WriteUniFontChunk(uniFontFiles.Get(i)->fullName, ttfFiles, i, assetFile);
+	}
+
+	for (int i = 0; i < cubeMapFiles.count; i++) {
+		WriteCubeMapChunk(cubeMapFiles.Get(i)->fullName, assetFileIds, i, assetFile);
 	}
 
 	for (int i = 0; i < prefabFiles.count; i++) {
@@ -410,6 +421,9 @@ UniformType ParseUniformType(const char* typeName) {
 	else if (StrEqual(typeName, "vec4")) {
 		return UT_VEC4;
 	}
+	else if (StrEqual(typeName, "texCube")) {
+		return UT_CUBEMAP;
+	}
 	else {
 		ASSERT_WARN("Unkown uniform type name: '%s'", typeName);
 		return UT_UNKNOWN;
@@ -432,6 +446,12 @@ void WriteMaterialChunk(const char* materialFileName, const StringMap<int>& asse
 	ASSERT(found);
 	found = rootElem->attributes.LookUp("fs", &fShader);
 	ASSERT(found);
+
+	String matTypeName;
+	MaterialType matType = MT_Opaque;
+	if (rootElem->attributes.LookUp("type", &matTypeName)) {
+		matType = (MaterialType)ParseEnum(CDE_MaterialType, matTypeName.string);
+	}
 
 	int vShaderId;
 	int fShaderId;
@@ -456,6 +476,7 @@ void WriteMaterialChunk(const char* materialFileName, const StringMap<int>& asse
 	fwrite(&vShaderId, 1, sizeof(int), assetFileHandle);
 	fwrite(&fShaderId, 1, sizeof(int), assetFileHandle);
 	fwrite(&uniformCount, 1, sizeof(int), assetFileHandle);
+	fwrite(&matType, 1, sizeof(MaterialType), assetFileHandle);
 
 	for (int i = 0; i < rootElem->childrenIds.count; i++) {
 		XMLElement* childElem = matDoc.elements.GetById(rootElem->childrenIds.Get(i));
@@ -512,6 +533,12 @@ void WriteMaterialChunk(const char* materialFileName, const StringMap<int>& asse
 			case UT_VEC4: {
 				Vector4 val = ParseVector4(valString.string);
 				fwrite(&val, 1, sizeof(Vector4), assetFileHandle);
+			} break;
+
+			case UT_CUBEMAP: {
+				int cubeMapId;
+				assetIds.LookUp(valString.string, &cubeMapId);
+				fwrite(&cubeMapId, 1, sizeof(int), assetFileHandle);
 			} break;
 
 			default:
@@ -1126,10 +1153,12 @@ void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& as
 	String polyCountStr = polyListElem->GetExistingAttrValue("count");
 	int polyCount = Atoi(polyCountStr.string);
 
-	XMLElement* vCountElem = polyListElem->GetChild("vcount");
-	Vector<int> vCountData = ParseIntArray(vCountElem->plainText.start, vCountElem->plainText.length, polyCount);
-	for (int i = 0; i < vCountData.count; i++) {
-		ASSERT(vCountData.Get(i) == 3);
+	{
+		XMLElement* vCountElem = polyListElem->GetChild("vcount");
+		Vector<int> vCountData = ParseIntArray(vCountElem->plainText.start, vCountElem->plainText.length, polyCount);
+		for (int i = 0; i < vCountData.count; i++) {
+			ASSERT(vCountData.Get(i) == 3);
+		}
 	}
 
 	char* uvId = nullptr;
@@ -1497,3 +1526,59 @@ void WriteSkinnedMeshChunk(const char* colladaFileName, const StringMap<int>& as
 		}
 	}
 }
+
+void WriteCubeMapChunk(const char* cubeMapFileName, const StringMap<int>& assetIds, int id, FILE* assetFileHandle) {
+	char chunkId[] = "BNCM";
+	int flippedChunkId = ~*(int*)chunkId;
+	fwrite(&chunkId, 1, 4, assetFileHandle);
+	fwrite(&id, 1, 4, assetFileHandle);
+
+	XMLDoc cubeMapFile;
+	XMLError err = ParseXMLStringFromFile(cubeMapFileName, &cubeMapFile);
+	ASSERT(err == XMLE_NONE);
+	ASSERT(cubeMapFile.elements.currentCount > 0);
+	ASSERT(cubeMapFile.elements.vals[0].name == "CubeMap");
+	ASSERT(cubeMapFile.elements.vals[0].childrenIds.count == 6);
+	int texIds[6] = {-1, -1, -1, -1, -1, -1};
+	BNS_VEC_FOR_I(cubeMapFile.elements.vals[0].childrenIds) {
+		XMLElement* tex = cubeMapFile.elements.vals[0].GetChild("Tex", i);
+		ASSERT(tex != nullptr);
+		const String& side = tex->GetExistingAttrValue("side");
+		const String& texFileName = tex->GetExistingAttrValue("tex");
+		int texId = -1;
+		bool res = assetIds.LookUp(texFileName.string, &texId);
+		ASSERT_MSG(res, "Could not find texture '%s' referenced by '%s'", texFileName.string, cubeMapFileName);
+		
+		// TODO: These seem wrong, double check how things line up w/ OpenGL?
+		if (side == "B") {
+			texIds[0] = texId;
+		}
+		else if (side == "F") {
+			texIds[1] = texId;
+		}
+		else if (side == "U") {
+			texIds[2] = texId;
+		}
+		else if (side == "D") {
+			texIds[3] = texId;
+		}
+		else if (side == "L") {
+			texIds[4] = texId;
+		}
+		else if (side == "R") {
+			texIds[5] = texId;
+		}
+		else {
+			ASSERT_WARN("Bad side name is '%s': '%s'", cubeMapFileName, side.string);
+		}
+	}
+
+	BNS_ARRAY_FOR_I(texIds) {
+		ASSERT(texIds[i] != -1);
+	}
+
+	fwrite(texIds, sizeof(int), 6, assetFileHandle);
+
+	fwrite(&flippedChunkId, 1, 4, assetFileHandle);
+}
+

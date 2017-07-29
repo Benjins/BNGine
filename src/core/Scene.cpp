@@ -2,6 +2,8 @@
 
 #include "../assets/AssetFile.h"
 
+#include "../gfx/GLExtInit.h"
+
 #include "../metagen/MetaParse.h"
 
 #include "../util/LevelLoading.h"
@@ -10,6 +12,10 @@
 #include "../../ext/CppUtils/unicode.h"
 
 Scene* GlobalScene = nullptr;
+
+ConfigVarTable globalConfigTable;
+
+CONFIG_VAR(float, sceneTimeScale, "time_scale", 1.0f);
 
 Scene::Scene() : entities(100), transforms(120), res() {
 	GlobalScene = this;
@@ -91,7 +97,14 @@ Entity* Scene::CloneEntity(Entity* srcEnt) {
 		ASSERT(srcTrans != nullptr);
 		if (srcTrans != nullptr) {
 			DrawCall* dc = GetDrawCallForEntity(IDHandle<Entity>(srcEnt->id));
-			Entity* newEnt = AddVisibleEntity(dc->matId, dc->meshId);
+			Entity* newEnt = nullptr;
+			if (dc != nullptr) {
+				newEnt = AddVisibleEntity(dc->matId, dc->meshId);
+			}
+			else {
+				newEnt = AddEntity();
+			}
+
 			Transform* newTrans = transforms.GetById(newEnt->transform);
 			newTrans->position = srcTrans->position;
 			newTrans->rotation = srcTrans->rotation;
@@ -129,7 +142,7 @@ void Scene::StartUp() {
 
 	gui.Init();
 
-	LoadLevel("Level1.lvl");
+	LoadLevel("Level2.lvl");
 
 	IDHandle<Prefab> playerPrefab;
 	res.assetIdMap.LookUp("player.bnp", &playerPrefab.id);
@@ -151,10 +164,18 @@ void Scene::StartUp() {
 	//net.Initialize(0);
 
 	frameTimer.Reset();
+	totalTimer.Reset();
 }
 
 void Scene::ShutDown(){
 	gui.ShutDown();
+}
+
+void Scene::ReloadAssets() {
+	gui.ShutDown();
+	PackAssetFile("assets", "assets.bna");
+	res.LoadAssetFile("assets.bna");
+	gui.Init();
 }
 
 void Scene::Update() {
@@ -164,11 +185,8 @@ void Scene::Update() {
 
 	UpdateCustomComponents();
 
-	if (GlobalScene->input.KeyIsReleased('R')) {
-		gui.ShutDown();
-		PackAssetFile("assets", "assets.bna");
-		res.LoadAssetFile("assets.bna");
-		gui.Init();
+	if (!gameConsole.shouldDisplayConsole && GlobalScene->input.KeyIsReleased('R')) {
+		ReloadAssets();
 	}
 
 	if (GlobalScene->input.KeyIsReleased('P')) {
@@ -338,16 +356,66 @@ void DestroyEntityImmediate(uint32 entId) {
 	}
 }
 
+void RenderSkyBox() {
+	int skyBoxMatId;
+	bool hasSkyBox = GlobalScene->res.assetIdMap.LookUp("skybox.mat", &skyBoxMatId);
+
+	int ballMeshId;
+	bool hasBall = GlobalScene->res.assetIdMap.LookUp("ball.obj", &ballMeshId);
+
+	ASSERT(hasSkyBox);
+	ASSERT(hasBall);
+
+	GLint oldCullFaceMode;
+	glGetIntegerv(GL_CULL_FACE_MODE, &oldCullFaceMode);
+	GLint oldDepthFuncMode;
+	glGetIntegerv(GL_DEPTH_FUNC, &oldDepthFuncMode);
+
+	glCullFace(GL_FRONT);
+	glDepthFunc(GL_LEQUAL);
+
+	Material* skyBoxMat = GlobalScene->res.materials.GetByIdNum(skyBoxMatId);
+	Mesh* ballMesh = GlobalScene->res.meshes.GetByIdNum(ballMeshId);
+
+	CubeMap* skyBox = GlobalScene->res.cubeMaps.GetById(skyBoxMat->cubeMap);
+	ASSERT(skyBox != nullptr);
+	skyBox->Bind(GL_TEXTURE0 + skyBoxMat->texCount);
+
+	skyBoxMat->SetIntUniform("_cubeMap", skyBoxMat->texCount);
+
+	Mat4x4 camera = GlobalScene->cam.GetCameraMatrix();
+	Mat4x4 persp = GlobalScene->cam.GetPerspectiveMatrix();
+	skyBoxMat->SetMatrix4Uniform("_cameraMatrix", camera);
+	skyBoxMat->SetMatrix4Uniform("_perspMatrix", persp);
+
+	Program* prog = GlobalScene->res.programs.GetById(skyBoxMat->programId);
+	glUseProgram(prog->programObj);
+	skyBoxMat->UpdateUniforms();
+
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, ballMesh->posVbo);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glDrawArrays(GL_TRIANGLES, 0, ballMesh->faces.count * 3);
+
+	glDisableVertexAttribArray(0);
+
+	glCullFace(oldCullFaceMode);
+	glDepthFunc(oldDepthFuncMode);
+}
+
 void Scene::Render() {
 	glViewport((int)cam.xOffset, (int)cam.yOffset, (int)cam.widthPixels, (int)cam.heightPixels);
 	glScissor((int)cam.xOffset, (int)cam.yOffset, (int)cam.widthPixels, (int)cam.heightPixels);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glScissor((int)cam.xOffset, (int)cam.yOffset + 100, (int)cam.widthPixels, (int)cam.heightPixels - 100);
+	//glScissor((int)cam.xOffset, (int)cam.yOffset + 100, (int)cam.widthPixels, (int)cam.heightPixels - 100);
 
 	glEnable(GL_DEPTH_TEST);
 
 	res.Render();
+
+	RenderSkyBox();
 
 	glDisable(GL_DEPTH_TEST);
 
@@ -383,8 +451,19 @@ void Scene::Render() {
 
 	width -= 0.2f;
 
-	gui.DrawUnicodeLabel(unicodeText, IDHandle<UniFont>(0), 18, x, 30, width);
-	gui.DrawTextLabel("Hi", IDHandle<BitmapFont>(0), 24, 40, 80, 100);
+	//gui.DrawUnicodeLabel(unicodeText, IDHandle<UniFont>(0), 18, x, 30, width);
+	//gui.DrawTextLabel("Hi", IDHandle<BitmapFont>(0), 24, 40, 80, 100);
+
+	// TODO: Hack
+	if (input.KeyIsReleased(KC_BackTick)) {
+		// TODO: Focus the console input as well?
+		// Also defocus it?
+		gameConsole.shouldDisplayConsole = !gameConsole.shouldDisplayConsole;
+		// TODO: HACK: Better way to signal this?
+		gameplay.players.vals[0].disablePlayerInput = !gameplay.players.vals[0].disablePlayerInput;
+	}
+
+	gameConsole.Render(&gui);
 
 	gui.Render();
 

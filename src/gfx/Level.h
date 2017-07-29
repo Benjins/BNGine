@@ -12,6 +12,7 @@ struct Transform;
 struct Entity;
 struct BoxCollider;
 struct SphereCollider;
+struct MeshCollider;
 struct PlayerComponent;
 struct BulletComponent;
 struct EnemyComponent;
@@ -22,6 +23,7 @@ struct ScriptInstance;
 struct AnimationInstance;
 struct Prefab;
 struct PrefabInstanceComponent;
+struct PatrolPointComponent;
 
 struct PrefabInstance {
 	Quaternion rot;
@@ -44,6 +46,7 @@ struct Level : IDBase{
 	// TODO: Automate
 	Vector<BoxCollider> boxCols;
 	Vector<SphereCollider> sphereCols;
+	Vector<MeshCollider> meshCols;
 	Vector<PlayerComponent> playerComps;
 	Vector<BulletComponent> bulletComps;
 	Vector<EnemyComponent> enemyComps;
@@ -53,6 +56,7 @@ struct Level : IDBase{
 	Vector<ScriptInstance> scriptInsts;
 	Vector<AnimationInstance> animInsts;
 	Vector<PrefabInstanceComponent> prefabInstComps;
+	Vector<PatrolPointComponent> patrolPoints;
 };
 
 #endif

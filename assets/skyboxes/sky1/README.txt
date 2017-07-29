@@ -1,0 +1,1 @@
+NOTE: These skyboxes were originally obtained in the .tga format, but have been converted to .bmp to work with the engine, and have also been renamed slightly to make things easier.

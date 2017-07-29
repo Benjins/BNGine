@@ -1,0 +1,3 @@
+<Material vs='skybox.vs' fs='skybox.fs'>
+	<Uniform name='_cubeMap' type='texCube' value='sky2.cbm'/>
+</Material>

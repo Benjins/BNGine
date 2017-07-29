@@ -31,9 +31,6 @@ void ExecuteDrawCalls(DrawCall* calls, int count) {
 			arm = GlobalScene->res.armatures.GetById(mesh->armatureId);
 			ASSERT(arm != nullptr);
 
-			//arm->bones[1].rot = arm->bones[1].rot * Quaternion(Y_AXIS, 0.015f);
-			//arm->bones[3].rot = arm->bones[3].rot * Quaternion(X_AXIS, 0.005f);
-
 			Mat4x4 boneMats[MAX_BONE_COUNT];
 			arm->CalculateBoneMatrices(boneMats);	
 
@@ -44,10 +41,11 @@ void ExecuteDrawCalls(DrawCall* calls, int count) {
 		mat->SetMatrix4Uniform("_camMatrix", camera);
 		mat->SetMatrix4Uniform("_perspMatrix", persp);
 		mat->SetVector3Uniform("_lightAngle", lightVec);
+		mat->SetFloatUniform("_time", GlobalScene->GetTotalTime());
 
-		for (int i = 0; i < mat->texCount; i++) {
-			Texture* tex =  GlobalScene->res.textures.GetById(mat->texIds[i]);
-			tex->Bind(GL_TEXTURE0 + i);
+		for (int j = 0; j < mat->texCount; j++) {
+			Texture* tex =  GlobalScene->res.textures.GetById(mat->texIds[j]);
+			tex->Bind(GL_TEXTURE0 + j);
 		}
 
 		mat->UpdateUniforms();

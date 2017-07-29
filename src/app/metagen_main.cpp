@@ -94,7 +94,8 @@ void DefineCustomComponentFunction(
 	const Vector<String>* getComponentPathList,
 	const char* functionName,
 	const char* methodName,
-	bool singleEntity = false)
+	bool singleEntity = false,
+	bool passAsBool = false)
 {
 	fprintf(componentMetaFile, "\nvoid %s(%s){\n", functionName, (singleEntity ? "IDHandle<Entity> entId" : ""));
 	for (int i = 0; i < componentIndices->count; i++) {
@@ -113,15 +114,23 @@ void DefineCustomComponentFunction(
 			fprintf(componentMetaFile, "\tfor (int i = 0; i < %s.currentCount; i++) {\n", 
 				getComponentPathList->Get(i).string);
 			if (singleEntity) {
-				fprintf(componentMetaFile, "\t\tif (%s.vals[i].entity == entId){\n",
-					getComponentPathList->Get(i).string);
-				fprintf(componentMetaFile, "\t\t\t%s.vals[i].%s();\n",
-					getComponentPathList->Get(i).string, methodName);
-				fprintf(componentMetaFile, "\t\t}\n");
+				if (passAsBool) {
+					fprintf(componentMetaFile, "\t\t%s.vals[i].%s(%s.vals[i].entity == entId);\n",
+						getComponentPathList->Get(i).string,
+						methodName,
+						getComponentPathList->Get(i).string);
+				}
+				else {
+					fprintf(componentMetaFile, "\t\tif (%s.vals[i].entity == entId){\n",
+						getComponentPathList->Get(i).string);
+					fprintf(componentMetaFile, "\t\t\t%s.vals[i].%s();\n",
+						getComponentPathList->Get(i).string, methodName);
+					fprintf(componentMetaFile, "\t\t}\n");
+				}
 			}
 			else {
-				fprintf(componentMetaFile, "\t\t%s.vals[i].%s();\n", 
-					getComponentPathList->Get(i).string, methodName);
+				fprintf(componentMetaFile, "\t\t%s.vals[i].%s(%s);\n", 
+					getComponentPathList->Get(i).string, methodName, (passAsBool ? "true" : ""));
 			}
 			fprintf(componentMetaFile, "\t}\n");
 		}
@@ -554,7 +563,6 @@ void AppPreInit(int argc, char** argv){
 		fprintf(componentMetaFile, "Component* %.*s_createAndAdd(){\n", ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "\t%.*s* comp = %s.CreateAndAdd();\n", ms->name.length, ms->name.start, getComponentPathList.data[i].string);
 		fprintf(componentMetaFile, "\tcomp->type = CCT_%.*s;\n", ms->name.length, ms->name.start);
-		fprintf(componentMetaFile, "\tcomp->type = CCT_%.*s;\n", ms->name.length, ms->name.start);
 		fprintf(componentMetaFile, "\treturn comp;\n");
 		fprintf(componentMetaFile, "}\n\n");
 
@@ -578,9 +586,9 @@ void AppPreInit(int argc, char** argv){
 	DefineCustomComponentFunction(componentMetaFile, &componentIndices, &allParseMetaStructs,
 		&getComponentPathList, "Scene::UpdateCustomComponents", "Update");
 	DefineCustomComponentFunction(componentMetaFile, &componentIndices, &allParseMetaStructs,
-		&getComponentPathList, "Scene::CustomComponentEditorGui", "EditorGui");
+		&getComponentPathList, "Scene::CustomComponentEditorGui", "EditorGui", false, true);
 	DefineCustomComponentFunction(componentMetaFile, &componentIndices, &allParseMetaStructs,
-		&getComponentPathList, "Scene::CustomComponentEditorGuiForEntity", "EditorGui", true);
+		&getComponentPathList, "Scene::CustomComponentEditorGuiForEntity", "EditorGui", true, true);
 
 	for (int i = 0; i < componentIndices.count; i++) {
 		int compIdx = componentIndices.data[i];

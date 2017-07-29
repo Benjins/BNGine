@@ -12,6 +12,7 @@
 #include "Camera.h"
 #include "Input.h"
 #include "Timer.h"
+#include "ConfigVariable.h"
 
 #include "../metagen/ComponentMeta.h"
 #include "../metagen/MetaStruct.h"
@@ -22,6 +23,7 @@
 #include "../physics/PhysicsSystem.h"
 
 #include "../gui/GuiSystem.h"
+#include "../gui/GameConsole.h"
 
 #include "../anim/Animations.h"
 
@@ -32,6 +34,10 @@
 #include "../../gen/Actions.h"
 
 struct DrawCall;
+
+extern ConfigVarTable globalConfigTable;
+
+extern float sceneTimeScale;
 
 struct Scene {
 	IDTracker<Entity> entities;
@@ -49,9 +55,12 @@ struct Scene {
 	AnimationSystem anims;
 	NetworkSystem net;
 
+	GameConsole gameConsole;
+
 	Camera cam;
 
 	Timer frameTimer;
+	Timer totalTimer;
 
 	Vector<Action> deferredActions;
 	
@@ -68,7 +77,12 @@ struct Scene {
 	}
 	
 	double GetDeltaTime() {
-		return frameRateIsLocked ? lockedFrameRate : frameTimer.GetTimeSince();
+		return sceneTimeScale * (frameRateIsLocked ? lockedFrameRate : frameTimer.GetTimeSince());
+	}
+
+	double GetTotalTime() {
+		// TODO: If framerate is locked, this will also need to be adjusted
+		return totalTimer.GetTimeSince();
 	}
 
 	Scene();
@@ -76,6 +90,8 @@ struct Scene {
 	void StartUp();
 	void StartUpCustomComponents();
 	void ShutDown();
+
+	void ReloadAssets();
 
 	void Update();
 	void UpdateCustomComponents();

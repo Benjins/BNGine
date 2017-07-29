@@ -395,9 +395,7 @@ void Editor::Render() {
 		mat->SetMatrix4Uniform("_perspMatrix", persp);
 	}
 
-	if (selectedEntity != -1) {
-		scene.CustomComponentEditorGuiForEntity(IDHandle<Entity>(selectedEntity));
-	}
+	scene.CustomComponentEditorGuiForEntity(IDHandle<Entity>(selectedEntity));
 
 	scene.cam.xOffset = 0;
 	scene.cam.yOffset = 0;
@@ -1023,28 +1021,17 @@ int Editor::GetSelectedEntity(int pixelX, int pixelY) {
 			}
 		}
 
-		BoxCollider* boxCol = sys.boxCols.CreateAndAdd();
-		boxCol->entity.id = ent->id;
-
 		if (meshId.id == -1) {
+			BoxCollider* boxCol = sys.boxCols.CreateAndAdd();
+			boxCol->entity.id = ent->id;
 			boxCol->position = Vector3(0, 0, 0);
 			boxCol->size = Vector3(0.5f, 0.5f, 0.5f);
 		}
 		else {
+			MeshCollider* meshCol = sys.meshCols.CreateAndAdd();
+			meshCol->entity.id = ent->id;
 			Mesh* mesh = scene.res.meshes.GetById(meshId);
-			Vector3 minPos = Vector3(FLT_MAX, FLT_MAX, FLT_MAX);
-			Vector3 maxPos = Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-			for (int j = 0; j < mesh->positions.count; j++) {
-				for (int k = 0; k < 3; k++) {
-					minPos[k] = BNS_MIN(minPos[k], mesh->positions.data[j][k]);
-					maxPos[k] = BNS_MAX(maxPos[k], mesh->positions.data[j][k]);
-				}
-			}
-
-			boxCol->position = (minPos + maxPos) / 2;
-			//Ensure that we're just a smidge bigger
-			boxCol->size = (maxPos - minPos) / 2 + Vector3(0.02f, 0.02f, 0.02f);
+			meshCol->mesh.id = mesh->id;
 		}
 	}
 
@@ -1054,9 +1041,16 @@ int Editor::GetSelectedEntity(int pixelX, int pixelY) {
 
 	RaycastHit hit = sys.Raycast(origin, direction);
 	if (hit.wasHit) {
-		//Transform* trans = scene.transforms.GetById(scene.entities.vals[0].transform);
-		//trans->position = hit.globalPos;
-		return sys.boxCols.GetByIdNum(hit.colId)->entity.id;
+		if (hit.type == CT_MESH) {
+			return sys.meshCols.GetByIdNum(hit.colId)->entity.id;
+		}
+		else if (hit.type == CT_BOX) {
+			return sys.boxCols.GetByIdNum(hit.colId)->entity.id;
+		}
+		else {
+			ASSERT(false);
+			return -1;
+		}
 	}
 	else {
 		return -1;

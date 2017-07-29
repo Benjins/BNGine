@@ -18,11 +18,21 @@ struct Vector4;
 
 struct Texture;
 struct Program;
+struct CubeMap;
+
+enum MaterialType {
+	MT_Opaque,
+	MT_Transparent
+};
 
 struct Material : IDBase {
-	IDHandle<Texture> texIds[MAX_TEXTURES_PER_MATERIAL];
 	IDHandle<Program> programId;
+	IDHandle<Texture> texIds[MAX_TEXTURES_PER_MATERIAL];
 	int texCount;
+
+	MaterialType type;
+
+	IDHandle<CubeMap> cubeMap;
 
 	StringMap<GLint> uniformCache;
 
@@ -61,6 +71,7 @@ enum UniformType{
 	UT_VEC2,
 	UT_VEC3,
 	UT_VEC4,
+	UT_CUBEMAP
 };
 
 #endif

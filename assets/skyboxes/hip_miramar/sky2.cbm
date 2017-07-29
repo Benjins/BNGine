@@ -1,0 +1,8 @@
+<CubeMap>
+	<Tex side='L' tex='miramar_lf.bmp'/>
+	<Tex side='R' tex='miramar_rt.bmp'/>
+	<Tex side='U' tex='miramar_up.bmp'/>
+	<Tex side='F' tex='miramar_ft.bmp'/>
+	<Tex side='D' tex='miramar_dn.bmp'/>
+	<Tex side='B' tex='miramar_bk.bmp'/>
+</CubeMap>

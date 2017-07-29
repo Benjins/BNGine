@@ -21,6 +21,15 @@ RaycastHit PhysicsSystem::Raycast(Vector3 origin, Vector3 direction) {
 			}
 		}
 	}
+	for (int i = 0; i < meshCols.currentCount; i++) {
+		if (!meshCols.vals[i].isTrigger) {
+			RaycastHit meshHit = RaycastMesh(origin, direction, &meshCols.vals[i]);
+
+			if (meshHit.wasHit && meshHit.depth < finalHit.depth) {
+				finalHit = meshHit;
+			}
+		}
+	}
 
 	return finalHit;
 }
@@ -115,6 +124,7 @@ RaycastHit RaycastBox(Vector3 origin, Vector3 direction, BoxCollider* boxCol) {
 	if (minDepth > 0 && minDepth < maxDepth) {
 		RaycastHit hit;
 		hit.wasHit = true;
+		hit.type = CT_BOX;
 
 		Mat4x4 loc2glob = trans->GetLocalToGlobalMatrix();
 
@@ -161,8 +171,89 @@ RaycastHit RaycastBox(Vector3 origin, Vector3 direction, BoxCollider* boxCol) {
 	}
 }
 
-RaycastHit RaycastSphere(Vector3 origin, Vector3 direction, SphereCollider* boxCol){
+RaycastHit RaycastSphere(Vector3 origin, Vector3 direction, SphereCollider* sphereCol){
 	RaycastHit hit;
 	hit.wasHit = false;
 	return hit;
 }
+
+
+RaycastHit RaycastMesh(Vector3 origin, Vector3 direction, MeshCollider* meshCol) {
+	Entity* ent = GlobalScene->entities.GetById(meshCol->entity);
+	ASSERT(ent != nullptr);
+	IDHandle<Transform> transId = ent->transform;
+	Transform* trans = GlobalScene->transforms.GetById(transId);
+	ASSERT(trans != nullptr);
+
+	Mat4x4 objMatrix = trans->GetGlobaltoLocalMatrix();
+
+	Vector3 localOrigin = objMatrix.MultiplyAsPosition(origin);
+	Vector3 localDirection = objMatrix.MultiplyAsDirection(direction);
+
+	RaycastHit hit;
+	hit.wasHit = false;
+
+	Mesh* mesh = GlobalScene->res.meshes.GetById(meshCol->mesh);
+	ASSERT(mesh != nullptr);
+	BNS_VEC_FOREACH(mesh->faces) {
+		Vector3 v0 = mesh->positions.data[ptr->posIndices[0]];
+		Vector3 v1 = mesh->positions.data[ptr->posIndices[1]];
+		Vector3 v2 = mesh->positions.data[ptr->posIndices[2]];
+
+		Vector3 normal = CrossProduct(v1 - v0, v2 - v0).Normalized();
+		Vector3 v0Toorigin = localOrigin - v0;
+		Vector3 v1Toorigin = localOrigin - v1;
+		Vector3 v2Toorigin = localOrigin - v2;
+
+		float planeDistance = DotProduct(v0Toorigin, normal);
+		// negate it so we go toward plane
+		float rayDist = -DotProduct(localDirection, normal);
+
+		// You could argue there are cases where this
+		// holds, and we still get a result,
+		// but it seems like an edge case we can just avoid for now.
+		if (rayDist == 0) {
+			continue;
+		}
+
+		float rayDistanceToPlane = planeDistance / rayDist;
+		//OutputDebugStringA(StringStackBuffer<256>("rayDistanceToPlane: %f\n", rayDistanceToPlane).buffer);
+
+		if (rayDistanceToPlane < 0) {
+			continue;
+		}
+
+		Vector3 rayHitsPlane = localOrigin + localDirection * rayDistanceToPlane;
+
+		Vector3 v01Check = CrossProduct(v0 - rayHitsPlane, v1 - v0);
+		Vector3 v12Check = CrossProduct(v1 - rayHitsPlane, v2 - v1);
+		Vector3 v20Check = CrossProduct(v2 - rayHitsPlane, v0 - v2);
+
+		Vector3 v01Expect = CrossProduct(v0 - v2, v1 - v0);
+		Vector3 v12Expect = CrossProduct(v1 - v0, v2 - v1);
+		Vector3 v20Expect = CrossProduct(v2 - v1, v0 - v2);
+
+		bool isInsideTriangle = DotProduct(v01Check, v01Expect) >= 0;
+		isInsideTriangle &= DotProduct(v12Check, v12Expect) >= 0;
+		isInsideTriangle &= DotProduct(v20Check, v20Expect) >= 0;
+
+		if (isInsideTriangle) {
+			Mat4x4 loc2glob = trans->GetLocalToGlobalMatrix();
+			Vector3 globalHitPos = loc2glob.MultiplyAsPosition(rayHitsPlane);
+
+			float depth = (origin - globalHitPos).Magnitude();
+
+			if (!hit.wasHit || depth < hit.depth) {
+				hit.wasHit = true;
+				hit.type = CT_MESH;
+				hit.depth = depth;
+				hit.globalPos = globalHitPos;
+				hit.colId = meshCol->id;
+				hit.globalNormal = loc2glob.MultiplyAsDirection(normal).Normalized();
+			}
+		}
+	}
+
+	return hit;
+}
+

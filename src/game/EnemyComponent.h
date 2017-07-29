@@ -37,7 +37,10 @@ struct EnemyComponent : Component {
 	float speed;
 	float pauseTime;
 
-	Vector<Vector3> patrolPoints;
+	Vector<IDHandle<Entity>> patrolPoints;
+
+	/*[DoNotSerialize]*/
+	bool hasCalculatedPatrolPoints;
 
 	EnemyComponent() {
 		currentState = ES_Paused;
@@ -46,11 +49,7 @@ struct EnemyComponent : Component {
 		patrolIndex = 0;
 		speed = 2.0f;
 		damageThisFrame = false;
-
-		patrolPoints.PushBack(Vector3(2,  0,  2));
-		patrolPoints.PushBack(Vector3(2,  0, -2));
-		patrolPoints.PushBack(Vector3(-2, 0,  2));
-		patrolPoints.PushBack(Vector3(-2, 0, -2));
+		hasCalculatedPatrolPoints = false;
 	}
 
 	void Update();

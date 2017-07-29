@@ -13,6 +13,8 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 
 KeyStrokeCode SystemKeyToKeyStrokeCode(int key);
 
+uint64_t GetFileModifiedTime(const char* filename);
+
 int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmdShow) {
 
 	CommandLineParser parser;
@@ -89,12 +91,12 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 			}
 		}
 
-		HDC hdc = GetDC(window);
+		HDC drawingContext = GetDC(window);
 
 		isRunning &= AppUpdate(argc, argv);
 
-		SwapBuffers(hdc);
-		ReleaseDC(window, hdc);
+		SwapBuffers(drawingContext);
+		ReleaseDC(window, drawingContext);
 
 		Sleep(16);
 	}
@@ -186,6 +188,21 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 	return result;
 }
 
+uint64_t GetFileModifiedTime(const char* filename) {
+	HANDLE fileHandle = CreateFile( filename, GENERIC_READ, FILE_SHARE_READ, NULL,
+									OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	
+	FILETIME writeTime;
+	GetFileTime(fileHandle, NULL, NULL, &writeTime);
+	CloseHandle(fileHandle);
+
+	LARGE_INTEGER writeTimeLInt;
+	writeTimeLInt.HighPart = writeTime.dwHighDateTime;
+	writeTimeLInt.LowPart = writeTime.dwLowDateTime;
+
+	return writeTimeLInt.QuadPart;
+}
+
 struct VKDef {
 	KeyStrokeCode keyCode;
 	int virtualCode;
@@ -221,7 +238,10 @@ KeyStrokeCode SystemKeyToKeyStrokeCode(int key) {
 			{ KC_LeftArrow,	   VK_LEFT },
 			{ KC_RightArrow,   VK_RIGHT },
 			{ KC_Space,        VK_SPACE },
-			{ KC_Minus,        VK_OEM_MINUS }
+			{ KC_Minus,        VK_OEM_MINUS },
+			// TODO: The ` is VK_OEM_3 on US keyboards, but
+			// I don't really understand how to handle diff keybaord layouts
+			{ KC_BackTick,     VK_OEM_3 }
 			// TODO: Minus/underscore
 		};
 

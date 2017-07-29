@@ -251,6 +251,7 @@ float GuiSystem::DrawTextLabel(const char* text, IDHandle<BitmapFont> fontId, fl
 		return 0;
 	}
 
+	// TODO: Avoid this malloc
 	float* posBuffer = (float*)malloc(textLen*12*sizeof(float));
 	float* uvsBuffer = (float*)malloc(textLen*12*sizeof(float));
 
@@ -377,12 +378,7 @@ String GuiSystem::TextInput(const String& textIn, uint32 fontId, float scale, fl
 		textToDraw = &textToDraw[textInputState.textOffset];
 	}
 
-	if (textInputState.count == textInputState.activeIndex) {
-		DrawTextLabel(textToDraw, IDHandle<BitmapFont>(fontId), scale, x + textOffset, y, w, scale);
-	}
-	else {
-		DrawTextLabel(textToDraw, IDHandle<BitmapFont>(fontId), scale, x + textOffset, y, w, scale);
-	}
+	DrawTextLabel(textToDraw, IDHandle<BitmapFont>(fontId), scale, x + textOffset, y, w, scale);
 
 	textInputState.count++;
 
@@ -600,25 +596,25 @@ void GuiSystem::Render() {
 			bool changed = false;
 			float scale = 12;
 			float currY = finalRect.y + finalRect.height - scale / 2 + 1;
-			for (int i = 0; i < picker->choices.count; i++) {
-				Vector4 backCol = (picker->choice & (1 << i)) ? Vector4(0.5f, 0.8f, 0.8f, 0.5f) : Vector4(0.3f, 0.3f, 0.3f, 0.3f);
-				Vector4 hoverCol = (picker->choice & (1 << i)) ? Vector4(0.5f, 0.7f, 0.7f, 0.4f) : Vector4(0.4f, 0.4f, 0.4f, 0.4f);
-				if (i == picker->clearIndex || i == picker->allIndex) {
+			for (int j = 0; j < picker->choices.count; j++) {
+				Vector4 backCol = (picker->choice & (1 << j)) ? Vector4(0.5f, 0.8f, 0.8f, 0.5f) : Vector4(0.3f, 0.3f, 0.3f, 0.3f);
+				Vector4 hoverCol = (picker->choice & (1 << j)) ? Vector4(0.5f, 0.7f, 0.7f, 0.4f) : Vector4(0.4f, 0.4f, 0.4f, 0.4f);
+				if (j == picker->clearIndex || j == picker->allIndex) {
 					backCol = Vector4(0.3f, 0.3f, 0.3f, 0.3f);
 					hoverCol = Vector4(0.4f, 0.4f, 0.4f, 0.4f);
 				}
 
-				if (TextButton(picker->choices.data[i].string, 0, scale, finalRect.x + 2, currY, finalRect.width - 4, scale + 2, backCol, hoverCol)) {
-					if (i == picker->clearIndex) {
+				if (TextButton(picker->choices.data[j].string, 0, scale, finalRect.x + 2, currY, finalRect.width - 4, scale + 2, backCol, hoverCol)) {
+					if (j == picker->clearIndex) {
 						changed = (picker->choice != 0);
 						picker->choice = 0;
 					}
-					else if (i == picker->allIndex) {
+					else if (j == picker->allIndex) {
 						changed = (picker->choice != -1);
 						picker->choice = -1;
 					}
 					else {
-						picker->choice ^= (1 << i);
+						picker->choice ^= (j << i);
 						changed = true;
 					}
 				}

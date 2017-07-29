@@ -19,7 +19,7 @@
 #include "../../gen/ScriptGen.h"
 
 ResourceManager::ResourceManager() 
-	: shaders(30), programs(20), materials(15), meshes(30), textures(20), drawCalls(40), levels(10){
+	: shaders(30), programs(20), materials(15), meshes(30), textures(50), drawCalls(40), levels(10){
 
 }
 
@@ -38,6 +38,69 @@ void ResourceManager::Reset() {
 	prefabs.Reset();
 	anims.Reset();
 	armatures.Reset();
+	cubeMaps.Reset();
+}
+
+// TODO: move this into CppUtils/strings.h
+bool StringEndsWith(const char* haystack, const char* needle) {
+	int hLength = StrLen(haystack);
+	int nLength = StrLen(needle);
+
+	const char* suspectedStart = haystack + hLength - nLength;
+
+	return StrEqualN(suspectedStart, needle, nLength);
+}
+
+// TODO: Avoid crawling the dir tree each time,
+// also should be pulled out to expose functionality to other places
+const char* GetFullFilePath(const char* fileName) {
+	File assets;
+	assets.Load("assets");
+	Vector<File*> assetFiles;
+	// TODO: Don't assume 3-letter extension
+	assets.FindFilesWithExt(fileName + StrLen(fileName) - 3, &assetFiles);
+
+	for (int i = 0; i < assetFiles.count; i++) {
+		if (StrEqual(fileName, assetFiles.Get(i)->fileName)) {
+			return assetFiles.Get(i)->fullName;
+		}
+	}
+
+	return "";
+}
+
+void ResourceManager::ReloadSingleAsset(const char* assetFileName) {
+	if (StringEndsWith(assetFileName, ".obj")) {
+		const char* fullPath = GetFullFilePath(assetFileName);
+		if (*fullPath != '\0') {
+			int assetId;
+			bool found = assetIdMap.LookUp(assetFileName, &assetId);
+			ASSERT(found);
+			// TODO: Avoid writing out to a file, just have asset write out to memstream,
+			// then write that to a file, but allow us to hijack it
+			FILE* fakeAssetFile = fopen("temp.bna", "wb");
+			WriteMeshChunk(fullPath, assetId, fakeAssetFile);
+			fclose(fakeAssetFile);
+
+			MemStream fileStream;
+			fileStream.ReadInFromFile("temp.bna");
+
+			char chunkTag[4];
+			fileStream.ReadArray<char>(chunkTag, 4);
+			fileStream.Read<int>();
+
+			Mesh* mesh = meshes.GetByIdNum(assetId);
+			mesh->Destroy();
+			LoadMeshFromChunk(fileStream, mesh);
+		}
+		else {
+			ASSERT(false);
+		}
+	}
+	else {
+		// TODO: Add more types
+		ASSERT(false);
+	}
 }
 
 void ResourceManager::LoadAssetFile(const char* fileName) {
@@ -120,6 +183,10 @@ void ResourceManager::LoadAssetFile(const char* fileName) {
 		else if (memcmp(chunkId, "BNUF", 4) == 0) {
 			UniFont* font = uniFonts.AddWithId(assetId);
 			LoadUniFontFromChunk(fileBufferStream, font);
+		}
+		else if (memcmp(chunkId, "BNCM", 4) == 0) {
+			CubeMap* cubeMap = cubeMaps.AddWithId(assetId);
+			LoadCubeMapFromChunk(fileBufferStream, cubeMap);
 		}
 		else if (memcmp(chunkId, "BNPF", 4) == 0) {
 			Prefab* prefab = prefabs.AddWithId(assetId);
@@ -215,11 +282,11 @@ void ResourceManager::LoadArmatureFromChunk(MemStream& stream, Armature* outArma
 	Vector<float> boneWeights(vertCount * MAX_BONES_PER_VERTEX);
 	Vector<float> boneIndices(vertCount * MAX_BONES_PER_VERTEX);
 	for (int i = 0; i < vertCount; i++) {
-		int boneCount = stream.Read<int>();
-		ASSERT(boneCount <= MAX_BONES_PER_VERTEX);
+		int bonesForThisVert = stream.Read<int>();
+		ASSERT(bonesForThisVert <= MAX_BONES_PER_VERTEX);
 		
 		float mag = 0.0f;
-		for (int j = 0; j < boneCount; j++) {
+		for (int j = 0; j < bonesForThisVert; j++) {
 			boneIndices.PushBack(stream.Read<int>());
 			float weight = stream.Read<float>();
 			boneWeights.PushBack(weight);
@@ -229,7 +296,7 @@ void ResourceManager::LoadArmatureFromChunk(MemStream& stream, Armature* outArma
 		ASSERT(BNS_ABS(mag - 1) < 0.001f);
 
 		//Pad to MAX_BONES_PER_VERTEX bones
-		for (int j = boneCount; j < MAX_BONES_PER_VERTEX; j++) {
+		for (int j = bonesForThisVert; j < MAX_BONES_PER_VERTEX; j++) {
 			boneIndices.PushBack(0);
 			boneWeights.PushBack(0.0f);
 		}
@@ -269,6 +336,12 @@ void ResourceManager::LoadAnimationTrackFromChunk(MemStream& stream, AnimationTr
 	outTrack->data.count = dataSize;
 }
 
+void ResourceManager::LoadCubeMapFromChunk(MemStream& stream, CubeMap* outCubeMap) {
+	stream.ReadArray<int>((int*)outCubeMap->textures, 6);
+
+	outCubeMap->UploadToGraphicsDevice();
+}
+
 void ResourceManager::LoadVShaderFromChunk(MemStream& stream, Shader* outShader) {
 	outShader->CompileShader(stream.ReadStringInPlace(), GL_VERTEX_SHADER);
 }
@@ -288,9 +361,6 @@ void ResourceManager::LoadTextureFromChunk(MemStream& stream, Texture* outTextur
 
 	outTexture->textureType = GL_TEXTURE_2D;
 	outTexture->UploadToGraphicsDevice();
-
-	free(outTexture->texMem);
-	outTexture->texMem = nullptr;
 }
 
 void ResourceManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat) {
@@ -340,6 +410,12 @@ void ResourceManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat)
 
 	int uniformCount = stream.Read<int>();
 
+	outMat->type = stream.Read<MaterialType>();
+
+	int cubeMapId = -1;
+
+	char* cubeMapName = nullptr;
+
 	for (int i = 0; i < uniformCount; i++) {
 		int strLength = stream.Read<int>();
 		BNS_UNUSED(strLength);
@@ -364,6 +440,15 @@ void ResourceManager::LoadMaterialFromChunk(MemStream& stream, Material* outMat)
 			Vector4 val = stream.Read<Vector4>();
 			outMat->SetVector4Uniform(uniformName, val);
 		}
+		else if (uniformType == UT_CUBEMAP) {
+			uint32 texId = stream.Read<uint32>();
+			outMat->cubeMap = IDHandle<CubeMap>(texId);
+			cubeMapName = uniformName;
+		}
+	}
+
+	if (cubeMapName != nullptr) {
+		outMat->SetIntUniform(cubeMapName, outMat->texCount);
 	}
 }
 
@@ -696,7 +781,29 @@ void ResourceManager::SaveLevelToFile(const Level* lvl, const char* fileName) {
 }
 
 void ResourceManager::Render() {
-	ExecuteDrawCalls(drawCalls.vals, drawCalls.currentCount);
+	Vector<DrawCall> opaqueDrawCalls;
+	Vector<DrawCall> transparentDrawCalls;
+	// TODO: Batching would probably be done here?
+	// Would likely mean doing object space -> world space on CPU side
+	for (int i = 0; i < drawCalls.currentCount; i++) {
+		IDHandle<Material> matId = drawCalls.vals[i].matId;
+		Material* mat = materials.GetById(matId);
+		if (mat->type == MT_Opaque) {
+			opaqueDrawCalls.PushBack(drawCalls.vals[i]);
+		}
+		else if (mat->type == MT_Transparent) {
+			transparentDrawCalls.PushBack(drawCalls.vals[i]);
+		}
+		else {
+			ASSERT(false);
+		}
+	}
+
+	glDisable(GL_BLEND);
+	ExecuteDrawCalls(opaqueDrawCalls.data, opaqueDrawCalls.count);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	ExecuteDrawCalls(transparentDrawCalls.data, transparentDrawCalls.count);
 }
 
 String ResourceManager::FindFileNameByIdAndExtension(const char* ext, uint32 id) {
