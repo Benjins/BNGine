@@ -803,6 +803,7 @@ void ResourceManager::Render() {
 	ExecuteDrawCalls(opaqueDrawCalls.data, opaqueDrawCalls.count);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// Disable depth-writing?
 	ExecuteDrawCalls(transparentDrawCalls.data, transparentDrawCalls.count);
 }
 
