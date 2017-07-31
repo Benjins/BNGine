@@ -4,6 +4,8 @@
 
 #include "../gfx/GLExtInit.h"
 
+#include "../gui/Debug3DGUI.h"
+
 #include "../metagen/MetaParse.h"
 
 #include "../util/LevelLoading.h"
@@ -189,7 +191,8 @@ void Scene::Update() {
 		ReloadAssets();
 	}
 
-	if (GlobalScene->input.KeyIsReleased('P')) {
+	// TODO: Remove this until it's stable
+	if (!gameConsole.shouldDisplayConsole && GlobalScene->input.KeyIsReleased('P')) {
 		IPV4Addr addr = IPV4Addr(127, 0, 0, 1, net.debugPortToConnectTo);
 		net.OpenNewConnection(addr);
 	}
@@ -404,6 +407,31 @@ void RenderSkyBox() {
 	glDepthFunc(oldDepthFuncMode);
 }
 
+void Scene::SetupDebugRenderUniforms() {
+	Mat4x4 camera = cam.GetCameraMatrix();
+	Mat4x4 persp = cam.GetPerspectiveMatrix();
+
+	{
+		int colMatId = -1;
+		res.assetIdMap.LookUp("color.mat", &colMatId);
+		Material* mat = res.materials.GetByIdNum(colMatId);
+		ASSERT(mat != nullptr);
+
+		mat->SetMatrix4Uniform("_camMatrix", camera);
+		mat->SetMatrix4Uniform("_perspMatrix", persp);
+	}
+
+	{
+		int debugColMatId = -1;
+		res.assetIdMap.LookUp("debugCol.mat", &debugColMatId);
+		Material* mat = res.materials.GetByIdNum(debugColMatId);
+		ASSERT(mat != nullptr);
+
+		mat->SetMatrix4Uniform("_camMatrix", camera);
+		mat->SetMatrix4Uniform("_perspMatrix", persp);
+	}
+}
+
 void Scene::Render() {
 	glViewport((int)cam.xOffset, (int)cam.yOffset, (int)cam.widthPixels, (int)cam.heightPixels);
 	glScissor((int)cam.xOffset, (int)cam.yOffset, (int)cam.widthPixels, (int)cam.heightPixels);
@@ -417,10 +445,21 @@ void Scene::Render() {
 
 	RenderSkyBox();
 
-	glDisable(GL_DEPTH_TEST);
-
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	NavMesh* currNavMesh = nav.navMeshes.GetById(nav.currentNavMesh);
+	if (currNavMesh != nullptr) {
+		//glEnable(GL_BLEND);
+
+		SetupDebugRenderUniforms();
+
+		currNavMesh->DebugRender();
+
+		//glDisable(GL_BLEND);
+	}
+
+	glDisable(GL_DEPTH_TEST);
 
 	// Do gui stuff.
 	// TODO: Separate function, so that editor doesn't do it?

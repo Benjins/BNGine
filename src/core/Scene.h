@@ -31,6 +31,8 @@
 
 #include "../script/ScriptSystem.h"
 
+#include "../nav/NavSystem.h"
+
 #include "../../gen/Actions.h"
 
 struct DrawCall;
@@ -54,6 +56,7 @@ struct Scene {
 	GuiSystem gui;
 	AnimationSystem anims;
 	NetworkSystem net;
+	NavSystem nav;
 
 	GameConsole gameConsole;
 
@@ -98,6 +101,7 @@ struct Scene {
 	void CustomComponentEditorGui();
 	void CustomComponentEditorGuiForEntity(IDHandle<Entity> entId);
 
+	void SetupDebugRenderUniforms();
 	void Render();
 
 	void Reset();

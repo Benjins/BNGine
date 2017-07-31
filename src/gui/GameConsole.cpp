@@ -73,12 +73,58 @@ void Console_ReloadAsset(Vector<SubString>* args, String* outString) {
 	}
 }
 
+void Console_PokeNavMesh(Vector<SubString>* args, String* outString) {
+	if (args->count != 4) {
+		*outString = "Error: poke_nav expects four args";
+	}
+	else {
+		int idx = Atoi(args->data[0].start);
+		Vector3 newVal = Vector3(Atof(args->data[1].start),
+								 Atof(args->data[2].start),
+								 Atof(args->data[3].start));
+		NavMesh* currNavMesh = GlobalScene->nav.navMeshes.GetById(GlobalScene->nav.currentNavMesh);
+		if (currNavMesh == nullptr) {
+			*outString = "No nav mesh currently.";
+		}
+		else if (idx < 0 || idx >= currNavMesh->vertices.count) {
+			*outString = StringStackBuffer<256>("idx %d out of nav mesh range [0, %d)",
+				idx, currNavMesh->vertices.count).buffer;
+		}
+		else {
+			currNavMesh->vertices.data[idx] = newVal;
+			currNavMesh->CalculateEdges();
+		}
+	}
+}
+
+void Console_PeekNavMesh(Vector<SubString>* args, String* outString) {
+	if (args->count != 1) {
+		*outString = "Error: peek_nav expects one arg";
+	}
+	else {
+		int idx = Atoi(args->data[0].start);
+		NavMesh* currNavMesh = GlobalScene->nav.navMeshes.GetById(GlobalScene->nav.currentNavMesh);
+		if (currNavMesh == nullptr) {
+			*outString = "No nav mesh currently.";
+		}
+		else if (idx < 0 || idx >= currNavMesh->vertices.count) {
+			*outString = StringStackBuffer<256>("idx %d out of nav mesh range [0, %d)",
+												idx, currNavMesh->vertices.count).buffer;
+		}
+		else {
+			*outString = EncodeVector3(currNavMesh->vertices.data[idx]);
+		}
+	}
+}
+
 ConsoleCommandBinding defaultBindings[] = {
 	{ "echo", Console_EchoArgs },
 	{ "add", Console_Add },
 	{ "reload", Console_Reload },
 	{ "set", Console_SetVariable },
-	{ "reload_asset", Console_ReloadAsset }
+	{ "reload_asset", Console_ReloadAsset },
+	{ "poke_nav", Console_PokeNavMesh },
+	{ "peek_nav", Console_PeekNavMesh }
 };
 
 void GameConsole::InitCommandBindings() {
