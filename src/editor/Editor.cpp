@@ -359,42 +359,6 @@ void Editor::Render() {
 		RenderPrefab();
 	}
 
-	Mat4x4 camera = scene.cam.GetCameraMatrix();
-	Mat4x4 persp = scene.cam.GetPerspectiveMatrix();
-
-	{
-		int colMatId = -1;
-		scene.res.assetIdMap.LookUp("color.mat", &colMatId);
-		Material* mat = scene.res.materials.GetByIdNum(colMatId);
-		ASSERT(mat != nullptr);
-
-		mat->SetMatrix4Uniform("_camMatrix", camera);
-		mat->SetMatrix4Uniform("_perspMatrix", persp);
-
-		Program* prog = scene.res.programs.GetById(mat->programId);
-		glUseProgram(prog->programObj);
-
-		for (int i = 0; i < scene.res.drawCalls.currentCount; i++) {
-			Entity* ent = scene.entities.GetById(scene.res.drawCalls.vals[i].entId);
-			Transform* trans = scene.transforms.GetById(ent->transform);
-			mat->SetMatrix4Uniform("_objMatrix", trans->GetLocalToGlobalMatrix());
-
-			if ((int)ent->id == selectedEntity) {
-				DrawCurrentGizmo(ent, mat);
-			}
-		}
-	}
-
-	{
-		int debugColMatId = -1;
-		scene.res.assetIdMap.LookUp("debugCol.mat", &debugColMatId);
-		Material* mat = scene.res.materials.GetByIdNum(debugColMatId);
-		ASSERT(mat != nullptr);
-
-		mat->SetMatrix4Uniform("_camMatrix", camera);
-		mat->SetMatrix4Uniform("_perspMatrix", persp);
-	}
-
 	scene.CustomComponentEditorGuiForEntity(IDHandle<Entity>(selectedEntity));
 
 	scene.cam.xOffset = 0;
