@@ -18,6 +18,7 @@ Scene* GlobalScene = nullptr;
 ConfigVarTable globalConfigTable;
 
 CONFIG_VAR(float, sceneTimeScale, "time_scale", 1.0f);
+CONFIG_VAR(bool, wireFrameRendering, "wire_render", false);
 
 Scene::Scene() : entities(100), transforms(120), res() {
 	GlobalScene = this;
@@ -441,7 +442,16 @@ void Scene::Render() {
 
 	glEnable(GL_DEPTH_TEST);
 
+	if (wireFrameRendering) {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	}
+	else {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+
 	res.Render();
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	RenderSkyBox();
 

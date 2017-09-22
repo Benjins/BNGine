@@ -7,6 +7,7 @@
 #include "SphereCollider.h"
 #include "MeshCollider.h"
 #include "Collision.h"
+#include "RigidBody.h"
 
 #include "../../ext/CppUtils/idbase.h"
 #include "../../ext/CppUtils/vector.h"
@@ -28,12 +29,14 @@ struct PhysicsSystem {
 	IDTracker<SphereCollider> sphereCols;
 	IDTracker<MeshCollider> meshCols;
 
+	IDTracker<RigidBody> rigidBodies;
+
 	Vector<Collision> collisions;
 	Vector<Collision> prevCollisions;
 
 	RaycastHit Raycast(Vector3 origin, Vector3 direction);
 
-	static float fixedTimestep;
+	static const float fixedTimestep;
 
 	float timeOffset;
 
@@ -42,7 +45,7 @@ struct PhysicsSystem {
 	}
 
 	void AdvanceTime(float time);
-	void StepFrame(float dt);
+	void StepFrame(float dt = fixedTimestep);
 	void EndFrame();
 };
 
