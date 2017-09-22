@@ -47,7 +47,7 @@ void Console_SetVariable(Vector<SubString>* args, String* outString) {
 				*configVar->value.AsConfigInt() = Atoi(args->data[1].start);
 			}
 			else if (configVar->value.IsConfigBool()) {
-				*configVar->value.AsConfigBool() =  (args->data[1].start != "F");
+				*configVar->value.AsConfigBool() =  (args->data[1] != "F");
 			}
 			else if (configVar->value.IsConfigString()) {
 				*configVar->value.AsConfigString() = args->data[1].start;

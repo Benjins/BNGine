@@ -6,7 +6,7 @@
 
 #include <cfloat>
 
-float PhysicsSystem::fixedTimestep = 0.02f;
+const float PhysicsSystem::fixedTimestep = 0.02f;
 
 RaycastHit PhysicsSystem::Raycast(Vector3 origin, Vector3 direction) {
 	RaycastHit finalHit;
@@ -37,32 +37,60 @@ RaycastHit PhysicsSystem::Raycast(Vector3 origin, Vector3 direction) {
 void PhysicsSystem::AdvanceTime(float time) {
 	timeOffset += time;
 	while (timeOffset >= fixedTimestep) {
-		StepFrame(fixedTimestep);
+		StepFrame();
 		timeOffset -= fixedTimestep;
 	}
 
 	EndFrame();
 }
 
-void PhysicsSystem::StepFrame(float dt) {
+void PhysicsSystem::StepFrame(float dt /*= fixedTimestep*/) {
 	collisions.Clear();
+
+	Vector3 gravity = Y_AXIS * -9.81f * dt * 0.05f;
+
+	BNS_FOR_I(rigidBodies.currentCount) {
+		int flagsNeeded = RBF_HasGravity | RBF_IsEnabled;
+		if ((rigidBodies.vals[i].rbFlags & flagsNeeded) == flagsNeeded) {
+			Entity* ent = GlobalScene->entities.GetById(rigidBodies.vals[i].entity);
+			ASSERT(ent != nullptr);
+			Transform* trans = GlobalScene->transforms.GetById(ent->transform);
+			ASSERT(trans != nullptr);
+			trans->position = trans->position + gravity;
+		}
+	}
+
 	for (int i = 0; i < boxCols.currentCount; i++) {
-		for (int j = 0; j < boxCols.currentCount; j++) {
-			if (i != j) {
-				Collision col = BoxBoxCollision(boxCols.vals[i], boxCols.vals[j]);
-				if (col.isColliding) {
-					collisions.PushBack(col);
-					IDHandle<Entity> entity1 = boxCols.GetByIdNum(col.colId1)->entity;
-					GlobalScene->SendCollisionToCustomComponents(entity1, col);
+		for (int j = i + 1; j < boxCols.currentCount; j++) {
+			Collision col = BoxBoxCollision(boxCols.vals[i], boxCols.vals[j]);
+			if (col.isColliding) {
+				collisions.PushBack(col);
+				IDHandle<Entity> entity1 = boxCols.GetByIdNum(col.colId1)->entity;
+				GlobalScene->SendCollisionToCustomComponents(entity1, col);
 
-					Collision col2 = col;
-					col2.colId2 = col.colId1;
-					col2.colId1 = col.colId2;
-					col2.colType1 = col.colType2;
-					col2.colType2 = col.colType1;
+				if (RigidBody* rb1 = FIND_COMPONENT_BY_ENTITY(RigidBody, entity1)) {
+					if ((rb1->rbFlags & RBF_IsEnabled) != 0) {
+						Entity* ent = GlobalScene->entities.GetById(rb1->entity);
+						Transform* trans = GlobalScene->transforms.GetById(ent->transform);
+						trans->position = trans->position + col.normal * col.depth;
+					}
+				}
 
-					IDHandle<Entity> entity2 = boxCols.GetByIdNum(col2.colId1)->entity;
-					GlobalScene->SendCollisionToCustomComponents(entity2, col2);
+				Collision col2 = col;
+				col2.colId2 = col.colId1;
+				col2.colId1 = col.colId2;
+				col2.colType1 = col.colType2;
+				col2.colType2 = col.colType1;
+
+				IDHandle<Entity> entity2 = boxCols.GetByIdNum(col2.colId1)->entity;
+				GlobalScene->SendCollisionToCustomComponents(entity2, col2);
+
+				if (RigidBody* rb2 = FIND_COMPONENT_BY_ENTITY(RigidBody, entity2)) {
+					if ((rb2->rbFlags & RBF_IsEnabled) != 0) {
+						Entity* ent = GlobalScene->entities.GetById(rb2->entity);
+						Transform* trans = GlobalScene->transforms.GetById(ent->transform);
+						trans->position = trans->position + col.normal * col.depth;
+					}
 				}
 			}
 		}

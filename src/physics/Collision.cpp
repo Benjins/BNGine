@@ -28,12 +28,30 @@ Collision BoxBoxCollision(const BoxCollider& box1, const BoxCollider& box2) {
 
 	Vector3 testAxes[15] = {};
 	//0-8
+	// TODO: There are NaN's being made, what gives?
 	for (int i = 0; i < 3; i++) {
 		Vector3 transformedAxis = transformedCol2Axes[i];
 		//Crossed with X, Y, and Z axes
-		testAxes[3 * i] = Vector3(0, transformedAxis.y, -transformedAxis.x).Normalized();
-		testAxes[3 * i + 1] = Vector3(transformedAxis.x, -transformedAxis.z, 0).Normalized();
-		testAxes[3 * i + 2] = Vector3(-transformedAxis.y, 0, transformedAxis.z).Normalized();
+		if (transformedAxis.x == 0.0f && transformedAxis.y == 0.0f) {
+			testAxes[3 * i] = transformedAxis;
+		}
+		else {
+			testAxes[3 * i] = Vector3(0, transformedAxis.y, -transformedAxis.x).Normalized();
+		}
+
+		if (transformedAxis.x == 0.0f && transformedAxis.z == 0.0f) {
+			testAxes[3 * i + 1] = transformedAxis;
+		}
+		else {
+			testAxes[3 * i + 1] = Vector3(transformedAxis.x, -transformedAxis.z, 0).Normalized();
+		}
+
+		if (transformedAxis.y == 0.0f && transformedAxis.z == 0.0f) {
+			testAxes[3 * i + 2] = transformedAxis;
+		}
+		else {
+			testAxes[3 * i + 2] = Vector3(-transformedAxis.y, 0, transformedAxis.z).Normalized();
+		}
 	}
 
 	//9-11
