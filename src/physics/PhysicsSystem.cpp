@@ -81,6 +81,7 @@ void PhysicsSystem::StepFrame(float dt /*= fixedTimestep*/) {
 				col2.colId1 = col.colId2;
 				col2.colType1 = col.colType2;
 				col2.colType2 = col.colType1;
+				col2.normal = col.normal * -1.0f;
 
 				IDHandle<Entity> entity2 = boxCols.GetByIdNum(col2.colId1)->entity;
 				GlobalScene->SendCollisionToCustomComponents(entity2, col2);
@@ -89,7 +90,7 @@ void PhysicsSystem::StepFrame(float dt /*= fixedTimestep*/) {
 					if ((rb2->rbFlags & RBF_IsEnabled) != 0) {
 						Entity* ent = GlobalScene->entities.GetById(rb2->entity);
 						Transform* trans = GlobalScene->transforms.GetById(ent->transform);
-						trans->position = trans->position + col.normal * col.depth;
+						trans->position = trans->position + col2.normal * col2.depth;
 					}
 				}
 			}
