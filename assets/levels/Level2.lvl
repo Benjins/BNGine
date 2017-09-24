@@ -123,12 +123,12 @@
 	<Entity id='31'>
 		<Transform pos='-4.924567,8.371611,-0.888437' id='32' scale='0.200000,0.300000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 		<BoxCollider isTrigger='F' colFlags='CF_NONE' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
-		<RigidBody rbFlags='RBF_IsEnabled,RBF_HasGravity' mass='1.000000'/>
+		<RigidBody rbFlags='RBF_IsEnabled,RBF_HasGravity' mass='0.100000'/>
 		<Material src='stone.mat'/>
 		<Mesh src='test_2.obj'/>
 	</Entity>
 	<Entity id='32'>
-		<Transform pos='-4.924567,2.371611,-0.888437' id='33' scale='2.000000,0.200000,2.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<Transform pos='-4.924567,2.671611,-0.888437' id='33' scale='3.000000,0.200000,3.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 		<BoxCollider isTrigger='F' colFlags='CF_NONE' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
 		<Material src='stone.mat'/>
 		<Mesh src='test_2.obj'/>
@@ -136,7 +136,7 @@
 	<Entity id='33'>
 		<Transform pos='-4.924567,10.371611,-0.888437' id='34' scale='1.000000,0.100000,0.200000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
 		<BoxCollider isTrigger='F' colFlags='CF_NONE' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
-		<RigidBody rbFlags='RBF_IsEnabled,RBF_HasGravity' mass='1.000000'/>
+		<RigidBody rbFlags='RBF_IsEnabled,RBF_HasGravity' mass='0.020000'/>
 		<Material src='stone.mat'/>
 		<Mesh src='test_2.obj'/>
 	</Entity>

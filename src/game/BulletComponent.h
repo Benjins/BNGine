@@ -9,7 +9,6 @@ struct Collision;
 
 struct BulletComponent : Component {
 	float killTime;
-	float speed;
 
 	/*[DoNotSerialize]*/
 	float currentTime;
@@ -20,10 +19,16 @@ struct BulletComponent : Component {
 	/*[DoNotSerialize]*/
 	bool hasDealtDamage;
 
+	/*[DoNotSerialize]*/
+	bool hasAddedForce;
+
+	float forceAtStart;
+
 	BulletComponent() {
 		hasDealtDamage = false;
+		hasAddedForce = false;
 		killTime = 2;
-		speed = 1;
+		forceAtStart = 100.0f;
 		currentTime = 0;
 	}
 

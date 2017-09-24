@@ -16,10 +16,25 @@ void BulletComponent::OnCollision(Collision col) {
 void BulletComponent::Update() {
 	currentTime += GlobalScene->GetDeltaTime();
 
-	Entity* ent = GlobalScene->entities.GetById(entity);
-	Transform* trans = GlobalScene->transforms.GetById(ent->transform);
+	if (!hasAddedForce) {
+		if (RigidBody* rb = FIND_COMPONENT_BY_ENTITY(RigidBody, entity)) {
+			Entity* ent = GlobalScene->entities.GetById(entity);
+			Transform* trans = GlobalScene->transforms.GetById(ent->transform);
 
-	trans->position = trans->position + trans->Forward() * GlobalScene->GetDeltaTime() * speed;
+			// TODO: Timestep???
+			rb->AddForceAtCentre(trans->Forward() * forceAtStart, 0.02f);
+		}
+
+		hasAddedForce = true;
+	}
+	else {
+		// HACK: Clear out velocity
+		if (RigidBody* rb = FIND_COMPONENT_BY_ENTITY(RigidBody, entity)) {
+			rb->acceleration = Vector3(0, 0, 0);
+		}
+	}
+
+	
 
 	if (currentTime >= killTime) {
 		GlobalScene->DestroyEntity(entity);

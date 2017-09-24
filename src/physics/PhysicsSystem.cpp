@@ -47,16 +47,23 @@ void PhysicsSystem::AdvanceTime(float time) {
 void PhysicsSystem::StepFrame(float dt /*= fixedTimestep*/) {
 	collisions.Clear();
 
-	Vector3 gravity = Y_AXIS * -9.81f * dt * 0.05f;
+	Vector3 gravity = Y_AXIS * -9.81f * dt;
 
 	BNS_FOR_I(rigidBodies.currentCount) {
-		int flagsNeeded = RBF_HasGravity | RBF_IsEnabled;
-		if ((rigidBodies.vals[i].rbFlags & flagsNeeded) == flagsNeeded) {
+		if ((rigidBodies.vals[i].rbFlags & RBF_IsEnabled) != 0) {
+			if ((rigidBodies.vals[i].rbFlags & RBF_HasGravity) != 0) {
+				rigidBodies.vals[i].AddForceAtCentre(gravity, dt);
+			}
+
+			Vector3 translation;
+			rigidBodies.vals[i].SimulateFrame(dt, &translation);
+
 			Entity* ent = GlobalScene->entities.GetById(rigidBodies.vals[i].entity);
 			ASSERT(ent != nullptr);
+
 			Transform* trans = GlobalScene->transforms.GetById(ent->transform);
 			ASSERT(trans != nullptr);
-			trans->position = trans->position + gravity;
+			trans->position = trans->position + translation;
 		}
 	}
 
@@ -68,11 +75,15 @@ void PhysicsSystem::StepFrame(float dt /*= fixedTimestep*/) {
 				IDHandle<Entity> entity1 = boxCols.GetByIdNum(col.colId1)->entity;
 				GlobalScene->SendCollisionToCustomComponents(entity1, col);
 
+				RigidBody* rb_1 = nullptr;
+				RigidBody* rb_2 = nullptr;
+
 				if (RigidBody* rb1 = FIND_COMPONENT_BY_ENTITY(RigidBody, entity1)) {
 					if ((rb1->rbFlags & RBF_IsEnabled) != 0) {
 						Entity* ent = GlobalScene->entities.GetById(rb1->entity);
 						Transform* trans = GlobalScene->transforms.GetById(ent->transform);
 						trans->position = trans->position + col.normal * col.depth;
+						rb_1 = rb1;
 					}
 				}
 
@@ -91,7 +102,27 @@ void PhysicsSystem::StepFrame(float dt /*= fixedTimestep*/) {
 						Entity* ent = GlobalScene->entities.GetById(rb2->entity);
 						Transform* trans = GlobalScene->transforms.GetById(ent->transform);
 						trans->position = trans->position + col2.normal * col2.depth;
+						rb_2 = rb2;
 					}
+				}
+
+				if (rb_1 != nullptr && rb_2 != nullptr) {
+					Vector3 momentum = rb_1->GetMomentum() + rb_2->GetMomentum();
+					Vector3 rb1NewVel = momentum / 2 / rb_1->mass;
+					Vector3 rb2NewVel = momentum / 2 / rb_2->mass;
+					rb_1->velocity = rb1NewVel;
+					rb_2->velocity = rb2NewVel;
+
+					rb_1->acceleration = Vector3(0, 0, 0);
+					rb_2->acceleration = Vector3(0, 0, 0);
+				}
+				else if (rb_1 != nullptr) {
+					rb_1->velocity = rb_1->velocity * -rb_1->bounceVelocityRatio;
+					rb_1->acceleration = Vector3(0, 0, 0);
+				}
+				else if (rb_2 != nullptr) {
+					rb_2->velocity = rb_2->velocity * -rb_2->bounceVelocityRatio;
+					rb_2->acceleration = Vector3(0, 0, 0);
 				}
 			}
 		}

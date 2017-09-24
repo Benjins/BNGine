@@ -3,5 +3,6 @@
 	<Material src='bullet.mat'/>
 	<Mesh src='test_2.obj'/>
 	<BoxCollider isTrigger='F' size='1.000000,1.000000,1.000000' position='0.000000,0.000000,0.000000'/>
-	<BulletComponent killTime='4.500000' speed='10.000000'/>
+	<BulletComponent killTime='4.500000' forceAtStart='2000.000000'/>
+	<RigidBody rbFlags='RBF_IsEnabled' mass='0.020000'/>
 </Prefab>

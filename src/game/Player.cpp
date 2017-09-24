@@ -57,7 +57,6 @@ void PlayerComponent::Update() {
 	}
 
 	if (GlobalScene->input.MouseButtonIsReleased(PRIMARY)) {
-		/*
 		int prefId = -1;
 		GlobalScene->res.assetIdMap.LookUp("bullet.bnp", &prefId);
 
@@ -76,7 +75,6 @@ void PlayerComponent::Update() {
 		ent = GlobalScene->entities.GetById(entity);
 		entTrans = GlobalScene->transforms.GetById(ent->transform);
 		camTrans = GlobalScene->transforms.GetById(GlobalScene->cam.transform);
-		*/
 	}
 
 	// States can use this to restore vertical movement, defaults to none
