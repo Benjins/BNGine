@@ -7,7 +7,7 @@
 
 Editor* GlobalEd = nullptr;
 
-void AppPostInit(int argc, char** argv) {
+void AppPostInit() {
 	GlobalEd = new Editor();
 
 	glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
@@ -18,7 +18,7 @@ void AppPostInit(int argc, char** argv) {
 	GlobalEd->StartUp();
 }
 
-bool AppUpdate(int argc, char** argv) {
+bool AppUpdate() {
 	GlobalEd->Update();
 	GlobalEd->Render();
 
@@ -28,7 +28,7 @@ bool AppUpdate(int argc, char** argv) {
 	return true;
 }
 
-void AppShutdown(int argc, char** argv) {
+void AppShutdown() {
 	//GlobalEd->ShutDown();
 	delete GlobalEd;
 }
@@ -63,3 +63,50 @@ void AppSetWindowSize(int w, int h) {
 		GlobalEd->cam.heightPixels = h;
 	}
 }
+
+void AppEventFunction(const PlatformEvent& evt) {
+	if (evt.IsPreInitEvent()) {
+		AppPreInit(evt.AsPreInitEvent().argc, evt.AsPreInitEvent().argv);
+	}
+	else if (evt.IsPostInitEvent()) {
+		AppPostInit();
+	}
+	else if (evt.IsUpdateEvent()) {
+		*evt.AsUpdateEvent().shouldContinue = AppUpdate();
+	}
+	else if (evt.IsShutDownEvent()) {
+		AppShutdown();
+	}
+	else if (evt.IsMouseButtonEvent()) {
+		if (evt.AsMouseButtonEvent().pressOrRelease == BNS_BUTTON_PRESS) {
+			AppMouseDown(evt.AsMouseButtonEvent().button);
+		}
+		else if (evt.AsMouseButtonEvent().pressOrRelease == BNS_BUTTON_RELEASE) {
+			AppMouseUp(evt.AsMouseButtonEvent().button);
+		}
+		else {
+			ASSERT(false);
+		}
+	}
+	else if (evt.IsKeyButtonEvent()) {
+		if (evt.AsKeyButtonEvent().pressOrRelease == BNS_BUTTON_PRESS) {
+			AppKeyDown(evt.AsKeyButtonEvent().keyCode);
+		}
+		else if (evt.AsKeyButtonEvent().pressOrRelease == BNS_BUTTON_RELEASE) {
+			AppKeyUp(evt.AsKeyButtonEvent().keyCode);
+		}
+		else {
+			ASSERT(false);
+		}
+	}
+	else if (evt.IsMousePosEvent()) {
+		AppMouseMove(evt.AsMousePosEvent().x, evt.AsMousePosEvent().y);
+	}
+	else if (evt.IsWindowResizeEvent()) {
+		AppSetWindowSize(evt.AsWindowResizeEvent().width, evt.AsWindowResizeEvent().height);
+	}
+	else {
+		ASSERT(false);
+	}
+}
+

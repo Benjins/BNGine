@@ -3,7 +3,9 @@
 
 #include "../../ext/CppUtils/commandline.h"
 
-void AppPostInit(int argc, char** argv) {
+CommandLineParser parser;
+
+void AppPostInit() {
 	GlobalScene = new Scene();
 
 	glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
@@ -12,18 +14,6 @@ void AppPostInit(int argc, char** argv) {
 	glLoadIdentity();
 
 	GlobalScene->StartUp();
-
-	// A bit redundant, since we do this already on Windows to get argc/argv...
-
-	CommandLineOption options[] = {
-		{ "-port", "Port to bind socket to", 1, 1 },
-		{ "-connPort", "Local port to connect to", 1, 1 }
-	};
-
-	CommandLineParser parser;
-	parser.SetOptions(options, BNS_ARRAY_COUNT(options));
-	parser.isProgramNamePresent = false;
-	parser.InitializeFromArgcArgv(argc, (const char**)argv);
 
 	if (parser.IsFlagPresent("-port")) {
 		int port = parser.FlagIntValue("-port");
@@ -35,7 +25,7 @@ void AppPostInit(int argc, char** argv) {
 	}
 }
 
-bool AppUpdate(int argc, char** argv) {
+bool AppUpdate() {
 	GlobalScene->Update();
 	GlobalScene->Render();
 
@@ -45,7 +35,7 @@ bool AppUpdate(int argc, char** argv) {
 	return true;
 }
 
-void AppShutdown(int argc, char** argv) {
+void AppShutdown() {
 	GlobalScene->ShutDown();
 	delete GlobalScene;
 }
@@ -72,12 +62,69 @@ void AppKeyDown(unsigned char key) {
 
 void AppPreInit(int argc, char** argv) {
 	StartUpSocketSystem();
+
+	// A bit redundant, since we do this already on Windows to get argc/argv...
+	CommandLineOption options[] = {
+		{ "-port", "Port to bind socket to", 1, 1 },
+		{ "-connPort", "Local port to connect to", 1, 1 }
+	};
+
+	parser.SetOptions(options, BNS_ARRAY_COUNT(options));
+	parser.isProgramNamePresent = false;
+	parser.InitializeFromArgcArgv(argc, (const char**)argv);
 }
 
 void AppSetWindowSize(int w, int h){
 	if (GlobalScene){
 		GlobalScene->cam.widthPixels = w;
 		GlobalScene->cam.heightPixels = h;
+	}
+}
+
+// TODO: Code dup w/ editor main?
+void AppEventFunction(const PlatformEvent& evt) {
+	if (evt.IsPreInitEvent()) {
+		AppPreInit(evt.AsPreInitEvent().argc, evt.AsPreInitEvent().argv);
+	}
+	else if (evt.IsPostInitEvent()) {
+		AppPostInit();
+	}
+	else if (evt.IsUpdateEvent()) {
+		*evt.AsUpdateEvent().shouldContinue = AppUpdate();
+	}
+	else if (evt.IsShutDownEvent()) {
+		AppShutdown();
+	}
+	else if (evt.IsMouseButtonEvent()) {
+		if (evt.AsMouseButtonEvent().pressOrRelease == BNS_BUTTON_PRESS) {
+			AppMouseDown(evt.AsMouseButtonEvent().button);
+		}
+		else if (evt.AsMouseButtonEvent().pressOrRelease == BNS_BUTTON_RELEASE) {
+			AppMouseUp(evt.AsMouseButtonEvent().button);
+		}
+		else {
+			ASSERT(false);
+		}
+	}
+	else if (evt.IsKeyButtonEvent()) {
+		if (evt.AsKeyButtonEvent().pressOrRelease == BNS_BUTTON_PRESS) {
+			AppKeyDown(evt.AsKeyButtonEvent().keyCode);
+		}
+		else if (evt.AsKeyButtonEvent().pressOrRelease == BNS_BUTTON_RELEASE) {
+			AppKeyUp(evt.AsKeyButtonEvent().keyCode);
+		}
+		else {
+			ASSERT(false);
+		}
+	}
+	else if (evt.IsMousePosEvent()) {
+		AppMouseMove(evt.AsMousePosEvent().x, evt.AsMousePosEvent().y);
+	}
+	else if (evt.IsWindowResizeEvent()) {
+		AppSetWindowSize(evt.AsWindowResizeEvent().width, evt.AsWindowResizeEvent().height);
+	}
+	else {
+		ASSERT(false);
 	}
 }
 

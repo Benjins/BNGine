@@ -6,7 +6,12 @@
 
 int main(int argc, char** argv){
 
-	AppPreInit(argc, argv);
+	{
+		PreInitEvent evt;
+		evt.argc = argc;
+		evt.argv = argv;
+		AppEventFunction(evt);
+	}
 
 	OSMesaContext ctx = OSMesaCreateContext(OSMESA_BGRA, NULL);
 	
@@ -16,20 +21,24 @@ int main(int argc, char** argv){
 	
 	InitGlExts();
 
-	AppPostInit(argc, argv);
+	AppEventFunction(PostInitEvent());
 	
-	bool success = AppUpdate(argc, argv);
-	
+	bool success = true;
+	{
+		UpdateEvent evt;
+		evt.shouldContinue = &success;
+		AppEventFunction(evt);
+	}
+
 	if (!success){
-		AppShutdown(argc, argv);
+		AppEventFunction(ShutDownEvent());
 		OSMesaDestroyContext(ctx);
 		free(imgBuffer);
 
 		return -1;
 	}
-	
-	
-	AppShutdown(argc, argv);
+
+	AppEventFunction(ShutDownEvent());
 	OSMesaDestroyContext(ctx);
 	free(imgBuffer);
 	

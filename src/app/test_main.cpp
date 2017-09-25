@@ -169,7 +169,7 @@ bool CompareFrameBufferAndWriteFile(BitmapData fb, const char* fileName) {
 	return true;
 }
 
-void AppPostInit(int argc, char** argv) {
+void AppPostInit() {
 	GlobalScene = new Scene();
 
 	glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
@@ -186,7 +186,7 @@ void AppPostInit(int argc, char** argv) {
 
 bool doCompare = false;
 
-bool AppUpdate(int argc, char** argv) {
+bool AppUpdate() {
 	for (int i = 0; i < 5; i++) {
 		GlobalScene->Update();
 		GlobalScene->Render();
@@ -232,7 +232,7 @@ bool AppUpdate(int argc, char** argv) {
 	return success;
 }
 
-void AppShutdown(int argc, char** argv) {
+void AppShutdown() {
 	GlobalScene->ShutDown();
 	delete GlobalScene;
 }
@@ -266,5 +266,52 @@ void AppPreInit(int argc, char** argv) {
 void AppSetWindowSize(int w, int h) {
 	GlobalScene->cam.widthPixels = w;
 	GlobalScene->cam.heightPixels = h;
+}
+
+// TODO: Code dup?
+void AppEventFunction(const PlatformEvent& evt) {
+	if (evt.IsPreInitEvent()) {
+		AppPreInit(evt.AsPreInitEvent().argc, evt.AsPreInitEvent().argv);
+	}
+	else if (evt.IsPostInitEvent()) {
+		AppPostInit();
+	}
+	else if (evt.IsUpdateEvent()) {
+		*evt.AsUpdateEvent().shouldContinue = AppUpdate();
+	}
+	else if (evt.IsShutDownEvent()) {
+		AppShutdown();
+	}
+	else if (evt.IsMouseButtonEvent()) {
+		if (evt.AsMouseButtonEvent().pressOrRelease == BNS_BUTTON_PRESS) {
+			AppMouseDown(evt.AsMouseButtonEvent().button);
+		}
+		else if (evt.AsMouseButtonEvent().pressOrRelease == BNS_BUTTON_RELEASE) {
+			AppMouseUp(evt.AsMouseButtonEvent().button);
+		}
+		else {
+			ASSERT(false);
+		}
+	}
+	else if (evt.IsKeyButtonEvent()) {
+		if (evt.AsKeyButtonEvent().pressOrRelease == BNS_BUTTON_PRESS) {
+			AppKeyDown(evt.AsKeyButtonEvent().keyCode);
+		}
+		else if (evt.AsKeyButtonEvent().pressOrRelease == BNS_BUTTON_RELEASE) {
+			AppKeyUp(evt.AsKeyButtonEvent().keyCode);
+		}
+		else {
+			ASSERT(false);
+		}
+	}
+	else if (evt.IsMousePosEvent()) {
+		AppMouseMove(evt.AsMousePosEvent().x, evt.AsMousePosEvent().y);
+	}
+	else if (evt.IsWindowResizeEvent()) {
+		AppSetWindowSize(evt.AsWindowResizeEvent().width, evt.AsWindowResizeEvent().height);
+	}
+	else {
+		ASSERT(false);
+	}
 }
 

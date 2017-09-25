@@ -5,16 +5,21 @@
 
 int main(int argc, char** argv) {
 
-	AppPreInit(argc, argv);
-
-	AppPostInit(argc, argv);
+	{
+		PreInitEvent evt;
+		evt.argc = argc;
+		evt.argv = argv;
+		AppEventFunction(evt);
+	}
 
 	bool isRunning = true;
 	while (isRunning) {
-		isRunning = AppUpdate(argc, argv);
+		UpdateEvent evt;
+		evt.shouldContinue = &isRunning;
+		AppEventFunction(evt);
 	}
 
-	AppShutdown(argc, argv);
+	AppEventFunction(ShutDownEvent());
 
 	return 0;
 }

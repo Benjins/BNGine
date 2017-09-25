@@ -24,7 +24,12 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 	// NOTE: This is a const cast, might want to watch it
 	char** argv = (char**)parser.args;
 
-	AppPreInit(argc, argv);
+	{
+		PreInitEvent evt;
+		evt.argc = argc;
+		evt.argv = argv;
+		AppEventFunction(evt);
+	}
 
 	WNDCLASS windowCls = {};
 	windowCls.hInstance = instance;
@@ -73,7 +78,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 	WIN_DEBUG_PRINT("GL Renderer: %s\n", glGetString(GL_RENDERER));
 #undef WIN_DEBUG_PRINT
 
-	AppPostInit(argc, argv);
+	AppEventFunction(PostInitEvent());
 
 	ReleaseDC(window, hdc);
 
@@ -93,15 +98,20 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE hPrev, LPSTR cmdLine, int cmd
 
 		HDC drawingContext = GetDC(window);
 
-		isRunning &= AppUpdate(argc, argv);
+		UpdateEvent evt;
+		bool shouldContinue = true;
+		evt.shouldContinue = &shouldContinue;
+		AppEventFunction(evt);
+
+		isRunning &= shouldContinue;
 
 		SwapBuffers(drawingContext);
 		ReleaseDC(window, drawingContext);
 
-		Sleep(16);
+		//Sleep(5);
 	}
 
-	AppShutdown(argc, argv);
+	AppEventFunction(ShutDownEvent());
 
 	return 0;
 }
@@ -116,27 +126,42 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		int mouseX = GET_X_LPARAM(lParam);
 		int mouseY = GET_Y_LPARAM(lParam);
 
-		AppMouseMove(mouseX, mouseY);
+		MousePosEvent evt;
+		evt.x = mouseX;
+		evt.y = mouseY;
+		AppEventFunction(evt);
 	}break;
 
 	case WM_LBUTTONDOWN:
 	{
-		AppMouseDown(MouseButton::PRIMARY);
+		MouseButtonEvent evt;
+		evt.button = MouseButton::PRIMARY;
+		evt.pressOrRelease = BNS_BUTTON_PRESS;
+		AppEventFunction(evt);
 	}break;
 
 	case WM_LBUTTONUP:
 	{
-		AppMouseUp(MouseButton::PRIMARY);
+		MouseButtonEvent evt;
+		evt.button = MouseButton::PRIMARY;
+		evt.pressOrRelease = BNS_BUTTON_RELEASE;
+		AppEventFunction(evt);
 	}break;
 
 	case WM_RBUTTONDOWN:
 	{
-		AppMouseDown(MouseButton::SECONDARY);
+		MouseButtonEvent evt;
+		evt.button = MouseButton::SECONDARY;
+		evt.pressOrRelease = BNS_BUTTON_PRESS;
+		AppEventFunction(evt);
 	}break;
 
 	case WM_RBUTTONUP:
 	{
-		AppMouseUp(MouseButton::SECONDARY);
+		MouseButtonEvent evt;
+		evt.button = MouseButton::SECONDARY;
+		evt.pressOrRelease = BNS_BUTTON_RELEASE;
+		AppEventFunction(evt);
 	}break;
 
 	case WM_SYSKEYDOWN:
@@ -158,11 +183,15 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		KeyStrokeCode keyCode = SystemKeyToKeyStrokeCode(code);
 
 		if (keyCode >= 0 && keyCode < 256) {
+			KeyButtonEvent evt;
+			evt.keyCode = keyCode;
 			if (wasDown && !isDown) {
-				AppKeyUp(keyCode);
+				evt.pressOrRelease = BNS_BUTTON_RELEASE;
+				AppEventFunction(evt);
 			}
 			else if (isDown && !wasDown) {
-				AppKeyDown(keyCode);
+				evt.pressOrRelease = BNS_BUTTON_PRESS;
+				AppEventFunction(evt);
 			}
 		}
 	}break;
@@ -171,7 +200,10 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		int width = LOWORD(lParam);
 		int height = HIWORD(lParam);
 
-		AppSetWindowSize(width, height);
+		WindowResizeEvent evt;
+		evt.width = width;
+		evt.height = height;
+		AppEventFunction(evt);
 	} break;
 
 	case WM_MOUSEWHEEL: {

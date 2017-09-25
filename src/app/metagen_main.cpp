@@ -227,15 +227,6 @@ bool EnumEntryHasAttrib(ParseMetaEnumEntry* entry, const char* attr, ParseMetaAt
 	return false;
 }
 
-void AppPostInit(int argc, char** argv) {}
-bool AppUpdate(int argc, char** argv) { return false; }
-void AppShutdown(int argc, char** argv) {}
-void AppMouseMove(int x, int y){}
-void AppMouseUp(int button) {}
-void AppMouseDown(int button) {}
-void AppKeyUp(unsigned char key) {}
-void AppKeyDown(unsigned char key) {}
-
 void AppPreInit(int argc, char** argv){
 	File srcFiles;
 	srcFiles.Load("src");
@@ -1229,5 +1220,13 @@ void AppPreInit(int argc, char** argv){
 	//-------------------------
 }
 
+void AppEventFunction(const PlatformEvent& evt) {
+	if (evt.IsPreInitEvent()) {
+		AppPreInit(evt.AsPreInitEvent().argc, evt.AsPreInitEvent().argv);
+	}
+	else if (evt.IsUpdateEvent()) {
+		*evt.AsUpdateEvent().shouldContinue = false;
+	}
+}
 
 

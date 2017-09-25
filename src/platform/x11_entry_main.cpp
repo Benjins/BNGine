@@ -28,8 +28,12 @@ unsigned char KeyStrokeCodeToAscii(Display* display, int keycode) {
 #include "../app/app_funcs.h"
 
 int main(int argc, char** argv) {
-
-	AppPreInit(argc, argv);
+	{
+		PreInitEvent evt;
+		evt.argc = argc;
+		evt.argv = argv;
+		AppEventFunction(evt);
+	}
 
 	Display* dpy = XOpenDisplay(NULL);
 
@@ -72,41 +76,55 @@ int main(int argc, char** argv) {
 
 	InitGlExts();
 
-	AppPostInit(argc, argv);
+	AppEventFunction(PostInitEvent());
 
 	XWindowAttributes gwa;
 	bool isRunning = true;
 	while (isRunning) {
 		XEvent ev;
 		while (XCheckIfEvent(dpy, &ev, evtPred, NULL)) {
+			MouseButtonEvent mouseEvt;
 			if (ev.type == ButtonPress) {
+				mouseEvt.pressOrRelease = BNS_BUTTON_PRESS;
 				if (ev.xbutton.button == 1) {
-					AppMouseDown(MouseButton::PRIMARY);
+					mouseEvt.button = MouseButton::PRIMARY;
+					AppEventFunction(mouseEvt);
 				}
 				else if (ev.xbutton.button == 3) {
-					AppMouseDown(MouseButton::SECONDARY);
+					mouseEvt.button = MouseButton::SECONDARY;
+					AppEventFunction(mouseEvt);
 				}
 			}
 			else if (ev.type == ButtonRelease) {
+				mouseEvt.pressOrRelease = BNS_BUTTON_RELEASE;
 				if (ev.xbutton.button == 1) {
-					AppMouseUp(MouseButton::PRIMARY);
+					mouseEvt.button = MouseButton::PRIMARY;
+					AppEventFunction(mouseEvt);
 				}
 				else if (ev.xbutton.button == 3) {
-					AppMouseUp(MouseButton::SECONDARY);
+					mouseEvt.button = MouseButton::SECONDARY;
+					AppEventFunction(mouseEvt);
 				}
 			}
 			else if (ev.type == MotionNotify) {
-				int currMouseX = ev.xmotion.x;
-				int currMouseY = ev.xmotion.y;
-				AppMouseMove(currMouseX, currMouseY);
+				MousePosEvent evt;
+				evt.x = ev.xmotion.x;
+				evt.y = ev.xmotion.y;
+				AppEventFunction(evt);
 			}
 			else if (ev.type == KeyPress) {
 				unsigned char key = KeyStrokeCodeToAscii(dpy, ev.xkey.keycode);
-				AppKeyDown(key);
+				KeyButtonEvent evt;
+				evt.keyCode = key;
+				evt.pressOrRelease = BNS_BUTTON_PRESS;
+				AppEventFunction(evt);
 			}
 			else if (ev.type == KeyRelease) {
 				unsigned char key = KeyStrokeCodeToAscii(dpy, ev.xkey.keycode);
-				AppKeyUp(key);
+				KeyButtonEvent evt;
+				evt.keyCode = key;
+				evt.pressOrRelease = BNS_BUTTON_RELEASE;
+				AppEventFunction(evt);
 			}
 			else if (ev.type == ConfigureNotify) {
 				// XConfigureEvent xce = ev.xconfigure;
@@ -119,8 +137,17 @@ int main(int argc, char** argv) {
 
 		XGetWindowAttributes(dpy, win, &gwa);
 		
-		AppSetWindowSize(gwa.width, gwa.height);
-		isRunning &= AppUpdate(argc, argv);
+		{
+			WindowResizeEvent evt;
+			evt.width = gwa.width;
+			evt.height = gwa.height;
+			AppEventFunction(evt);
+		}
+		{
+			UpdateEvent evt;
+			evt.shouldContinue = &isRunning;
+			AppEventFunction(evt);
+		}
 
 		glXSwapBuffers(dpy, win);
 
@@ -128,7 +155,7 @@ int main(int argc, char** argv) {
 
 	}
 
-	AppShutdown(argc, argv);
+	AppEventFunction(ShutDownEvent());
 
 	glXMakeCurrent(dpy, None, NULL);
 	glXDestroyContext(dpy, glc);
