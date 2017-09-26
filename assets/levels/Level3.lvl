@@ -1,0 +1,12 @@
+<Scene>
+	<Camera nearClip='0.010000' farClip='1000.000000' fov='80'>
+		<Transform pos='0.000000,0.200000,0.000000' id='1' scale='1.000000,1.000000,1.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+	</Camera>
+	<Entity id='3'>
+		<Transform pos='4.342375,0.585669,0.000000' id='4' scale='2.000000,2.000000,2.000000' rotation='1.000000,0.000000,0.000000,0.000000' parent='-1'/>
+		<MeshCollider src='ground.obj' isTrigger='F' colFlags='CF_NONE'/>
+		<Material src='floor.mat'/>
+		<Mesh src='ground.obj'/>
+		<PhysModuleComp/>
+	</Entity>
+</Scene>

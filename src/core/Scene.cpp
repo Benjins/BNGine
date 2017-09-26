@@ -145,7 +145,7 @@ void Scene::StartUp() {
 
 	gui.Init();
 
-	LoadLevel("Level2.lvl");
+	LoadLevel("Level3.lvl");
 
 	IDHandle<Prefab> playerPrefab;
 	res.assetIdMap.LookUp("player.bnp", &playerPrefab.id);
@@ -160,6 +160,10 @@ void Scene::StartUp() {
 			break;
 		}
 	}
+
+	auto& rb = phys.physModules.vals[0].sys.rigidbodies.EmplaceBack();
+	InitPhys2Rigidbody(&rb, 0.5f, 1.0f);
+	rb.position = Vector3(0, 3, 0);
 
 	StartUpCustomComponents();
 
@@ -452,6 +456,14 @@ void Scene::Render() {
 	res.Render();
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	BNS_VEC_FOREACH(phys.physModules.vals[0].sys.rigidbodies) {
+		Transform dbgTrans;
+		dbgTrans.parent.id = -1;
+		dbgTrans.position = ptr->position;
+		dbgTrans.rotation = ptr->orientation;
+		DebugDrawWireCube(Vector3(0, 0, 0), Vector3(1, 1, 1), &dbgTrans);
+	}
 
 	RenderSkyBox();
 

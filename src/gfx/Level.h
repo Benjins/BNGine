@@ -25,6 +25,7 @@ struct Prefab;
 struct PrefabInstanceComponent;
 struct PatrolPointComponent;
 struct RigidBody;
+struct PhysModuleComp;
 
 struct PrefabInstance {
 	Quaternion rot;
@@ -59,6 +60,7 @@ struct Level : IDBase{
 	Vector<PrefabInstanceComponent> prefabInstComps;
 	Vector<PatrolPointComponent> patrolPoints;
 	Vector<RigidBody> rigidBodies;
+	Vector<PhysModuleComp> physModules;
 };
 
 #endif

@@ -8,6 +8,7 @@
 #include "MeshCollider.h"
 #include "Collision.h"
 #include "RigidBody.h"
+#include "../physics2/PhysModuleComp.h"
 
 #include "../../ext/CppUtils/idbase.h"
 #include "../../ext/CppUtils/vector.h"
@@ -28,7 +29,7 @@ struct PhysicsSystem {
 	IDTracker<BoxCollider> boxCols;
 	IDTracker<SphereCollider> sphereCols;
 	IDTracker<MeshCollider> meshCols;
-
+	IDTracker<PhysModuleComp> physModules;
 	IDTracker<RigidBody> rigidBodies;
 
 	Vector<Collision> collisions;
