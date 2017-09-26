@@ -27,7 +27,9 @@ struct Phys2RigidBody {
 	Vector3 angularMomentum; // O
 
 	Vector3 accumulatedForces; // dp/dt
-	Vector3 accumulatedTorque; // dO/dt 
+	Vector3 accumulatedTorque; // dO/dt
+
+	float boxSize;
 
 	float inertiaTensor;
 	float invInertiaTensor;
@@ -50,5 +52,9 @@ struct Phys2System {
 void Phys2StepRigidBody(Phys2RigidBody* rb, float dt);
 
 void Phys2AddForceAtPoint(Phys2RigidBody* rb, Vector3 point, Vector3 force);
+
+// Max of 4 contact points for outContacts
+bool Phys2RigidBodyHitGround(Phys2RigidBody* rb, float groundHeight, Vector3* outContacts,
+							 int* outContactCount, Vector3* outNormal, float* depth);
 
 #endif

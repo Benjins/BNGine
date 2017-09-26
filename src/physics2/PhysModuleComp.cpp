@@ -1,8 +1,16 @@
 #include "PhysModuleComp.h"
 
+bool doUpdateEachFrame = true;
+
 void PhysModuleComp::Update() {
-	BNS_VEC_FOREACH(sys.rigidbodies) {
-		Phys2StepRigidBody(ptr, 0.01f);
+	if (GlobalScene->input.KeyIsPressed('P')) {
+		doUpdateEachFrame = !doUpdateEachFrame;
+	}
+
+	if (doUpdateEachFrame || GlobalScene->input.KeyIsPressed('L')) {
+		BNS_VEC_FOREACH(sys.rigidbodies) {
+			Phys2StepRigidBody(ptr, 0.01f);
+		}
 	}
 
 	float dt = GlobalScene->GetDeltaTime();
@@ -40,5 +48,11 @@ void PhysModuleComp::Update() {
 		localCoords[rand() % 3] = (rand() % 2) * 2 - 1;
 
 		Phys2AddForceAtPoint(&sys.rigidbodies.data[0], localCoords, camTrans->Forward() * 10);
+	}
+	if (GlobalScene->input.MouseButtonIsReleased(SECONDARY)) {
+		Vector3 localCoords = Vector3((rand() % 100) / 100.0f, (rand() % 100) / 100.0f, (rand() % 100) / 100.0f);
+		localCoords[rand() % 3] = (rand() % 2) * 2 - 1;
+
+		Phys2AddForceAtPoint(&sys.rigidbodies.data[0], localCoords, camTrans->Up() * 10);
 	}
 }

@@ -163,7 +163,8 @@ void Scene::StartUp() {
 
 	auto& rb = phys.physModules.vals[0].sys.rigidbodies.EmplaceBack();
 	InitPhys2Rigidbody(&rb, 0.5f, 1.0f);
-	rb.position = Vector3(0, 3, 0);
+	rb.position = Vector3(0, 5.5f, 0);
+	rb.orientation = Quaternion(X_AXIS, 0.2f);
 
 	StartUpCustomComponents();
 
@@ -197,10 +198,12 @@ void Scene::Update() {
 	}
 
 	// TODO: Remove this until it's stable
+	/*
 	if (!gameConsole.shouldDisplayConsole && GlobalScene->input.KeyIsReleased('P')) {
 		IPV4Addr addr = IPV4Addr(127, 0, 0, 1, net.debugPortToConnectTo);
 		net.OpenNewConnection(addr);
 	}
+	*/
 
 	for (int i = 0; i < deferredActions.count; i++) {
 		ExecuteAction(deferredActions.data[i]);
@@ -462,7 +465,7 @@ void Scene::Render() {
 		dbgTrans.parent.id = -1;
 		dbgTrans.position = ptr->position;
 		dbgTrans.rotation = ptr->orientation;
-		DebugDrawWireCube(Vector3(0, 0, 0), Vector3(1, 1, 1), &dbgTrans);
+		DebugDrawWireCube(Vector3(0, 0, 0), Vector3(1, 1, 1) * ptr->boxSize, &dbgTrans);
 	}
 
 	RenderSkyBox();
