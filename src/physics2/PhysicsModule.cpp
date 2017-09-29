@@ -1,6 +1,6 @@
 #include "PhysicsModule.h"
 
-Vector3 phys2Gravity = Vector3(0.0f, -9.81f, 0.0f) * 0.5f;
+Vector3 phys2Gravity = Vector3(0.0f, -9.81f, 0.0f);// *0.5f;
 
 void Phys2StepRigidBody(Phys2RigidBody* rb, float dt) {
 	rb->momentum = rb->momentum + rb->accumulatedForces * dt;
@@ -16,7 +16,7 @@ void Phys2StepRigidBody(Phys2RigidBody* rb, float dt) {
 	rb->accumulatedTorque = Vector3(0, 0, 0);
 	rb->accumulatedForces = Vector3(0, 0, 0);
 
-	rb->angularMomentum = rb->angularMomentum * 0.995f;
+	rb->angularMomentum = rb->angularMomentum * 0.99f;
 	//rb->momentum = rb->momentum * 0.995f;
 	rb->momentum = rb->momentum + phys2Gravity * dt * rb->mass;
 
@@ -32,9 +32,9 @@ void Phys2StepRigidBody(Phys2RigidBody* rb, float dt) {
 		avgContactPoint = avgContactPoint / contactPointCount - rb->position;
 
 		rb->position = rb->position - normal * depth;
-		rb->momentum = rb->momentum * -0.8f;
-		Vector3 torqueForce = Y_AXIS * -rb->velocity.MagnitudeSquared() * rb->mass;
-		rb->accumulatedTorque = rb->accumulatedTorque + CrossProduct(torqueForce, avgContactPoint) * 0.8f;
+		rb->momentum = rb->momentum * -0.6f;
+		Vector3 torqueForce = rb->momentum * -1;
+		rb->accumulatedTorque = rb->accumulatedTorque + CrossProduct(torqueForce, avgContactPoint);
 	}
 }
 

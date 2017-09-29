@@ -53,6 +53,6 @@ void PhysModuleComp::Update() {
 		Vector3 localCoords = Vector3((rand() % 100) / 100.0f, (rand() % 100) / 100.0f, (rand() % 100) / 100.0f);
 		localCoords[rand() % 3] = (rand() % 2) * 2 - 1;
 
-		Phys2AddForceAtPoint(&sys.rigidbodies.data[0], localCoords, camTrans->Up() * 10);
+		Phys2AddForceAtPoint(&sys.rigidbodies.data[0], localCoords, camTrans->Up() * 500);
 	}
 }
