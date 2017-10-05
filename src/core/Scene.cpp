@@ -163,7 +163,7 @@ void Scene::StartUp() {
 
 	{
 		auto& rb = phys.physModules.vals[0].sys.rigidbodies.EmplaceBack();
-		InitPhys2Rigidbody(&rb, 0.5f, 1.0f);
+		InitPhys2Rigidbody(&rb, 10.5f, 1.0f);
 		rb.position = Vector3(0, 5.5f, 0);
 		rb.orientation = Quaternion(X_AXIS, 0.2f);
 	}

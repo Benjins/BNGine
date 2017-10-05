@@ -31,6 +31,11 @@ void Phys2StepRigidBody(Phys2RigidBody* rb, float dt) {
 		}
 		avgContactPoint = avgContactPoint / contactPointCount - rb->position;
 
+		Vector3 fulcrumEnd = rb->position - avgContactPoint;
+		//Phys2AddForceAtPoint(rb, fulcrumEnd, phys2Gravity * dt);
+
+		//rb->accumulatedTorque = rb->accumulatedTorque + CrossProduct(rb->angularMomentum, avgContactPoint);
+
 		rb->position = rb->position - normal * depth;
 		rb->momentum = rb->momentum * -0.6f;
 		Vector3 torqueForce = rb->momentum * -1;
