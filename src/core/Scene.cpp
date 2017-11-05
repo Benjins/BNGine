@@ -541,6 +541,10 @@ void Scene::Render() {
 	gui.Render();
 
 	glDisable(GL_BLEND);
+	
+	BNS_FOR_I(res.materials.currentCount) {
+		res.materials.vals[i].FlushUniforms();
+	}
 }
 
 // This is unfortunately needed, until we exclude editor headers from metagen for non-editor builds,

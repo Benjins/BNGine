@@ -59,8 +59,7 @@ void Material::UpdateUniforms() {
 		}
 	}
 
-	uniformValues.readHead = uniformValues.base;
-	uniformValues.writeHead = uniformValues.base;
+	uniformValues.ResetWhenClear();
 }
 
 void Material::SetFloatUniform(const char* name, float val) {
@@ -140,5 +139,12 @@ GLint Material::GetUniformLocation(const char* name) {
 
 		return loc;
 	}
-	
+}
+
+void Material::FlushUniforms() {
+	if (uniformValues.GetLength() > 0) {
+		Program* prog = GlobalScene->res.programs.GetById(programId);
+		glUseProgram(prog->programObj);
+		UpdateUniforms();
+	}
 }

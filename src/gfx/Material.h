@@ -59,6 +59,8 @@ struct Material : IDBase {
 	void SetVector3Uniform(const char* name, const Vector3& val);
 	void SetVector2Uniform(const char* name, const Vector2& val);
 	void SetTextureUniform(const char* name, const Texture* tex);
+	
+	void FlushUniforms();
 };
 
 enum UniformType{
