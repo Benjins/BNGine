@@ -7,7 +7,7 @@
 
 #include "../core/ConfigVariable.h"
 
-CONFIG_VAR(float, playerGravity, "gravity", 0.08f);
+CONFIG_VAR(float, playerGravity, "gravity", 4.4f);
 
 void PlayerComponent::Start() {
 	//GuiFormData* form = GlobalScene->gui.guiFormStack.CreateAndAdd();
@@ -112,8 +112,8 @@ void PlayerComponent::Update() {
 		}
 	}
 	else if (currState == CS_JUMPING) {
-		yVelocity -= playerGravity;
-		moveVec.y = yVelocity / 50.0f;
+		yVelocity -= playerGravity * GlobalScene->GetDeltaTime();
+		moveVec.y = yVelocity * GlobalScene->GetDeltaTime();
 
 		if (yVelocity < 0) {
 			currState = CS_FALLING;
@@ -123,7 +123,7 @@ void PlayerComponent::Update() {
 		}
 	}
 	else if (currState == CS_FALLING) {
-		yVelocity -= playerGravity;
+		yVelocity -= playerGravity * GlobalScene->GetDeltaTime();
 		moveVec.y = yVelocity * GlobalScene->GetDeltaTime();
 
 		if (entTrans->position.y + moveVec.y < floorHeight) {
