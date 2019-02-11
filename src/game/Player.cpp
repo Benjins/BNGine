@@ -146,7 +146,7 @@ void PlayerComponent::Update() {
 		}
 	}
 	else if (currState == CS_FALLINGWATER) {
-		yVelocity += playerGravity / 4;
+		yVelocity += playerGravity / 4 * GlobalScene->GetDeltaTime();
 
 		if (!disablePlayerInput) {
 			if (GlobalScene->input.KeyIsDown('Q')) {
@@ -182,7 +182,7 @@ void PlayerComponent::Update() {
 		}
 	}
 	else if (currState == CS_RISINGWATER) {
-		yVelocity += playerGravity / 10;
+		yVelocity += playerGravity / 10 * GlobalScene->GetDeltaTime();
 
 		if (!disablePlayerInput) {
 			if (GlobalScene->input.KeyIsDown('Q')) {
